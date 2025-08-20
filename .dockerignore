@@ -8,6 +8,7 @@
 **/.toolstarget
 **/.vs
 **/.vscode
+**/.idea
 **/*.*proj.user
 **/*.dbmdl
 **/*.jfm
@@ -22,7 +23,6 @@
 **/secrets.dev.yaml
 **/values.dev.yaml
 LICENSE
-README.md
 !**/.gitignore
 !.git/HEAD
 !.git/config
