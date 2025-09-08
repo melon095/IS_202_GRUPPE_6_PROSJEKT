@@ -1,9 +1,12 @@
+using Kartverket.Web.Controllers;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<DummyMapService, DummyMapService>();
 builder.AddMySqlDataSource(connectionName: "mysqldb");
 var app = builder.Build();
 

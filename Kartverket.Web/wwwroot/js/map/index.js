@@ -5,18 +5,20 @@
 
 const TILE_LAYER_URL = 'https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png';
 const TILE_LAYER_COPYRIGHT = `&copy; <a href="http://www.kartverket.no/">Kartverket</a>`;
-    
+
 window.Map = new class {
-    #points = [];
+    #geojson = [];
     #div = null;
     #map = null;
+    #currentPositionMarker = null;
+    #accuracyCircle = null;
     
     get map() {
         return this.#map;
     }
     
-    load(points, div) {
-        this.#points = points;
+    load(geojson, div) {
+        this.#geojson = geojson;
         this.#div = div;
         this.#map = L.map(this.#div, {
             center: [58.14654566028351, 7.991145057860376],
@@ -27,14 +29,26 @@ window.Map = new class {
             maxZoom: 19,
             attribution: TILE_LAYER_COPYRIGHT
         }).addTo(this.#map);
-
-        const latlngs = this.#points.map(p => [p.Latitude, p.Longitude]);
-        const polyline = L.polyline(latlngs, {color: 'red'}).addTo(this.#map);
-        this.#map.fitBounds(polyline.getBounds());
-
-        for (const point of this.#points) {
-            L.circleMarker([point.Latitude, point.Longitude], {radius: 5, color: 'blue'}).addTo(this.#map);
-        }
+        
+        L
+            .geoJSON(this.#geojson)
+            .bindPopup(function (layer) {
+                return layer.feature.properties.description || 'No description';
+            })
+            .addTo(this.#map)
+        
+        // const latlngs = this.#geojson.points.map(({point}) => [point.latitude, point.longitude]);
+        // const polyline = L.polyline(latlngs, {color: 'red'}).addTo(this.#map);
+        // this.#map.fitBounds(polyline.getBounds());
+        //
+        // for (const point of this.#geojson.points) {
+        //     L
+        //         .circleMarker([point.point.latitude, point.point.longitude], {radius: 5, color: 'blue'})
+        //         .addTo(this.#map)
+        //         .bindPopup(point.description || 'No description');
+        // }
+        
+        this.#geolocationTimer();
     }
 
     setDragging(enabled) {
@@ -51,9 +65,42 @@ window.Map = new class {
             headers: {"Content-Type": "application/json"}
         });
         
-        this.#points.push(point);
+        this.#geojson.push(point);
         L.circleMarker([point.Latitude, point.Longitude], {radius: 5, color: 'blue'}).addTo(this.#map);
         this.#map.invalidateSize();
+    }
+    
+    #geolocationTimer() {
+        if (!navigator.geolocation) {
+            console.error("Geolocation is not supported by this browser.");
+            return;
+        }
+
+        const updatePosition = (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            const accuracy = position.coords.accuracy;
+
+            if (this.#currentPositionMarker) {
+                this.#map.removeLayer(this.#currentPositionMarker);
+            }
+            if (this.#accuracyCircle) {
+                this.#map.removeLayer(this.#accuracyCircle);
+            }
+
+            this.#currentPositionMarker = L.marker([lat, lon]).addTo(this.#map);
+            this.#accuracyCircle = L.circle([lat, lon], {radius: accuracy}).addTo(this.#map);
+        };
+
+        const handleError = (error) => {
+            console.error("Error obtaining geolocation: ", error);
+        };
+
+        navigator.geolocation.getCurrentPosition(updatePosition, handleError);
+
+        setInterval(() => {
+            navigator.geolocation.getCurrentPosition(updatePosition, handleError);
+        }, 10000);
     }
 }
 

@@ -1,0 +1,21 @@
+﻿@model MapIndexModel
+@using System.Text.Json
+@{
+    ViewBag.Title = "Map";
+}
+
+<div id="map" style="height: 600px;"></div>
+<div id="underMap"></div>
+
+@section Scripts {
+    <script src="~/js/map/index.js"></script>
+    <script>
+        window.addEventListener('load', function () {
+            @*const points = @Html.Raw(JsonSerializer.Serialize(Model, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));*@
+            const geojson = @Html.Raw(Model.GeoJson);
+
+            window.Map.load(geojson, document.getElementById('map'));
+            window.mapRun();
+        });
+    </script>
+}
