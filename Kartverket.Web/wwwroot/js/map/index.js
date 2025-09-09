@@ -18,7 +18,8 @@ window.Map = new class {
     #map = null;
     #currentPositionMarker = null;
     #accuracyCircle = null;
-    firstPoint = null;
+    
+    lineState = null;
     geolocationMode = GEOLOCATION_MODE.AUTO_MOVE;
     
     get map() {
@@ -63,16 +64,14 @@ window.Map = new class {
         }
     }
     
-    async addLine(x1, x2, y1, y2) {
-        const point = {
-            X1: x1,
-            X2: x2,
-            Y1: y1,
-            Y2: y2
-        };
-        const response = await fetch("/Map/AddLine", {
+    async addLines(coords) {
+        const req = {
+            points: coords
+        }
+        
+        const response = await fetch("/Map/AddLines", {
             method: "POST",
-            body: JSON.stringify(point),
+            body: JSON.stringify(req),
             headers: {"Content-Type": "application/json"}
         });
         
@@ -96,6 +95,7 @@ window.Map = new class {
             if (this.#currentPositionMarker) {
                 this.#map.removeLayer(this.#currentPositionMarker);
             }
+
             if (this.#accuracyCircle) {
                 this.#map.removeLayer(this.#accuracyCircle);
             }
@@ -227,19 +227,37 @@ window.Map = new class {
                             Longitude: coord.lng,
                         };
 
-                        await window.Map.addPoint(point);
+                        await that.addPoint(point);
                     }
 
                     if(activeButtonType === ACTIVE_BUTTON_TYPE.LINE)
                     {
-                        if (!that.firstPoint) {
-                            that.firstPoint = e.latlng;
-                            alert("First point set. Click to set the second point.");
-                        } else {
-                            const secondPoint = e.latlng;
-                            await window.Map.addLine(that.firstPoint.lng, secondPoint.lng, that.firstPoint.lat, secondPoint.lat);
-                            that.firstPoint = null;
+                        if (that.lineState == null)
+                        {
+                            that.lineState = [];
                         }
+                        
+                        that.lineState.push(e.latlng);
+                        let prevItem = null, newItem = null;
+                        if (that.lineState.length >= 2)
+                        {
+                            prevItem = that.lineState[that.lineState.length - 2];
+                            newItem = that.lineState[that.lineState.length - 1];
+                        }
+                        else
+                        {
+                            prevItem = that.lineState[that.lineState.length - 1];
+                            newItem = that.lineState[that.lineState.length - 1];
+                        }
+                        
+                        L.polyline([
+                                [prevItem.lat, prevItem.lng], 
+                                [newItem.lat, newItem.lng]
+                            ],
+                            {
+                                color: 'red'
+                            }
+                        ).addTo(window.Map.map);
                     }
                     
                     // if (that.geolocationMode === GEOLOCATION_MODE.AUTO_MOVE)
@@ -247,6 +265,21 @@ window.Map = new class {
                     //     that.geolocationMode = GEOLOCATION_MODE.MANUAL;
                     //     geolocationModeButton.innerHTML = 'Manual Position';
                     // }
+                });
+                
+                window.Map.map.on("dblclick", async (e) => {
+                    if (that.lineState === null || 
+                        that.lineState.length <= 1)
+                    {
+                        return;
+                    }
+                    
+                    const coords = that.lineState
+                        .map(({lat,lng}) => ({latitude: lat, longitude: lng}));
+                    
+                    await that.addLines(coords);
+                    
+                    that.lineState = null;
                 });
   
                 return container;

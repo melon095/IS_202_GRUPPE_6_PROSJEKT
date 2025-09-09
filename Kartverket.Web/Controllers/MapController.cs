@@ -260,9 +260,9 @@ public class MapController : Controller
     }
 
     [HttpPost]
-    public string AddLine([FromBody] MapAddLineModel line)
+    public string AddLines([FromBody] MapAddLineModel line)
     {
-        _logger.LogInformation("Received line: {X1}, {Y1} to {X2}, {Y2}", line.X1, line.Y1, line.X2, line.Y2);
+        _logger.LogInformation("Received lines {@Points}", line.Points);
         var report = new Report
         {
             ReportName = "New Line Report",
@@ -274,37 +274,24 @@ public class MapController : Controller
             Name = "New Line Object"
         };
         
-        var mapPoint1 = new MapPoint
+        var mapPoints = line.Points.Select(p => new MapPoint
         {
             Report = report,
             MapObject = mapObject,
-            Latitude = line.Y1,
-            Longitude = line.X1,
+            Latitude = p.Latitude,
+            Longitude = p.Longitude,
             AMSL = 0
-        };
+        }).ToList();
         
-        var mapPoint2 = new MapPoint
-        {
-            Report = report,
-            MapObject = mapObject,
-            Latitude = line.Y2,
-            Longitude = line.X2,
-            AMSL = 0
-        };
-        
-        _mapService.AddMapPoint(mapPoint1);
-        _mapService.AddMapPoint(mapPoint2);
-        
+        foreach(var point in mapPoints)
+            _mapService.AddMapPoint(point);
+
         var geoFeature = new GeoFeature
         {
             Geometry = new Geometry
             {
                 Type = "LineString",
-                Coordinates = new[]
-                {
-                    new[] {line.X1, line.Y1},
-                    new[] {line.X2, line.Y2}
-                }
+                Coordinates = mapPoints.Select(p => new [] {p.Longitude, p.Latitude}).ToArray()
             },
             Properties = new Properties
             {
@@ -318,4 +305,4 @@ public class MapController : Controller
 
 public record MapAddPointModel(double Latitude, double Longitude);
 
-public record MapAddLineModel(double X1, double Y1, double X2, double Y2);
+public record MapAddLineModel(List<MapAddPointModel> Points);
