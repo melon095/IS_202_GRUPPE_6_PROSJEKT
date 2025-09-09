@@ -30,24 +30,7 @@ window.Map = new class {
             attribution: TILE_LAYER_COPYRIGHT
         }).addTo(this.#map);
         
-        L
-            .geoJSON(this.#geojson)
-            .bindPopup(function (layer) {
-                return layer.feature.properties.description || 'No description';
-            })
-            .addTo(this.#map)
-        
-        // const latlngs = this.#geojson.points.map(({point}) => [point.latitude, point.longitude]);
-        // const polyline = L.polyline(latlngs, {color: 'red'}).addTo(this.#map);
-        // this.#map.fitBounds(polyline.getBounds());
-        //
-        // for (const point of this.#geojson.points) {
-        //     L
-        //         .circleMarker([point.point.latitude, point.point.longitude], {radius: 5, color: 'blue'})
-        //         .addTo(this.#map)
-        //         .bindPopup(point.description || 'No description');
-        // }
-        
+        this.#addGeoJson(this.#geojson);
         this.#geolocationTimer();
     }
 
@@ -59,15 +42,16 @@ window.Map = new class {
     }
     
     async addPoint(point) {
-        await fetch("/Home/AddPoint", {
+        const response = await fetch("/Home/AddPoint", {
             method: "POST",
             body: JSON.stringify(point),
             headers: {"Content-Type": "application/json"}
         });
         
-        this.#geojson.push(point);
-        L.circleMarker([point.Latitude, point.Longitude], {radius: 5, color: 'blue'}).addTo(this.#map);
-        this.#map.invalidateSize();
+        if (response.ok) {
+            const newPoint = await response.json();
+            this.#addGeoJson();
+        }
     }
     
     #geolocationTimer() {
@@ -101,6 +85,24 @@ window.Map = new class {
         setInterval(() => {
             navigator.geolocation.getCurrentPosition(updatePosition, handleError);
         }, 10000);
+    }
+    
+    #addGeoJson(geo) {
+        L
+            .geoJSON(geo, {
+                style: function (feature) {
+                    if (feature.geometry.type === 'LineString') {
+                        return { color: 'red', weight: 10 };
+                    }
+                    return { color: 'blue' };
+                }
+            })
+            .bindPopup(function (layer) {
+                return layer.feature.properties.description || 'No description';
+            })
+            .addTo(this.#map);
+
+        this.#map.invalidateSize();
     }
 }
 
@@ -154,8 +156,8 @@ window.mapRun = function() {
         {
             const coord = e.latlng;
             const point = {
-                Latitude: coord.lat,
-                Longitude: coord.lng,
+                latitude: coord.lat,
+                longitude: coord.lng,
             };
     
             await window.Map.addPoint(point);
