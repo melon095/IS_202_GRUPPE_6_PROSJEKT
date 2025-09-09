@@ -1,7 +1,13 @@
 ﻿const ACTIVE_BUTTON_TYPE = {
     PAN: 'PAN',
-    ADD: 'ADD'
+    ADD: 'ADD',
+    LINE: 'LINE'
 }
+
+const GEOLOCATION_MODE = {
+    AUTO_MOVE: 'AUTO_MOVE',
+    MANUAL: 'MANUAL'
+};
 
 const TILE_LAYER_URL = 'https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png';
 const TILE_LAYER_COPYRIGHT = `&copy; <a href="http://www.kartverket.no/">Kartverket</a>`;
@@ -12,6 +18,8 @@ window.Map = new class {
     #map = null;
     #currentPositionMarker = null;
     #accuracyCircle = null;
+    firstPoint = null;
+    geolocationMode = GEOLOCATION_MODE.AUTO_MOVE;
     
     get map() {
         return this.#map;
@@ -31,6 +39,7 @@ window.Map = new class {
         }).addTo(this.#map);
         
         this.#addGeoJson(this.#geojson);
+        this.#addButtons();
         this.#geolocationTimer();
     }
 
@@ -42,7 +51,7 @@ window.Map = new class {
     }
     
     async addPoint(point) {
-        const response = await fetch("/Home/AddPoint", {
+        const response = await fetch("/Map/AddPoint", {
             method: "POST",
             body: JSON.stringify(point),
             headers: {"Content-Type": "application/json"}
@@ -50,16 +59,35 @@ window.Map = new class {
         
         if (response.ok) {
             const newPoint = await response.json();
-            this.#addGeoJson();
+            this.#addGeoJson(newPoint);
         }
     }
     
+    async addLine(x1, x2, y1, y2) {
+        const point = {
+            X1: x1,
+            X2: x2,
+            Y1: y1,
+            Y2: y2
+        };
+        const response = await fetch("/Map/AddLine", {
+            method: "POST",
+            body: JSON.stringify(point),
+            headers: {"Content-Type": "application/json"}
+        });
+        
+        if (response.ok) {
+            const newLine = await response.json();
+            this.#addGeoJson(newLine);
+        }
+    }
+
     #geolocationTimer() {
         if (!navigator.geolocation) {
             console.error("Geolocation is not supported by this browser.");
             return;
         }
-
+        
         const updatePosition = (position) => {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
@@ -74,19 +102,29 @@ window.Map = new class {
 
             this.#currentPositionMarker = L.marker([lat, lon]).addTo(this.#map);
             this.#accuracyCircle = L.circle([lat, lon], {radius: accuracy}).addTo(this.#map);
+            
+            console.log({lat, lon, accuracy});
+            
+            if (this.geolocationMode === GEOLOCATION_MODE.MANUAL) {
+                return;
+            }
+            
+            this.#map.setView([lat, lon], 15);
         };
 
         const handleError = (error) => {
             console.error("Error obtaining geolocation: ", error);
         };
-
-        navigator.geolocation.getCurrentPosition(updatePosition, handleError);
-
-        setInterval(() => {
-            navigator.geolocation.getCurrentPosition(updatePosition, handleError);
-        }, 10000);
+        
+        const opts = {
+            enableHighAccuracy: true,
+            maximumAge: 0,
+            timeout: 5000
+        };
+        navigator.geolocation.getCurrentPosition(updatePosition, handleError, opts);        
+        navigator.geolocation.watchPosition(updatePosition, handleError, opts);
     }
-    
+
     #addGeoJson(geo) {
         L
             .geoJSON(geo, {
@@ -104,63 +142,117 @@ window.Map = new class {
 
         this.#map.invalidateSize();
     }
-}
+    
+    #addButtons() {
+        const that = this;
+        const control = L.Control.extend({
+            options: {
+                position: 'topright'
+            },
+            onAdd: function (map) {
+                let activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
+                
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+                container.style.backgroundColor = 'white';
+                container.style.padding = '5px';
 
-window.mapRun = function() {
-    let activeButtonType;
-    
-    const addToDiv = (elem) => {
-        const div = document.getElementById('underMap');
-        div.appendChild(elem);
-    };
-    
-    const panButton = document.createElement('button');
-    panButton.textContent = "Pan";
-    
-    panButton.onclick = () => {
-        activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
-    };
-    
-    const addButton = document.createElement('button');
-    addButton.textContent = "Add point";
-    
-    addButton.onclick = () => {
-        activeButtonType = ACTIVE_BUTTON_TYPE.ADD;
-    };
-    
-    addToDiv(panButton);
-    addToDiv(addButton);
-    
-    activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
-    
-    const HUNDRED_MS = 100;
-    setInterval(() => {
-        switch(activeButtonType)
-        {
-            case ACTIVE_BUTTON_TYPE.PAN:
-                window.Map.setDragging(true);
-                break;
-    
-            case ACTIVE_BUTTON_TYPE.ADD:
-                window.Map.setDragging(false);
-                break;
-    
-            default:
-                console.error("Unknown activeButtonType: " + activeButtonType);
-                break;
-        };
-    }, HUNDRED_MS);
-    
-    window.Map.map.on('click', async (e) => {
-        if(activeButtonType === ACTIVE_BUTTON_TYPE.ADD)
-        {
-            const coord = e.latlng;
-            const point = {
-                latitude: coord.lat,
-                longitude: coord.lng,
-            };
-    
-            await window.Map.addPoint(point);
-        }
-    });
+                const panButton = L.DomUtil.create('button', '', container);
+                panButton.innerHTML = 'Pan';
+                panButton.style.display = 'block';
+                panButton.style.marginBottom = '5px';
+
+                panButton.onclick = () => {
+                    activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
+                };
+                
+                const addButton = L.DomUtil.create('button', '', container);
+                addButton.innerHTML = 'Add point';
+                addButton.style.display = 'block';
+                
+                addButton.onclick = () => {
+                    activeButtonType = ACTIVE_BUTTON_TYPE.ADD;
+                };
+                
+                const lineButton = L.DomUtil.create('button', '', container);
+                lineButton.innerHTML = 'Add line';
+                lineButton.style.display = 'block';
+                
+                lineButton.onclick = () => {
+                    activeButtonType = ACTIVE_BUTTON_TYPE.LINE;
+                };
+                
+                // const geolocationModeButton = L.DomUtil.create('button', '', container);
+                // geolocationModeButton.innerHTML = 'Follow Position';
+                // geolocationModeButton.style.display = 'block';
+                // geolocationModeButton.style.marginTop = '5px';
+                //
+                // geolocationModeButton.onclick = () => {
+                //     if (that.geolocationMode === GEOLOCATION_MODE.AUTO_MOVE) {
+                //         that.geolocationMode = GEOLOCATION_MODE.MANUAL;
+                //         geolocationModeButton.innerHTML = 'Manual Position';
+                //     } 
+                //     else if (that.geolocationMode === GEOLOCATION_MODE.MANUAL) {
+                //         that.geolocationMode = GEOLOCATION_MODE.AUTO_MOVE;
+                //         geolocationModeButton.innerHTML = 'Follow Position';
+                //     }
+                // };
+
+                L.DomEvent.disableClickPropagation(container);
+                
+                const HUNDRED_MS = 100;
+                setInterval(() => {
+                    switch(activeButtonType)
+                    {
+                        case ACTIVE_BUTTON_TYPE.PAN:
+                            window.Map.setDragging(true);
+                            break;
+
+                        case ACTIVE_BUTTON_TYPE.ADD:
+                        case ACTIVE_BUTTON_TYPE.LINE:
+                            window.Map.setDragging(false);
+                            break;
+
+                        default:
+                            console.error("Unknown activeButtonType: " + activeButtonType);
+                            break;
+                    }
+                }, HUNDRED_MS);
+
+                window.Map.map.on('click', async (e) => {
+                    if(activeButtonType === ACTIVE_BUTTON_TYPE.ADD)
+                    {
+                        const coord = e.latlng;
+                        const point = {
+                            Latitude: coord.lat,
+                            Longitude: coord.lng,
+                        };
+
+                        await window.Map.addPoint(point);
+                    }
+
+                    if(activeButtonType === ACTIVE_BUTTON_TYPE.LINE)
+                    {
+                        if (!that.firstPoint) {
+                            that.firstPoint = e.latlng;
+                            alert("First point set. Click to set the second point.");
+                        } else {
+                            const secondPoint = e.latlng;
+                            await window.Map.addLine(that.firstPoint.lng, secondPoint.lng, that.firstPoint.lat, secondPoint.lat);
+                            that.firstPoint = null;
+                        }
+                    }
+                    
+                    // if (that.geolocationMode === GEOLOCATION_MODE.AUTO_MOVE)
+                    // {
+                    //     that.geolocationMode = GEOLOCATION_MODE.MANUAL;
+                    //     geolocationModeButton.innerHTML = 'Manual Position';
+                    // }
+                });
+  
+                return container;
+            }
+        });
+        
+        this.#map.addControl(new control());
+    }
 }

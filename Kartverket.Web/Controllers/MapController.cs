@@ -50,33 +50,41 @@ public class DummyMapService
 {
     private static readonly List<MapPoint> MapPoints = new();
 
+    public GeoFeature ConvertPoint(MapPoint point)
+    {
+        return new GeoFeature
+        {
+            Geometry = new Geometry
+            {
+                Coordinates = new [] {point.Longitude, point.Latitude}
+            },
+            Properties = new Properties
+            {
+                Description = $"{point.MapObject.Name} - {point.Report.ReportName}"
+            }
+        };
+    }
+    
     public List<GeoFeature> GetPoints()
     {
-        var points = MapPoints.Select(p => new GeoFeature
-        {
-            Geometry = new Geometry
-            {
-                Coordinates = new [] {p.Longitude, p.Latitude}
-            },
-            Properties = new Properties
-            {
-                Description = $"{p.MapObject.Name} - {p.Report.ReportName}"
-            }
-        }).ToList();
+        var points = MapPoints.Select(ConvertPoint).ToList();
         
-        var lines = MapPoints.GroupBy(p => p.Report.ID).Select(g => new GeoFeature
-        {
-            Type = "Feature",
-            Geometry = new Geometry
+        var lines = MapPoints
+            .GroupBy(p => p.Report.ID)
+            .Where(g => g.Count() > 1)
+            .Select(g => new GeoFeature
             {
-                Type = "LineString",
-                Coordinates = g.OrderBy(p => p.AMSL).Select(p => new[] {p.Longitude, p.Latitude}).ToArray()
-            },
-            Properties = new Properties
-            {
-                Description = $"Path for report {g.First().Report.ReportName}"
-            }
-        }).ToList();
+                Geometry = new Geometry
+                {
+                    Type = "LineString",
+                    Coordinates = g.Select(p => new [] {p.Longitude, p.Latitude}).ToArray()
+                },
+                Properties = new Properties
+                {
+                    Description = $"{g.First().MapObject.Name} - {g.First().Report.ReportName} (Line)"
+                }
+            }).ToList();
+
         
         foreach (var line in lines)
         {
@@ -98,6 +106,11 @@ public class DummyMapService
         Seed();
     }
 
+    public void AddMapPoint(MapPoint point)
+    {
+        MapPoints.Add(point);
+    }
+    
     private void Seed()
     {
         var report = new Report
@@ -190,6 +203,12 @@ public class MapController : Controller
     private readonly ILogger<MapController> _logger;
     private readonly DummyMapService _mapService;
     
+    private static readonly JsonSerializerOptions jsonOpts = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
+    };
+    
     public MapController(ILogger<MapController> logger, DummyMapService mapService)
     {
         _logger = logger;
@@ -206,33 +225,97 @@ public class MapController : Controller
             features = points
         };
         
-        var geojson = JsonSerializer.Serialize(obj, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            WriteIndented = true
-        });
+        var geojson = JsonSerializer.Serialize(obj, jsonOpts);
         
         return View(new MapIndexModel(geojson));
     }
     
     [HttpPost]
-    public IActionResult AddPoint([FromBody] MapAddPointModel point)
+    public string AddPoint([FromBody] MapAddPointModel point)
     {
         _logger.LogInformation("Received point: {Latitude}, {Longitude}", point.Latitude, point.Longitude);
-        _mapService.GetPoints().Add(new GeoFeature
+        var report = new Report
+        {
+            ReportName = "New Report",
+            ReportDescription = "Added via API"
+        };
+        
+        var mapObject = new MapObject
+        {
+            Name = "New Object"
+        };
+        
+        var mapPoint = new MapPoint
+        {
+            Report = report,
+            MapObject = mapObject,
+            Latitude = point.Latitude,
+            Longitude = point.Longitude,
+            AMSL = 0
+        };
+        
+        _mapService.AddMapPoint(mapPoint);
+        
+        return JsonSerializer.Serialize(_mapService.ConvertPoint(mapPoint), jsonOpts);
+    }
+
+    [HttpPost]
+    public string AddLine([FromBody] MapAddLineModel line)
+    {
+        _logger.LogInformation("Received line: {X1}, {Y1} to {X2}, {Y2}", line.X1, line.Y1, line.X2, line.Y2);
+        var report = new Report
+        {
+            ReportName = "New Line Report",
+            ReportDescription = "Added via API"
+        };
+        
+        var mapObject = new MapObject
+        {
+            Name = "New Line Object"
+        };
+        
+        var mapPoint1 = new MapPoint
+        {
+            Report = report,
+            MapObject = mapObject,
+            Latitude = line.Y1,
+            Longitude = line.X1,
+            AMSL = 0
+        };
+        
+        var mapPoint2 = new MapPoint
+        {
+            Report = report,
+            MapObject = mapObject,
+            Latitude = line.Y2,
+            Longitude = line.X2,
+            AMSL = 0
+        };
+        
+        _mapService.AddMapPoint(mapPoint1);
+        _mapService.AddMapPoint(mapPoint2);
+        
+        var geoFeature = new GeoFeature
         {
             Geometry = new Geometry
             {
-                Coordinates = new [] {point.Longitude, point.Latitude}
+                Type = "LineString",
+                Coordinates = new[]
+                {
+                    new[] {line.X1, line.Y1},
+                    new[] {line.X2, line.Y2}
+                }
             },
             Properties = new Properties
             {
-                Description = "New Point"
+                Description = $"{mapObject.Name} - {report.ReportName} (Line)"
             }
-        });
-    
-        return Ok();
+        };
+        
+        return JsonSerializer.Serialize(geoFeature, jsonOpts);
     }
 }
 
-public record MapAddPointModel(double Latitude, double Longitude); 
+public record MapAddPointModel(double Latitude, double Longitude);
+
+public record MapAddLineModel(double X1, double Y1, double X2, double Y2);

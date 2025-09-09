@@ -4,8 +4,7 @@
     
 }
 
-<div id="map" style="height: 600px;"></div>
-<div id="underMap"></div>
+<div id="map" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; padding: 0;"></div>
 
 @section Scripts {
     <script src="~/js/map/index.js"></script>
@@ -14,7 +13,6 @@
             const geojson = @Html.Raw(Model.GeoJson);
             
             window.Map.load(geojson, document.getElementById('map'));
-            window.mapRun();
         });
     </script>
 }
