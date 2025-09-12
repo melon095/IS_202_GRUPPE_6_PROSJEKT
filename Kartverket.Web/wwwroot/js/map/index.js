@@ -11,6 +11,9 @@ const GEOLOCATION_MODE = {
 
 const TILE_LAYER_URL = 'https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png';
 const TILE_LAYER_COPYRIGHT = `&copy; <a href="http://www.kartverket.no/">Kartverket</a>`;
+const COORD_PRECISION = ".000001";
+const COORD_PRECISION_INT = 6;
+
 
 class CMap {
     #geojson = [];
@@ -72,8 +75,8 @@ class CMap {
             {
                 const coord = e.latlng;
                 const point = {
-                    Latitude: coord.lat,
-                    Longitude: coord.lng,
+                    Latitude: coord.lat.toFixed(COORD_PRECISION_INT),
+                    Longitude: coord.lng.toFixed(COORD_PRECISION_INT)
                 };
 
                 await this.addPoint(point);
@@ -124,7 +127,10 @@ class CMap {
             }
 
             const coords = this.lineState
-                .map(({lat,lng}) => ({latitude: lat, longitude: lng}));
+                .map(({lat,lng}) => ({
+                    latitude: lat.toFixed(COORD_PRECISION_INT), 
+                    longitude: lng.toFixed(COORD_PRECISION_INT)
+                }));
 
             await this.addLines(coords);
 
@@ -351,15 +357,15 @@ class PilotMap extends CMap {
                 name: 'latitude',
                 label: 'Latitude',
                 type: 'number',
-                value: this.#pendingPointData.Latitude.toFixed(6),
-                step: '0.000001'
+                value: this.#pendingPointData.Latitude.toFixed(COORD_PRECISION_INT),
+                step: COORD_PRECISION
             },
             {
                 name: 'longitude',
                 label: 'Longitude',
                 type: 'number',
-                value: this.#pendingPointData.Longitude.toFixed(6),
-                step: '0.000001'
+                value: this.#pendingPointData.Longitude.toFixed(COORD_PRECISION_INT),
+                step: COORD_PRECISION
             },
             {
                 name: 'Meters above sea level in foot',
@@ -429,8 +435,8 @@ class PilotMap extends CMap {
                 label: "Linje punkter",
                 type: "table",
                 columns: [
-                    { key: "latitude", label: "Latitude", type: "number", step: "0.000001" },
-                    { key: "longitude", label: "Longitude", type: "number", step: "0.000001" }
+                    { key: "latitude", label: "Latitude", type: "number", step: COORD_PRECISION },
+                    { key: "longitude", label: "Longitude", type: "number", step: COORD_PRECISION }
                 ],
                 value: this.#pendingLineData
             }
@@ -447,6 +453,8 @@ class PilotMap extends CMap {
     
     async #submitLineData(formData) {
         if (!this.#pendingLineData) return;
+        alert("//TODO SUBMIT LINE DATA")
+        return;
         
         const coords = this.#pendingLineData.map((point, index) => ({
             latitude: parseFloat(formData.lines[index].latitude),
@@ -647,6 +655,8 @@ class Panel {
                 default: {
                     input = document.createElement('input');
                     input.type = field.type || 'text';
+                    if (field.step) input.step = field.step;
+                    break;
                 }
             }
 
