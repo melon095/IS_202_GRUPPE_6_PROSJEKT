@@ -1,10 +1,12 @@
 ﻿@model MapIndexModel
 @{
     ViewBag.Title = "Map";
-    
 }
 
-<div id="map" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; padding: 0;"></div>
+<div id="mapParent" style="display: flex;">
+    <div id="map" style="flex: 1; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; padding: 0;"></div>
+</div>
+
 
 @section Scripts {
     <script src="~/js/map/index.js"></script>
@@ -12,7 +14,9 @@
         window.addEventListener('load', function () {
             const geojson = @Html.Raw(Model.GeoJson);
             
-            window.Map.load(geojson, document.getElementById('map'));
+            window.Map = new PilotMap();
+            window.Map.onLoad(geojson, document.getElementById('map'));
         });
+    
     </script>
 }

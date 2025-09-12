@@ -1,4 +1,5 @@
 using Kartverket.Web.Controllers;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,7 +7,10 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<DummyMapService, DummyMapService>();
+builder.Services
+    .AddSingleton<DummyMapService, DummyMapService>()
+    .AddMudServices();
+
 builder.AddMySqlDataSource(connectionName: "mysqldb");
 var app = builder.Build();
 
@@ -26,6 +30,7 @@ app.UseRouting();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+app.UseStaticFiles();
 
 app.MapControllerRoute(
     name: "default",

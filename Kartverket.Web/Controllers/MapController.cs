@@ -4,12 +4,38 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kartverket.Web.Controllers;
 
+public class Role
+{
+    public Guid ID { get; set; } = Guid.NewGuid();
+    public string RoleName { get; set; }
+}
+
+public class User
+{
+    public Guid ID { get; set; } = Guid.NewGuid();
+    public string UserName { get; set; }
+    public Role Role { get; set; }
+}
+
 public class Report
 {
     public Guid ID { get; set; } = Guid.NewGuid();
-    public Guid UserID { get; set; } = Guid.NewGuid();
-    public string ReportName { get; set; }
     public string ReportDescription { get; set; }
+    public List<ReportFeedback> Feedbacks { get; set; } = new();
+}
+
+public class ReportFeedback
+{
+    public Guid ID { get; set; } = Guid.NewGuid();
+    public Report Report { get; set; }
+    public string Feedback { get; set; }
+}
+
+public class ReportFeedbackAssignment
+{
+    public Guid ID { get; set; } = Guid.NewGuid();
+    public ReportFeedback Feedback { get; set; }
+    public User AssignedTo { get; set; }
 }
 
 public class MapObject
@@ -49,6 +75,7 @@ public class Properties
 public class DummyMapService
 {
     private static readonly List<MapPoint> MapPoints = new();
+    private static readonly List<Report> Reports = new();
 
     public GeoFeature ConvertPoint(MapPoint point)
     {
@@ -60,7 +87,7 @@ public class DummyMapService
             },
             Properties = new Properties
             {
-                Description = $"{point.MapObject.Name} - {point.Report.ReportName}"
+                Description = $"{point.MapObject.Name} - {point.Report.ReportDescription}"
             }
         };
     }
@@ -81,7 +108,7 @@ public class DummyMapService
                 },
                 Properties = new Properties
                 {
-                    Description = $"{g.First().MapObject.Name} - {g.First().Report.ReportName} (Line)"
+                    Description = $"{g.First().MapObject.Name} - {g.First().Report.ReportDescription} (Line)"
                 }
             }).ToList();
 
@@ -111,11 +138,29 @@ public class DummyMapService
         MapPoints.Add(point);
     }
     
+    public Report CreateReport(string description)
+    {
+        var report = new Report
+        {
+            ID = Guid.NewGuid(),
+            ReportDescription = description,
+            Feedbacks = []
+        };
+        
+        Reports.Add(report);
+
+        return report;
+    }
+    
+    public Report? GetReport(Guid id)
+    {
+        return Reports.FirstOrDefault(r => r.ID == id);
+    }
+    
     private void Seed()
     {
         var report = new Report
         {
-            ReportName = "Test Report",
             ReportDescription = "This is a test report"
         };
         
@@ -157,7 +202,6 @@ public class DummyMapService
 
         var report2 = new Report
         {
-            ReportName = "UIA Report",
             ReportDescription = "UIA"
         };
         
@@ -192,8 +236,6 @@ public class DummyMapService
             Longitude = 8.002266061424608,
             AMSL = 75
         });
-
-
     }
 }
 
@@ -234,14 +276,16 @@ public class MapController : Controller
     public string AddPoint([FromBody] MapAddPointModel point)
     {
         _logger.LogInformation("Received point: {Latitude}, {Longitude}", point.Latitude, point.Longitude);
-        var report = new Report
+        var report = _mapService.GetReport(point.ReportId);
+        if (report == null)
         {
-            ReportName = "New Report",
-            ReportDescription = "Added via API"
-        };
+            Response.StatusCode = 400;
+            return JsonSerializer.Serialize(new {error = "Invalid report ID"}, jsonOpts);
+        }
         
         var mapObject = new MapObject
         {
+            ID = Guid.NewGuid(),
             Name = "New Object"
         };
         
@@ -263,14 +307,16 @@ public class MapController : Controller
     public string AddLines([FromBody] MapAddLineModel line)
     {
         _logger.LogInformation("Received lines {@Points}", line.Points);
-        var report = new Report
+        var report = _mapService.GetReport(line.ReportId);
+        if (report == null)
         {
-            ReportName = "New Line Report",
-            ReportDescription = "Added via API"
-        };
-        
+            Response.StatusCode = 400;
+            return JsonSerializer.Serialize(new {error = "Invalid report ID"}, jsonOpts);
+        }
+
         var mapObject = new MapObject
         {
+            ID = Guid.NewGuid(),
             Name = "New Line Object"
         };
         
@@ -295,14 +341,48 @@ public class MapController : Controller
             },
             Properties = new Properties
             {
-                Description = $"{mapObject.Name} - {report.ReportName} (Line)"
+                Description = $"{mapObject.Name} - {report.ReportDescription} (Line)"
             }
         };
         
         return JsonSerializer.Serialize(geoFeature, jsonOpts);
     }
+
+    [HttpPost]
+    public Report? CreateReport()
+    {
+        if (!ModelState.IsValid)
+        {
+            Response.StatusCode = 400;
+            return null;
+        }
+        
+        return _mapService.CreateReport("Pending Description");
+    }
+    
+    [HttpPut]
+    public Report? UpdateReport(Guid id, [FromBody] UpdateReportModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            Response.StatusCode = 400;
+            return null;
+        }
+
+        var report = _mapService.GetReport(id);
+        if (report == null)
+        {
+            Response.StatusCode = 404;
+            return null;
+        }
+
+        report.ReportDescription = model.ReportDescription;
+        return report;
+    }
 }
 
-public record MapAddPointModel(double Latitude, double Longitude);
+public record MapAddPointModel(Guid ReportId, double Latitude, double Longitude);
 
-public record MapAddLineModel(List<MapAddPointModel> Points);
+public record MapAddLineModel(Guid ReportId, List<MapAddPointModel> Points);
+
+public record UpdateReportModel(string ReportDescription);
