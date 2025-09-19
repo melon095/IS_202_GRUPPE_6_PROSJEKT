@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Kartverket.Web.Controllers;
 using Kartverket.Web.Database;
+using Kartverket.Web.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,12 +11,18 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services
-    .AddSingleton<DummyMapService, DummyMapService>();
+    .AddSingleton<DummyMapService, DummyMapService>()
+    .AddTransient<MapService, MapService>()
+    .AddTransient<UserService, UserService>()
+    .AddTransient<GeoJSONService, GeoJSONService>()
+    .AddTransient<ReportService, ReportService>();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-    Debug.Assert(connectionString != null, $"Du glemte DefaultConnection i din appsettings.{builder.Environment.EnvironmentName}.json fil!");
+    Debug.Assert(connectionString != null,
+        $"Du glemte DefaultConnection i din appsettings.{builder.Environment.EnvironmentName}.json fil!");
+    
     var version = ServerVersion.AutoDetect(connectionString);
     
     options.UseMySql(connectionString, version, mySqlOptions =>
