@@ -26,16 +26,14 @@
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div>
-                    <ul>
-                        <li>
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li>
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Map" asp-action="Index">Map</a>
-                        </li>
-                    </ul>
-                </div>
+                <ul>
+                    <li>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                    </li>
+                    <li>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Map" asp-action="Index">Map</a>
+                    </li>
+                </ul>
             </div>
         </nav>
     </header>
@@ -49,9 +47,10 @@
             &copy; @(DateTime.Now.Year) - Kartverket.Web - Gruppe 6
         </div>
     </footer>
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-<script src="_content/MudBlazor/MudBlazor.min.js"></script>
-@await RenderSectionAsync("Scripts", required: false)
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

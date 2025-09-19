@@ -1,4 +1,7 @@
+using System.Diagnostics;
 using Kartverket.Web.Controllers;
+using Kartverket.Web.Database;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,7 +12,21 @@ builder.Services.AddControllersWithViews();
 builder.Services
     .AddSingleton<DummyMapService, DummyMapService>();
 
-// builder.AddMySqlDataSource(connectionName: "mysqldb");
+builder.Services.AddDbContext<DatabaseContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    Debug.Assert(connectionString != null, $"Du glemte DefaultConnection i din appsettings.{builder.Environment.EnvironmentName}.json fil!");
+    var version = ServerVersion.AutoDetect(connectionString);
+    
+    options.UseMySql(connectionString, version, mySqlOptions =>
+    {
+        mySqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorNumbersToAdd: null);
+    });
+});
+
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
