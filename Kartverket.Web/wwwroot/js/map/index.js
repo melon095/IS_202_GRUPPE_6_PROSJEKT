@@ -14,7 +14,6 @@ const TILE_LAYER_COPYRIGHT = `&copy; <a href="http://www.kartverket.no/">Kartver
 const COORD_PRECISION = ".000001";
 const COORD_PRECISION_INT = 6;
 
-
 class CMap {
     #geojson = [];
     #div = null;
@@ -78,6 +77,8 @@ class CMap {
                     Latitude: coord.lat.toFixed(COORD_PRECISION_INT),
                     Longitude: coord.lng.toFixed(COORD_PRECISION_INT)
                 };
+                
+                L.marker([point.Latitude, point.Longitude]).addTo(this.#map);
 
                 await this.addPoint(point);
             }
@@ -177,26 +178,40 @@ class CMap {
 
     addControlButton(container) {
         const panButton = L.DomUtil.create('button', '', container);
-        panButton.innerHTML = 'Pan';
         panButton.style.display = 'block';
-        panButton.style.marginBottom = '5px';
-
+        
+        const panImg = document.createElement('img');
+        panImg.src = '/svg/geo-pan-fill.svg';
+        panImg.style.verticalAlign = 'middle';
+        panImg.style.width = '24px';
+        
+        panButton.appendChild(panImg);
+        
         panButton.onclick = () => {
             this.activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
         };
 
         const addButton = L.DomUtil.create('button', '', container);
-        addButton.innerHTML = 'Add point';
         addButton.style.display = 'block';
-
+        const addImg = document.createElement('img');
+        addImg.src = '/svg/geo-plus-fill.svg';
+        addImg.style.verticalAlign = 'middle';
+        
+        addButton.appendChild(addImg);
+        
         addButton.onclick = () => {
             this.activeButtonType = ACTIVE_BUTTON_TYPE.ADD;
         };
 
         const lineButton = L.DomUtil.create('button', '', container);
-        lineButton.innerHTML = 'Add line';
         lineButton.style.display = 'block';
-
+        
+        const lineImg = document.createElement('img');
+        lineImg.src = '/svg/geo-line-fill.svg';
+        lineImg.style.verticalAlign = 'middle';
+        
+        lineButton.appendChild(lineImg);
+        
         lineButton.onclick = () => {
             this.activeButtonType = ACTIVE_BUTTON_TYPE.LINE;
         };
@@ -290,6 +305,9 @@ class CMap {
                 // };
 
                 L.DomEvent.disableClickPropagation(this.container);
+                this.container.style.display = 'flex';
+                this.container.style.flexDirection = 'column';
+                this.container.style.gap = '5px';
 
                 return this.container;
             }
@@ -356,20 +374,20 @@ class PilotMap extends CMap {
             {
                 name: 'latitude',
                 label: 'Latitude',
-                type: 'number',
-                value: this.#pendingPointData.Latitude.toFixed(COORD_PRECISION_INT),
+                type: 'number', 
+                value: this.#pendingPointData.Latitude,
                 step: COORD_PRECISION
             },
             {
                 name: 'longitude',
                 label: 'Longitude',
                 type: 'number',
-                value: this.#pendingPointData.Longitude.toFixed(COORD_PRECISION_INT),
+                value: this.#pendingPointData.Longitude,
                 step: COORD_PRECISION
             },
             {
-                name: 'Meters above sea level in foot',
-                label: 'Meters above sea level in foot',
+                name: 'Height above sea level in foot',
+                label: 'Height above sea level in foot',
                 type: 'number',
                 value: '',
                 step: '0.1'
