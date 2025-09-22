@@ -1,6 +1,8 @@
 ﻿using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
+using Kartverket.Web.Models.Report.Request;
 using Kartverket.Web.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kartverket.Web.Controllers;
@@ -16,32 +18,48 @@ public class ReportController : Controller
         _dbContext = dbContext;
     }
 
-    [HttpGet("/report/{id}")]
+    [HttpGet]
     public IActionResult Report(string id)
     {
         throw new NotImplementedException();
     }
 
-    [HttpPost("/report")]
-    public IActionResult CreateReport([FromBody] object reportData)
+    [HttpPost, Authorize]
+    public IActionResult Create([FromBody] CreateReportRequestModel reportRequestData)
     {
-        throw new NotImplementedException();
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+            
+        var user = User.Identity?.Name ?? "unknown";
+        var userId = _dbContext.Users.FirstOrDefault(u => u.UserName == user)?.Id;
+        ArgumentNullException.ThrowIfNull(userId, nameof(userId));
+
+        var report = new ReportTable
+        {
+            Title = reportRequestData.Title,
+            Description = reportRequestData.Description,
+            UserId = userId.Value
+        };
+        _dbContext.Reports.Add(report);
+        _dbContext.SaveChanges();
+        
+        return Ok(report);
     }
 
     [HttpGet("/reports")]
-    public IActionResult GetAllReports()
+    public IActionResult GetAll()
     {
         throw new NotImplementedException();
     }
 
-    [HttpDelete("/report/{id}")]
-    public IActionResult DeleteReport(string id)
+    [HttpDelete("/{id}")]
+    public IActionResult Delete(string id)
     {
         throw new NotImplementedException();
     }
 
-    [HttpPut("/report/{id}")]
-    public IActionResult UpdateReport(string id, [FromBody] object reportData)
+    [HttpPut("/{id}")]
+    public IActionResult Update(string id, [FromBody] object reportData)
     {
         throw new NotImplementedException();
     }

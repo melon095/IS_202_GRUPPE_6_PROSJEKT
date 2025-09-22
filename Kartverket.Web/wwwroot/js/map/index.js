@@ -1,7 +1,6 @@
 ﻿const ACTIVE_BUTTON_TYPE = {
     PAN: 'PAN',
     ADD: 'ADD',
-    LINE: 'LINE'
 }
 
 const GEOLOCATION_MODE = {
@@ -14,254 +13,63 @@ const TILE_LAYER_COPYRIGHT = `&copy; <a href="http://www.kartverket.no/">Kartver
 const COORD_PRECISION = ".000001";
 const COORD_PRECISION_INT = 6;
 
-class CMap {
-    #geojson = [];
-    #div = null;
-    #map = null;
-    #currentPositionMarker = null;
-    #accuracyCircle = null;
-    #currentReport = null;
-    
-    lineState = null;
-    buttonControl = null;
-    activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
+// 1. The control button shows a "add" icon and a "pan" icon.
+// 2. When the add button is clicked, and a point has been added, a submit button is shown. 
+// 3. When the submit button is clicked, a form is shown with fields for everything.
+// 4. If submitted
+//       a. The point(s) is added to the map
+//       b. A report is made on the server and the point(s) is linked to the report
+//       c. The form is closed
+// 5. If cancelled
+//       a. The point(s) is removed from the map
+//       b. The form is closed
 
-    get map() {
-        return this.#map;
-    }
+const clean = (str) => {
+    return str.replace(/[\n\r]/g, ' ').trim();
+}
+
+class LeafletMap {
+    #geoJson = [];
+    #underlyingDiv = null;
+    #mapInst = null;
+
+    /** Layer for when adding points */
+    #inputLayer = null;
+    /** Layer for server data */
+    #markerLayer = null;
+    #data = [];
     
-    onLoad(geojson, div) {
-        this.#geojson = geojson;
-        this.#div = div;
-        this.#map = L.map(this.#div, {
+    #formPanel = null;
+    #buttonControl = null;
+    
+    #activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
+    
+    constructor(div, parentDiv) {
+        this.#underlyingDiv = div;
+        this.#mapInst = L.map(div, {
             center: [58.14654566028351, 7.991145057860376],
             zoom: 15
-        })
-
+        });
+        
         L.tileLayer(TILE_LAYER_URL, {
             maxZoom: 19,
             attribution: TILE_LAYER_COPYRIGHT
-        }).addTo(this.#map);
+        }).addTo(this.#mapInst);
+        
+        this.#inputLayer = L.layerGroup().addTo(this.#mapInst);
+        this.#markerLayer = L.layerGroup().addTo(this.#mapInst);
+        this.#formPanel = new Panel(parentDiv, 'rightAddPanel');
 
-        this.#addGeoJson(this.#geojson);
+        this.map.on('click', this.onMapClick.bind(this));
+        
         this.#addControlLayer();
-        this.#geolocationTimer();
-        this.addControlButton(this.buttonControl.container);
-
-        // const HUNDRED_MS = 100;
-        // setInterval(() => {
-        //     switch(this.activeButtonType)
-        //     {
-        //         case ACTIVE_BUTTON_TYPE.PAN:
-        //             this.setDragging(true);
-        //             break;
-        //
-        //         case ACTIVE_BUTTON_TYPE.ADD:
-        //         case ACTIVE_BUTTON_TYPE.LINE:
-        //             this.setDragging(false);
-        //             break;
-        //
-        //         default:
-        //             console.error("Unknown activeButtonType: " + this.activeButtonType);
-        //             break;
-        //     }
-        // }, HUNDRED_MS);
-
-        this.map.on('click', async (e) => {
-            if (!this.currentReport) this.currentReport = await this.#prepareReport();
-            
-            if(this.activeButtonType === ACTIVE_BUTTON_TYPE.ADD)
-            {
-                const coord = e.latlng;
-                const point = {
-                    Latitude: coord.lat.toFixed(COORD_PRECISION_INT),
-                    Longitude: coord.lng.toFixed(COORD_PRECISION_INT)
-                };
-                
-                L.marker([point.Latitude, point.Longitude]).addTo(this.#map);
-
-                await this.addPoint(point);
-            }
-
-            if(this.activeButtonType === ACTIVE_BUTTON_TYPE.LINE)
-            {
-                if (this.lineState == null)
-                {
-                    this.lineState = [];
-                }
-
-                this.lineState.push(e.latlng);
-                let prevItem = null, newItem = null;
-                if (this.lineState.length >= 2)
-                {
-                    prevItem = this.lineState[this.lineState.length - 2];
-                    newItem = this.lineState[this.lineState.length - 1];
-                }
-                else
-                {
-                    prevItem = this.lineState[this.lineState.length - 1];
-                    newItem = this.lineState[this.lineState.length - 1];
-                }
-
-                L.polyline([
-                        [prevItem.lat, prevItem.lng],
-                        [newItem.lat, newItem.lng]
-                    ],
-                    {
-                        color: 'red'
-                    }
-                ).addTo(this.#map);
-            }
-
-            // if (this.geolocationMode === GEOLOCATION_MODE.AUTO_MOVE)
-            // {
-            //     this.geolocationMode = GEOLOCATION_MODE.MANUAL;
-            //     geolocationModeButton.innerHTML = 'Manual Position';
-            // }
-        });
-
-        this.map.on("dblclick", async (e) => {
-            if (this.lineState === null ||
-                this.lineState.length <= 1)
-            {
-                return;
-            }
-
-            const coords = this.lineState
-                .map(({lat,lng}) => ({
-                    latitude: lat.toFixed(COORD_PRECISION_INT), 
-                    longitude: lng.toFixed(COORD_PRECISION_INT)
-                }));
-
-            await this.addLines(coords);
-
-            this.lineState = null;
-        });
     }
     
-    async addPoint(point) {
-        const req = {
-            latitude: point.Latitude,
-            longitude: point.Longitude,
-            reportId: this.currentReport.id
-        }
-        
-        const response = await fetch("/Map/AddPoint", {
-            method: "POST",
-            body: JSON.stringify(req),
-            headers: {"Content-Type": "application/json"}
-        });
-
-        if (response.ok) {
-            const newPoint = await response.json();
-            this.#addGeoJson(newPoint);
-        }
+    get map() {
+        return this.#mapInst;
     }
 
-    async addLines(coords) {
-        const req = {
-            points: coords,
-            reportId: this.currentReport.id
-        }
-
-        const response = await fetch("/Map/AddLines", {
-            method: "POST",
-            body: JSON.stringify(req),
-            headers: {"Content-Type": "application/json"}
-        });
-
-        if (response.ok) {
-            const newLine = await response.json();
-            this.#addGeoJson(newLine);
-        }
-    }
-
-    addControlButton(container) {
-        const panButton = L.DomUtil.create('button', '', container);
-        panButton.style.display = 'block';
-        
-        const panImg = document.createElement('img');
-        panImg.src = '/svg/geo-pan-fill.svg';
-        panImg.style.verticalAlign = 'middle';
-        panImg.style.width = '24px';
-        
-        panButton.appendChild(panImg);
-        
-        panButton.onclick = () => {
-            this.activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
-        };
-
-        const addButton = L.DomUtil.create('button', '', container);
-        addButton.style.display = 'block';
-        const addImg = document.createElement('img');
-        addImg.src = '/svg/geo-plus-fill.svg';
-        addImg.style.verticalAlign = 'middle';
-        
-        addButton.appendChild(addImg);
-        
-        addButton.onclick = () => {
-            this.activeButtonType = ACTIVE_BUTTON_TYPE.ADD;
-        };
-
-        const lineButton = L.DomUtil.create('button', '', container);
-        lineButton.style.display = 'block';
-        
-        const lineImg = document.createElement('img');
-        lineImg.src = '/svg/geo-line-fill.svg';
-        lineImg.style.verticalAlign = 'middle';
-        
-        lineButton.appendChild(lineImg);
-        
-        lineButton.onclick = () => {
-            this.activeButtonType = ACTIVE_BUTTON_TYPE.LINE;
-        };
-    }
-    
-    #geolocationTimer() {
-        if (!navigator.geolocation) {
-            console.error("Geolocation is not supported by this browser.");
-            return;
-        }
-
-        const updatePosition = (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            const accuracy = position.coords.accuracy;
-
-            if (this.#currentPositionMarker) {
-                this.#map.removeLayer(this.#currentPositionMarker);
-            }
-
-            if (this.#accuracyCircle) {
-                this.#map.removeLayer(this.#accuracyCircle);
-            }
-
-            this.#currentPositionMarker = L.marker([lat, lon]).addTo(this.#map);
-            this.#accuracyCircle = L.circle([lat, lon], {radius: accuracy}).addTo(this.#map);
-
-            console.log({lat, lon, accuracy});
-
-            if (this.geolocationMode === GEOLOCATION_MODE.MANUAL) {
-                return;
-            }
-
-            // this.#map.setView([lat, lon], 15);
-        };
-
-        const handleError = (error) => {
-            console.error("Error obtaining geolocation: ", error);
-        };
-
-        const opts = {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 5000
-        };
-        navigator.geolocation.getCurrentPosition(updatePosition, handleError, opts);
-        navigator.geolocation.watchPosition(updatePosition, handleError, opts);
-    }
-
-    #addGeoJson(geo) {
+    addGeoJson(geo) {
         L
             .geoJSON(geo, {
                 style: function (feature) {
@@ -274,168 +82,67 @@ class CMap {
             .bindPopup(function (layer) {
                 return layer.feature.properties.description || 'No description';
             })
-            .addTo(this.#map);
-
-        this.#map.invalidateSize();
+            .addTo(this.#mapInst);
+        
+        this.#mapInst.invalidateSize();
     }
+    
+    displayInputPoints() {
+        if (this.#data == null || this.#data.length === 0)
+        {
+            return;
+        }
 
-    #addControlLayer() {
-        const control = L.Control.extend({
-            options: {
-                position: 'topright'
-            },
-            onAdd: function (map) {
-                this.container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
-                this.container.style.backgroundColor = 'white';
-                this.container.style.padding = '5px';
-                // const geolocationModeButton = L.DomUtil.create('button', '', container);
-                // geolocationModeButton.innerHTML = 'Follow Position';
-                // geolocationModeButton.style.display = 'block';
-                // geolocationModeButton.style.marginTop = '5px';
-                //
-                // geolocationModeButton.onclick = () => {
-                //     if (this.geolocationMode === GEOLOCATION_MODE.AUTO_MOVE) {
-                //         this.geolocationMode = GEOLOCATION_MODE.MANUAL;
-                //         geolocationModeButton.innerHTML = 'Manual Position';
-                //     } 
-                //     else if (this.geolocationMode === GEOLOCATION_MODE.MANUAL) {
-                //         this.geolocationMode = GEOLOCATION_MODE.AUTO_MOVE;
-                //         geolocationModeButton.innerHTML = 'Follow Position';
-                //     }
-                // };
-
-                L.DomEvent.disableClickPropagation(this.container);
-                this.container.style.display = 'flex';
-                this.container.style.flexDirection = 'column';
-                this.container.style.gap = '5px';
-
-                return this.container;
-            }
+        this.#inputLayer.clearLayers();
+        this.#data.forEach(point => {
+            L.marker([point.lat, point.lng]).addTo(this.#inputLayer);
         });
-
-        this.buttonControl = new control;
-        this.#map.addControl(this.buttonControl);
     }
     
-    async #prepareReport() {
-        const reportId = await fetch("/Map/CreateReport", { method: "POST"});
-        if (reportId.ok) {
-            const json = await reportId.json();
-            return json;
+    clearInputPoints() {
+        this.#data = [];
+        this.#inputLayer.clearLayers();
+    }
+    
+    async onMapClick(e) {
+        if (this.#activeButtonType !== ACTIVE_BUTTON_TYPE.ADD)
+        {
+            return;
         }
         
-        return null;
-    }
-}
-
-class PilotMap extends CMap {
-    #addPanel = new Panel('mapParent', 'rightAddPanel');
-    #pendingPointData = null;
-    #pendingLineData = null;
-
-    onLoad(geojson, div) {
-        super.onLoad(geojson, div);
-        this.#addPanel.insert();
-    }
-
-    async addPoint(point) {
-        this.#addPanel.reset();
-        this.#pendingPointData = point;
-        this.#showPointDataForm();
-    }
-    
-    async addLines(coords) {
-        this.#addPanel.reset();
-        this.#pendingLineData = coords;
-        this.#showLineDataForm();
-    }
-    
-    #showPointDataForm() {
-        this.#addPanel.setTitle('Add Point Information');
-
-        const fields = [
-            {
-                name: 'description',
-                label: 'Description',
-                type: 'textarea',
-                placeholder: 'Enter description'
-            },
-            {
-                name: 'category',
-                label: 'Category',
-                type: 'select',
-                options: [
-                    { value: 'landmark', label: 'Landmark' },
-                    { value: 'facility', label: 'Facility' },
-                    { value: 'hazard', label: 'Hazard' },
-                    { value: 'other', label: 'Other' }
-                ]
-            },
-            {
-                name: 'latitude',
-                label: 'Latitude',
-                type: 'number', 
-                value: this.#pendingPointData.Latitude,
-                step: COORD_PRECISION
-            },
-            {
-                name: 'longitude',
-                label: 'Longitude',
-                type: 'number',
-                value: this.#pendingPointData.Longitude,
-                step: COORD_PRECISION
-            },
-            {
-                name: 'Height above sea level in foot',
-                label: 'Height above sea level in foot',
-                type: 'number',
-                value: '',
-                step: '0.1'
-            }
-        ];
-
-        this.#addPanel.createForm(
-            fields,
-            (data) => this.#submitPointData(data),
-            () => this.#cancelPointAdd()
-        );
-
-        this.#addPanel.show();
-    }
-
-    async #submitPointData(formData) {
-        if (!this.#pendingPointData) return;
-
-        const pointData = {
-            ...this.#pendingPointData,
-            Latitude: parseFloat(formData.latitude),
-            Longitude: parseFloat(formData.longitude),
-            name: formData.name,
-            description: formData.description,
-            category: formData.category
+        const cord = e.latlng;
+        const point = {
+            lat: cord.lat.toFixed(COORD_PRECISION_INT),
+            lng: cord.lng.toFixed(COORD_PRECISION_INT)
         };
-
-        try {
-            await super.addPoint(pointData);
-            this.#addPanel.hide();
-            this.#pendingPointData = null;
-        } catch (error) {
-            console.error('Failed to add point:', error);
-            alert('Failed to add point. Please try again.');
+        
+        if (this.#data == null)
+        {
+            this.#data = [];
         }
-    }
-
-    #cancelPointAdd() {
-        this.#pendingPointData = null;
-        this.#addPanel.reset();
+        
+        this.#data.push(point);
+        this.displayInputPoints();
     }
     
-    #showLineDataForm() {
-        this.#addPanel.reset();
+    async submitData() {
+        if (this.#data == null || this.#data.length < 1)
+        {
+            return;
+        }
         
-        this.#addPanel.setTitle("Legg til mange punkter");
-        
+        this.#formPanel.reset();
+
+        this.#formPanel.setTitle("Last opp din rapport");
+
         const fields = [
+            {
+                name: "title",
+                label: "Tittel",
+                type: "text",
+                required: true,
+                placeholder: "Skriv inn tittel"
+            },
             {
                 name: "description",
                 label: "Beskrivelse",
@@ -449,63 +156,338 @@ class PilotMap extends CMap {
                 options: [] // TODO: Kategori
             },
             {
-                name: "lines",
-                label: "Linje punkter",
+                name: "points",
+                label: "Punkter",
                 type: "table",
                 columns: [
-                    { key: "latitude", label: "Latitude", type: "number", step: COORD_PRECISION },
-                    { key: "longitude", label: "Longitude", type: "number", step: COORD_PRECISION }
+                    { key: "lat", label: "Latitude", type: "number", step: COORD_PRECISION },
+                    { key: "lng", label: "Longitude", type: "number", step: COORD_PRECISION },
+                    { key: "elevation", label: "Høyde (fot)", type: "number", value: 0 }
                 ],
-                value: this.#pendingLineData
-            }
+                value: this.#data
+            },
         ];
-        
-        this.#addPanel.createForm(
+
+        this.#formPanel.createForm(
             fields,
-            (data) => this.#submitLineData(data),
-            () => this.#cancelLineAdd()
+            async (data) => {
+                try {
+                    const reportBody = {
+                        title: clean(data.title || "Uten tittel"),
+                        description: clean(data.description || ""),
+                    };
+                    const report = await fetch("/Report/Create", { 
+                        method: "POST",
+                        body: JSON.stringify(reportBody),
+                        headers: { "Content-Type": "application/json" }
+                    })
+                        .then(res => res.json());
+                    
+                    const req = {
+                        reportId: report.id,
+                        points: this.#data,
+                    }
+
+                    const response = await fetch("/Map/Upload", {
+                        method: "POST",
+                        body: JSON.stringify(req),
+                        headers: {"Content-Type": "application/json"}
+                    });
+
+                    if (response.ok) {
+                        const newLine = await response.json();
+                        this.addGeoJson(newLine);
+                    }
+                } catch (error) {
+                    console.error("Det skjedde en feil ved innsending av rapport:", error);
+                    alert("Det skjedde en feil ved innsending av rapport. " + error.message);
+                    return;
+                }
+                
+                this.#formPanel.reset();
+                this.clearInputPoints();
+            },
+            () => {
+                this.clearInputPoints();
+                this.#formPanel.reset();
+            }
         );
-        
-        this.#addPanel.show();
+
+        this.#formPanel.show();
     }
-    
-    async #submitLineData(formData) {
-        if (!this.#pendingLineData) return;
-        alert("//TODO SUBMIT LINE DATA")
-        return;
-        
-        const coords = this.#pendingLineData.map((point, index) => ({
-            latitude: parseFloat(formData.lines[index].latitude),
-            longitude: parseFloat(formData.lines[index].longitude)
-        }));
-        
-        try {
-            await super.addLines(coords);
-            this.#addPanel.hide();
-            this.#pendingLineData = null;
-        } catch (error) {
-            console.error('Failed to add lines:', error);
-            alert('Failed to add lines. Please try again.');
+
+    addButtonToControl(createCallback) {
+        if (this.#buttonControl && this.#buttonControl.container) {
+            const button = L.DomUtil.create('button', '', this.#buttonControl.container);
+            button.style.display = 'block';
+            
+            createCallback(button);
         }
     }
+
+    enablePanMode() {
+        this.map.dragging.enable();
+        this.map.doubleClickZoom.enable();
+        this.map.scrollWheelZoom.enable();
+    }
     
-    #cancelLineAdd() {
-        this.#pendingLineData = null;
-        this.#addPanel.reset();
+    disablePanMode() {
+        this.map.dragging.disable();
+        this.map.doubleClickZoom.disable();
+        this.map.scrollWheelZoom.disable();
+    }
+    
+    enableLineMode() {
+        this.enablePanMode();
+        this.#activeButtonType = ACTIVE_BUTTON_TYPE.ADD;
+    }
+    
+    disableLineMode() {
+        this.enablePanMode();
+    }
+
+    #addControlLayer() {
+        const control = L.Control.extend({
+            options: {
+                position: 'topright'
+            },
+            onAdd: function (map) {
+                this.container = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+                this.container.style.backgroundColor = 'white';
+                this.container.style.padding = '5px';
+
+                L.DomEvent.disableClickPropagation(this.container);
+                this.container.style.display = 'flex';
+                this.container.style.flexDirection = 'column';
+                this.container.style.gap = '5px';
+
+                return this.container;
+            }
+        });
+
+        this.#buttonControl = new control;
+        this.#mapInst.addControl(this.#buttonControl);
     }
 }
 
-class UserMap extends CMap {
-    onLoad() {
-        super.onLoad();
-    }
-}
-
-class KartverketMap extends CMap {
-    onLoad() {
-        super.onLoad();
-    }
-}
+// class CMap {
+//     #geojson = [];
+//     #div = null;
+//     #map = null;
+//     #currentPositionMarker = null;
+//     #accuracyCircle = null;
+//     #currentReport = null;
+//    
+//     lineState = null;
+//     buttonControl = null;
+//     activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
+//
+//     get map() {
+//         return this.#map;
+//     }
+//    
+//     onLoad(geojson, div) {
+//         this.#geojson = geojson;
+//         this.#div = div;
+//         this.#map = L.map(this.#div, {
+//             center: [58.14654566028351, 7.991145057860376],
+//             zoom: 15
+//         })
+//
+//         L.tileLayer(TILE_LAYER_URL, {
+//             maxZoom: 19,
+//             attribution: TILE_LAYER_COPYRIGHT
+//         }).addTo(this.#map);
+//
+//         this.#addGeoJson(this.#geojson);
+//         this.#addControlLayer();
+//         this.#geolocationTimer();
+//         this.addControlButton(this.buttonControl.container);
+//
+//         // const HUNDRED_MS = 100;
+//         // setInterval(() => {
+//         //     switch(this.activeButtonType)
+//         //     {
+//         //         case ACTIVE_BUTTON_TYPE.PAN:
+//         //             this.setDragging(true);
+//         //             break;
+//         //
+//         //         case ACTIVE_BUTTON_TYPE.ADD:
+//         //         case ACTIVE_BUTTON_TYPE.LINE:
+//         //             this.setDragging(false);
+//         //             break;
+//         //
+//         //         default:
+//         //             console.error("Unknown activeButtonType: " + this.activeButtonType);
+//         //             break;
+//         //     }
+//         // }, HUNDRED_MS);
+//
+//         this.map.on('click', async (e) => {
+//            
+//             // if (this.geolocationMode === GEOLOCATION_MODE.AUTO_MOVE)
+//             // {
+//             //     this.geolocationMode = GEOLOCATION_MODE.MANUAL;
+//             //     geolocationModeButton.innerHTML = 'Manual Position';
+//             // }
+//         });
+//
+//         this.map.on("dblclick", async (e) => {
+//             if (this.lineState === null ||
+//                 this.lineState.length <= 1)
+//             {
+//                 return;
+//             }
+//
+//             const coords = this.lineState
+//                 .map(({lat,lng}) => ({
+//                     latitude: lat.toFixed(COORD_PRECISION_INT), 
+//                     longitude: lng.toFixed(COORD_PRECISION_INT)
+//                 }));
+//
+//             await this.addLines(coords);
+//
+//             this.lineState = null;
+//         });
+//     }
+//    
+//     async addPoint(point) {
+//         const req = {
+//             latitude: point.Latitude,
+//             longitude: point.Longitude,
+//             reportId: this.currentReport.id
+//         }
+//        
+//         const response = await fetch("/Map/AddPoint", {
+//             method: "POST",
+//             body: JSON.stringify(req),
+//             headers: {"Content-Type": "application/json"}
+//         });
+//
+//         if (response.ok) {
+//             const newPoint = await response.json();
+//             this.#addGeoJson(newPoint);
+//         }
+//     }
+//
+//     async addLines(coords) {
+//
+//     }
+//
+//     addControlButton(container) {
+//         const panButton = L.DomUtil.create('button', '', container);
+//         panButton.style.display = 'block';
+//        
+//         const panImg = document.createElement('img');
+//         panImg.src = '/svg/geo-pan-fill.svg';
+//         panImg.style.verticalAlign = 'middle';
+//         panImg.style.width = '24px';
+//        
+//         panButton.appendChild(panImg);
+//        
+//         panButton.onclick = () => {
+//             this.activeButtonType = ACTIVE_BUTTON_TYPE.PAN;
+//         };
+//
+//         const addButton = L.DomUtil.create('button', '', container);
+//         addButton.style.display = 'block';
+//         const addImg = document.createElement('img');
+//         addImg.src = '/svg/geo-plus-fill.svg';
+//         addImg.style.verticalAlign = 'middle';
+//        
+//         addButton.appendChild(addImg);
+//        
+//         addButton.onclick = () => {
+//             this.activeButtonType = ACTIVE_BUTTON_TYPE.ADD;
+//         };
+//
+//         const lineButton = L.DomUtil.create('button', '', container);
+//         lineButton.style.display = 'block';
+//        
+//         const lineImg = document.createElement('img');
+//         lineImg.src = '/svg/geo-line-fill.svg';
+//         lineImg.style.verticalAlign = 'middle';
+//        
+//         lineButton.appendChild(lineImg);
+//        
+//         lineButton.onclick = () => {
+//             this.activeButtonType = ACTIVE_BUTTON_TYPE.LINE;
+//         };
+//     }
+//    
+//     #geolocationTimer() {
+//         if (!navigator.geolocation) {
+//             console.error("Geolocation is not supported by this browser.");
+//             return;
+//         }
+//
+//         const updatePosition = (position) => {
+//             const lat = position.coords.latitude;
+//             const lon = position.coords.longitude;
+//             const accuracy = position.coords.accuracy;
+//
+//             if (this.#currentPositionMarker) {
+//                 this.#map.removeLayer(this.#currentPositionMarker);
+//             }
+//
+//             if (this.#accuracyCircle) {
+//                 this.#map.removeLayer(this.#accuracyCircle);
+//             }
+//
+//             this.#currentPositionMarker = L.marker([lat, lon]).addTo(this.#map);
+//             this.#accuracyCircle = L.circle([lat, lon], {radius: accuracy}).addTo(this.#map);
+//
+//             console.log({lat, lon, accuracy});
+//
+//             if (this.geolocationMode === GEOLOCATION_MODE.MANUAL) {
+//                 return;
+//             }
+//
+//             // this.#map.setView([lat, lon], 15);
+//         };
+//
+//         const handleError = (error) => {
+//             console.error("Error obtaining geolocation: ", error);
+//         };
+//
+//         const opts = {
+//             enableHighAccuracy: true,
+//             maximumAge: 0,
+//             timeout: 5000
+//         };
+//         navigator.geolocation.getCurrentPosition(updatePosition, handleError, opts);
+//         navigator.geolocation.watchPosition(updatePosition, handleError, opts);
+//     }
+//
+//     #addGeoJson(geo) {
+//         L
+//             .geoJSON(geo, {
+//                 style: function (feature) {
+//                     if (feature.geometry.type === 'LineString') {
+//                         return { color: 'red', weight: 10 };
+//                     }
+//                     return { color: 'blue' };
+//                 }
+//             })
+//             .bindPopup(function (layer) {
+//                 return layer.feature.properties.description || 'No description';
+//             })
+//             .addTo(this.#map);
+//
+//         this.#map.invalidateSize();
+//     }
+//
+//    
+//     async #prepareReport() {
+//         const reportId = await fetch("/Map/CreateReport", { method: "POST"});
+//         if (reportId.ok) {
+//             const json = await reportId.json();
+//             return json;
+//         }
+//        
+//         return null;
+//     }
+// }
 
 class Panel {
     /** @type {HTMLElement} */
@@ -516,11 +498,11 @@ class Panel {
     #header;
     /** @type {HTMLElement} */
     #closeBtn;
-    #parentId;
+    #parentDiv;
     #isOpen = false;
 
-    constructor(parentId, modelId) {
-        this.#parentId = parentId;
+    constructor(parentDiv, modelId) {
+        this.#parentDiv = parentDiv;
         this.#panel = document.getElementById(modelId) ?? document.createElement('div');
         this.#header = document.createElement('div');
         this.#content = document.createElement('div');
@@ -551,8 +533,7 @@ class Panel {
     insert() {
         if (this.#panel.parentElement) return;
 
-        const parent = document.getElementById(this.#parentId);
-        parent.appendChild(this.#panel);
+        this.#parentDiv.appendChild(this.#panel);
 
         this.#panel.appendChild(this.#header);
         this.#panel.appendChild(this.#content);
@@ -604,6 +585,7 @@ class Panel {
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
             onSubmit(data);
+            this.hide();
         };
 
         fields.forEach(field => {
