@@ -271,114 +271,114 @@ public class MapController : Controller
         
         return View(new MapIndexModel(geojson));
     }
-    
-    [HttpPost]
-    public string AddPoint([FromBody] MapAddPointModel point)
-    {
-        _logger.LogInformation("Received point: {Latitude}, {Longitude}", point.Latitude, point.Longitude);
-        var report = _mapService.GetReport(point.ReportId);
-        if (report == null)
-        {
-            Response.StatusCode = 400;
-            return JsonSerializer.Serialize(new {error = "Invalid report ID"}, jsonOpts);
-        }
-        
-        var mapObject = new MapObject
-        {
-            ID = Guid.NewGuid(),
-            Name = "New Object"
-        };
-        
-        var mapPoint = new MapPoint
-        {
-            Report = report,
-            MapObject = mapObject,
-            Latitude = point.Latitude,
-            Longitude = point.Longitude,
-            AMSL = 0
-        };
-        
-        _mapService.AddMapPoint(mapPoint);
-        
-        return JsonSerializer.Serialize(_mapService.ConvertPoint(mapPoint), jsonOpts);
-    }
 
-    [HttpPost]
-    public string AddLines([FromBody] MapAddLineModel line)
-    {
-        _logger.LogInformation("Received lines {@Points}", line.Points);
-        var report = _mapService.GetReport(line.ReportId);
-        if (report == null)
-        {
-            Response.StatusCode = 400;
-            return JsonSerializer.Serialize(new {error = "Invalid report ID"}, jsonOpts);
-        }
-
-        var mapObject = new MapObject
-        {
-            ID = Guid.NewGuid(),
-            Name = "New Line Object"
-        };
-        
-        var mapPoints = line.Points.Select(p => new MapPoint
-        {
-            Report = report,
-            MapObject = mapObject,
-            Latitude = p.Latitude,
-            Longitude = p.Longitude,
-            AMSL = 0
-        }).ToList();
-        
-        foreach(var point in mapPoints)
-            _mapService.AddMapPoint(point);
-
-        var geoFeature = new GeoFeature
-        {
-            Geometry = new Geometry
-            {
-                Type = "LineString",
-                Coordinates = mapPoints.Select(p => new [] {p.Longitude, p.Latitude}).ToArray()
-            },
-            Properties = new Properties
-            {
-                Description = $"{mapObject.Name} - {report.ReportDescription} (Line)"
-            }
-        };
-        
-        return JsonSerializer.Serialize(geoFeature, jsonOpts);
-    }
-
-    [HttpPost]
-    public Report? CreateReport()
-    {
-        if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return null;
-        }
-        
-        return _mapService.CreateReport("Pending Description");
-    }
-    
-    [HttpPut]
-    public Report? UpdateReport(Guid id, [FromBody] UpdateReportModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            Response.StatusCode = 400;
-            return null;
-        }
-
-        var report = _mapService.GetReport(id);
-        if (report == null)
-        {
-            Response.StatusCode = 404;
-            return null;
-        }
-
-        report.ReportDescription = model.ReportDescription;
-        return report;
-    }
+    // [HttpPost]
+    // public string AddPoint([FromBody] MapAddPointModel point)
+    // {
+    //     _logger.LogInformation("Received point: {Latitude}, {Longitude}", point.Latitude, point.Longitude);
+    //     var report = _mapService.GetReport(point.ReportId);
+    //     if (report == null)
+    //     {
+    //         Response.StatusCode = 400;
+    //         return JsonSerializer.Serialize(new {error = "Invalid report ID"}, jsonOpts);
+    //     }
+    //     
+    //     var mapObject = new MapObject
+    //     {
+    //         ID = Guid.NewGuid(),
+    //         Name = "New Object"
+    //     };
+    //     
+    //     var mapPoint = new MapPoint
+    //     {
+    //         Report = report,
+    //         MapObject = mapObject,
+    //         Latitude = point.Latitude,
+    //         Longitude = point.Longitude,
+    //         AMSL = 0
+    //     };
+    //     
+    //     _mapService.AddMapPoint(mapPoint);
+    //     
+    //     return JsonSerializer.Serialize(_mapService.ConvertPoint(mapPoint), jsonOpts);
+    // }
+    //
+    // [HttpPost]
+    // public string AddLines([FromBody] MapAddLineModel line)
+    // {
+    //     _logger.LogInformation("Received lines {@Points}", line.Points);
+    //     var report = _mapService.GetReport(line.ReportId);
+    //     if (report == null)
+    //     {
+    //         Response.StatusCode = 400;
+    //         return JsonSerializer.Serialize(new {error = "Invalid report ID"}, jsonOpts);
+    //     }
+    //
+    //     var mapObject = new MapObject
+    //     {
+    //         ID = Guid.NewGuid(),
+    //         Name = "New Line Object"
+    //     };
+    //     
+    //     var mapPoints = line.Points.Select(p => new MapPoint
+    //     {
+    //         Report = report,
+    //         MapObject = mapObject,
+    //         Latitude = p.Latitude,
+    //         Longitude = p.Longitude,
+    //         AMSL = 0
+    //     }).ToList();
+    //     
+    //     foreach(var point in mapPoints)
+    //         _mapService.AddMapPoint(point);
+    //
+    //     var geoFeature = new GeoFeature
+    //     {
+    //         Geometry = new Geometry
+    //         {
+    //             Type = "LineString",
+    //             Coordinates = mapPoints.Select(p => new [] {p.Longitude, p.Latitude}).ToArray()
+    //         },
+    //         Properties = new Properties
+    //         {
+    //             Description = $"{mapObject.Name} - {report.ReportDescription} (Line)"
+    //         }
+    //     };
+    //     
+    //     return JsonSerializer.Serialize(geoFeature, jsonOpts);
+    // }
+    //
+    // [HttpPost]
+    // public Report? CreateReport()
+    // {
+    //     if (!ModelState.IsValid)
+    //     {
+    //         Response.StatusCode = 400;
+    //         return null;
+    //     }
+    //     
+    //     return _mapService.CreateReport("Pending Description");
+    // }
+    //
+    // [HttpPut]
+    // public Report? UpdateReport(Guid id, [FromBody] UpdateReportModel model)
+    // {
+    //     if (!ModelState.IsValid)
+    //     {
+    //         Response.StatusCode = 400;
+    //         return null;
+    //     }
+    //
+    //     var report = _mapService.GetReport(id);
+    //     if (report == null)
+    //     {
+    //         Response.StatusCode = 404;
+    //         return null;
+    //     }
+    //
+    //     report.ReportDescription = model.ReportDescription;
+    //     return report;
+    // }
 }
 
 public record MapAddPointModel(Guid ReportId, double Latitude, double Longitude);
