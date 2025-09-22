@@ -1,8 +1,22 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
+
+    var user = Context.Session.GetString("Username");
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+@if (!string.IsNullOrEmpty(user))
+{
+    <h1>LOGGED IN AS @Context.Session.GetString("Username")</h1>
+}
+else
+{
+    <h1>NOT LOGGED IN</h1>
+    
+    <form method="post" asp-controller="User" asp-action="Login">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required />
+        </div>
+        <button type="submit">Login</button>
+    </form>
+}
