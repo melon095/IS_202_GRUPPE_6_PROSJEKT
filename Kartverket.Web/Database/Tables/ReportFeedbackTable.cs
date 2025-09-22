@@ -16,4 +16,6 @@ public class ReportFeedbackTable : BaseModel
     
     public Guid ReportId { get; set; }
     public ReportTable Report { get; set; }
+    
+    public List<ReportFeedbackAssignmentTable> ReportFeedbackAssignments { get; set; }
 }

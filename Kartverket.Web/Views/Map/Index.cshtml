@@ -7,15 +7,65 @@
     <div id="map" style="flex: 1; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; padding: 0;"></div>
 </div>
 
-
 @section Scripts {
     <script src="~/js/map/index.js"></script>
     <script>
         window.addEventListener('load', function () {
             const geojson = @Html.Raw(Model.GeoJson);
-            
-            window.Map = new PilotMap();
-            window.Map.onLoad(geojson, document.getElementById('map'));
+            let panBtn = null, lineBtn = null, submitBtn = null;
+
+            window._LeafletMap = new LeafletMap(document.getElementById('map'), document.getElementById('mapParent'));
+            window._LeafletMap.addGeoJson(geojson);
+
+            function setButtonStates({ pan, line, submit }) {
+                if (panBtn) panBtn.disabled = pan;
+                if (lineBtn) lineBtn.disabled = line;
+                if (submitBtn) submitBtn.disabled = submit;
+            }
+
+            window._LeafletMap.addButtonToControl((btn) => {
+                panBtn = btn;
+                const panImg = document.createElement('img');
+                panImg.src = '/svg/geo-pan-fill.svg';
+                panImg.style.width = '24px';
+                panImg.style.verticalAlign = 'middle';
+
+                btn.appendChild(panImg);
+                btn.onclick = () => {
+                    window._LeafletMap.enablePanMode();
+                    setButtonStates({ pan: true, line: false, submit: false });
+                };
+            });
+
+            window._LeafletMap.addButtonToControl((btn) => {
+                lineBtn = btn;
+                const lineImg = document.createElement('img');
+                lineImg.src = '/svg/geo-line-fill.svg';
+                lineImg.style.width = '24px';
+                lineImg.style.verticalAlign = 'middle';
+
+                btn.appendChild(lineImg);
+                btn.onclick = () => {
+                    window._LeafletMap.enableLineMode();
+                    setButtonStates({ pan: false, line: true, submit: false });
+                };
+            });
+
+            window._LeafletMap.addButtonToControl((btn) => {
+                submitBtn = btn;
+                btn.textContent = 'Submit changes';
+
+                btn.onclick = () => {
+                    setButtonStates({ pan: false, line: false, submit: false });
+                    window._LeafletMap.submitData().then(() => {
+                        setButtonStates({ pan: true, line: false, submit: false });
+                    }).catch(() => {
+                        setButtonStates({ pan: true, line: false, submit: false });
+                    });
+                };
+            });
+
+            setButtonStates({ pan: true, line: false, submit: false });
         });
     
     </script>

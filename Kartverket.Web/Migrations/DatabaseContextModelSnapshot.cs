@@ -74,7 +74,7 @@ namespace Kartverket.Web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
-                    b.Property<int>("ASML")
+                    b.Property<int>("AMSL")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
@@ -124,10 +124,9 @@ namespace Kartverket.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("ReportFeedbackId");
 
-                    b.HasIndex("ReportFeedbackId", "UserId")
-                        .IsUnique();
+                    b.HasIndex("UserId");
 
                     b.ToTable("ReportFeedbackAssignments");
                 });
@@ -156,8 +155,6 @@ namespace Kartverket.Web.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ReportId");
-
                     b.ToTable("ReportFeedbacks");
                 });
 
@@ -174,6 +171,9 @@ namespace Kartverket.Web.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<Guid?>("FeedbackId")
+                        .HasColumnType("char(36)");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -185,6 +185,9 @@ namespace Kartverket.Web.Migrations
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FeedbackId")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -287,7 +290,7 @@ namespace Kartverket.Web.Migrations
             modelBuilder.Entity("Kartverket.Web.Database.Tables.ReportFeedbackAssignmentTable", b =>
                 {
                     b.HasOne("Kartverket.Web.Database.Tables.ReportFeedbackTable", "ReportFeedback")
-                        .WithMany()
+                        .WithMany("ReportFeedbackAssignments")
                         .HasForeignKey("ReportFeedbackId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -295,7 +298,7 @@ namespace Kartverket.Web.Migrations
                     b.HasOne("Kartverket.Web.Database.Tables.UserTable", "User")
                         .WithMany("ReportFeedbackAssignments")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("ReportFeedback");
@@ -303,24 +306,20 @@ namespace Kartverket.Web.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Kartverket.Web.Database.Tables.ReportFeedbackTable", b =>
-                {
-                    b.HasOne("Kartverket.Web.Database.Tables.ReportTable", "Report")
-                        .WithMany("Feedbacks")
-                        .HasForeignKey("ReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Report");
-                });
-
             modelBuilder.Entity("Kartverket.Web.Database.Tables.ReportTable", b =>
                 {
+                    b.HasOne("Kartverket.Web.Database.Tables.ReportFeedbackTable", "Feedback")
+                        .WithOne("Report")
+                        .HasForeignKey("Kartverket.Web.Database.Tables.ReportTable", "FeedbackId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("Kartverket.Web.Database.Tables.UserTable", "User")
                         .WithMany("Reports")
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Feedback");
 
                     b.Navigation("User");
                 });
@@ -344,10 +343,16 @@ namespace Kartverket.Web.Migrations
                     b.Navigation("MapObjects");
                 });
 
+            modelBuilder.Entity("Kartverket.Web.Database.Tables.ReportFeedbackTable", b =>
+                {
+                    b.Navigation("Report")
+                        .IsRequired();
+
+                    b.Navigation("ReportFeedbackAssignments");
+                });
+
             modelBuilder.Entity("Kartverket.Web.Database.Tables.ReportTable", b =>
                 {
-                    b.Navigation("Feedbacks");
-
                     b.Navigation("MapPoints");
                 });
 

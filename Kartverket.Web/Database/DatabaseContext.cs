@@ -1,5 +1,4 @@
-﻿using Kartverket.Web.Controllers;
-using Kartverket.Web.Database.Tables;
+﻿using Kartverket.Web.Database.Tables;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Database;
@@ -45,9 +44,27 @@ public class DatabaseContext : DbContext
             .HasIndex(mot => mot.Name)
             .IsUnique();
         
-        modelBuilder.Entity<ReportFeedbackAssignmentTable>()
-            .HasIndex(rfa => new { rfa.ReportFeedbackId, rfa.UserId })
+        modelBuilder.Entity<MapObjectTable>()
+            .HasIndex(mo => mo.Name)
             .IsUnique();
+
+        modelBuilder.Entity<ReportFeedbackAssignmentTable>()
+            .HasOne(rfa => rfa.User)
+            .WithMany(u => u.ReportFeedbackAssignments)
+            .HasForeignKey(rfa => rfa.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<ReportTable>()
+            .HasOne(r => r.User)
+            .WithMany(u => u.Reports)
+            .HasForeignKey(r => r.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+        
+        modelBuilder.Entity<ReportFeedbackTable>()
+            .HasOne(rf => rf.Report)
+            .WithOne(r => r.Feedback)
+            .HasForeignKey<ReportTable>(r => r.FeedbackId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         base.OnModelCreating(modelBuilder);
     }
