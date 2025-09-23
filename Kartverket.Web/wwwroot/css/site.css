@@ -54,6 +54,9 @@
     border-radius: 4px;
 }
 
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
 .panel-close-btn:hover {
     background: var(--muted-border-color);
 }
@@ -99,7 +102,6 @@
 }
 
 .panel-btn-secondary {
-    background: #6c757d;
 }
 
 .panel-btn-secondary:hover {
@@ -136,4 +138,5 @@
 
 /*.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {*/
 /*  text-align: start;*/
+/*}*/
 /*}*/

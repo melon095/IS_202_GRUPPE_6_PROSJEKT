@@ -184,6 +184,7 @@ class CMap {
         panImg.src = '/svg/geo-pan-fill.svg';
         panImg.style.verticalAlign = 'middle';
         panImg.style.width = '24px';
+
         
         panButton.appendChild(panImg);
         
@@ -215,6 +216,11 @@ class CMap {
         lineButton.onclick = () => {
             this.activeButtonType = ACTIVE_BUTTON_TYPE.LINE;
         };
+        const testButton = L.DomUtil.create(`button`, '', container);
+        testButton.innerHTML = "Home";
+        testButton.onclick = () => {
+            window.location.href = "/";
+        }
     }
     
     #geolocationTimer() {
