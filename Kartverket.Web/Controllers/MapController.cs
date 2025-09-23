@@ -5,6 +5,7 @@ using Kartverket.Web.Models;
 using Kartverket.Web.Models.Map.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Controllers;
 
@@ -47,19 +48,43 @@ public class MapController : Controller
     [HttpGet, Authorize]
     public IActionResult Index()
     {
-        var points = _dbContext.MapPoints
-            .Select(p => new GeoFeature
-            {
-                Geometry = new Geometry
-                {
-                    Coordinates = new [] {p.Longitude, p.Latitude}
-                },
-                Properties = new Properties
-                {
-                    Description = $"{p.MapObject.Name} - {p.Report.Description}"
-                }
-            }).ToList();
+        var geoFeatures = _dbContext.MapPoints
+            .Include(p => p.MapObject)
+            .Include(p => p.Report)
+            .ToList();
 
+        var points = geoFeatures.Select(p => new GeoFeature
+        {
+            Geometry = new Geometry
+            {
+                Coordinates = new [] {p.Longitude, p.Latitude}
+            },
+            Properties = new Properties
+            {
+                Description = $"{p.MapObject.Name} - {p.Report.Description}"
+            }
+        }).ToList();
+        
+        var mapObjects = geoFeatures.GroupBy(p => p.MapObjectId);
+        foreach (var mapObject in mapObjects)
+        {
+            if (mapObject.Count() > 1)
+            {
+                points.Add(new GeoFeature
+                {
+                    Geometry = new Geometry
+                    {
+                        Type = "LineString",
+                        Coordinates = mapObject.Select(p => new [] {p.Longitude, p.Latitude}).ToList()
+                    },
+                    Properties = new Properties
+                    {
+                        Description = $"{mapObject.First().MapObject.Name} - {mapObject.First().Report.Description} (Line)"
+                    }
+                });
+            }
+        }
+        
         //TODO: Better
         var obj = new
         {
@@ -118,6 +143,22 @@ public class MapController : Controller
                 Description = $"{mapObject.Name} - {p.Report.Description}"
             }
         }).ToList();
+        
+        if (points.Count > 1)
+        {
+            geoFeatures.Add(new GeoFeature
+            {
+                Geometry = new Geometry
+                {
+                    Type = "LineString",
+                    Coordinates = points.Select(p => new [] {p.Longitude, p.Latitude}).ToList()
+                },
+                Properties = new Properties
+                {
+                    Description = $"{mapObject.Name} - {report.Description} (Line)"
+                }
+            });
+        }
 
         var obj = new
         {
