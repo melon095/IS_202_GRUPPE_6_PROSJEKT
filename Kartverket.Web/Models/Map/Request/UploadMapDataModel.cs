@@ -7,8 +7,8 @@ public class UploadMapDataModel
     
     public class Point
     {
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+        public double Lat { get; set; }
+        public double Lng { get; set; }
         public int Eleveation { get; set; }
     }
 }

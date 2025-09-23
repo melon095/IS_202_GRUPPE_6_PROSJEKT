@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kartverket.Web.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20250922112244_første")]
+    [Migration("20250923063624_første")]
     partial class første
     {
         /// <inheritdoc />
