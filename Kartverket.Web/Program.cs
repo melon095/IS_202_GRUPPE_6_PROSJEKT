@@ -11,7 +11,6 @@ builder.AddServiceDefaults();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services
-    .AddSingleton<DummyMapService, DummyMapService>()
     .AddTransient<MapService, MapService>()
     .AddTransient<UserService, UserService>()
     .AddTransient<GeoJSONService, GeoJSONService>()
