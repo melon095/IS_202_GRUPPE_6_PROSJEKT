@@ -48,6 +48,24 @@
         </div>
     </footer>
 
+    <script>
+        (function () {
+            const frames = [
+                "/cursor-1.png",
+                "/cursor-2.png",
+                "/cursor-3.png",
+                "/cursor-4.png",
+                "/cursor-5.png"
+            ];
+            let index = 0;
+
+            setInterval(() => {
+                document.body.style.cursor = `url("${frames[index]}"), auto`;
+                index = (index + 1) % frames.length;
+            }, 100); 
+        })();
+    </script>
+
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
