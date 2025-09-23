@@ -10,7 +10,7 @@
 }
 
 body {
-    cursor: url("/cursor-0.png"), auto;
+    cursor: url("/cursor/cursor-0.png"), auto;
     -webkit-animation: cursor 400ms infinite;
     animation: cursor 400ms infinite;
 }
