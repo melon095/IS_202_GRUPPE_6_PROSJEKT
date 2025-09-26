@@ -52,6 +52,54 @@ class LeafletMap {
         this.map.on('click', this.onMapClick.bind(this));
         
         this.#addControlLayer();
+        
+        const GPS_POLL_INTERVAL = 5000;
+        setInterval(async () => {
+            if (!navigator.geolocation) {
+                console.warn("Geolocation is not supported by this browser.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition((position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                const accuracy = position.coords.accuracy;
+
+                if (!this.#mapInst) {
+                    return;
+                }
+
+                const userMarker = L.circleMarker([lat, lng], {
+                    radius: 8,
+                    fillColor: "#136AEC",
+                    color: "#fff",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.7
+                });
+
+                userMarker.bindPopup(`Du er her`).openPopup();
+
+                this.#markerLayer.eachLayer((layer) => {
+                    if (layer.options && layer.options.fillColor === "#136AEC") {
+                        this.#markerLayer.removeLayer(layer);
+                    }
+                });
+
+                userMarker.addTo(this.#markerLayer);
+
+                if (this.#activeButtonType === ACTIVE_BUTTON_TYPE.PAN) {
+                    this.#mapInst.setView([lat, lng], this.#mapInst.getZoom());
+                }
+            }, (error) => {
+                console.error("Error obtaining geolocation:", error);
+            }, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0
+            });
+        }, GPS_POLL_INTERVAL);
     }
     
     get map() {
@@ -184,7 +232,7 @@ class LeafletMap {
         this.#formPanel.show();
     }
     
-    async quickSubmitData() {
+    async draftSubmitData() {
         // TODO: ADD GPS LOCATION AS POINT!
         
         await this.submitData(true);
@@ -484,8 +532,10 @@ class Panel {
         this.#content.appendChild(form);
         
         if (autoSubmit) {
-            onSubmit(Object.fromEntries(new FormData(form).entries()));
-            this.hide();
+            setTimeout(() => {
+                onSubmit(Object.fromEntries(new FormData(form).entries()));
+                this.hide();
+            }, 500);
         }
         
         return form;
