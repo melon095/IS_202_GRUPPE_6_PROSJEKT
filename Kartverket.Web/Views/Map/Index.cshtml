@@ -3,7 +3,7 @@
     ViewBag.Title = "Map";
 }
 
-<div id="mapParent" style="display: flex;">
+<div id="mapParent" style="display: flex; max-width: none; max-height: none; position: relative; margin: 0; padding: 0;">
     <div id="map" style="flex: 1; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; padding: 0;"></div>
 </div>
 
@@ -11,61 +11,102 @@
     <script src="~/js/map/index.js"></script>
     <script>
         window.addEventListener('load', function () {
+            document.querySelector('header').style.display = 'none';
+            document.querySelector('footer').style.display = 'none';
+
             const geojson = @Html.Raw(Model.GeoJson);
-            let panBtn = null, lineBtn = null, submitBtn = null;
+            let panBtn = null, lineBtn = null, submitBtn = null, quickSubmitBtn = null, cancelBtn = null;
 
             window._LeafletMap = new LeafletMap(document.getElementById('map'), document.getElementById('mapParent'));
             window._LeafletMap.addGeoJson(geojson);
 
-            function setButtonStates({ pan, line, submit }) {
+            function setButtonStates(obj) {
+                let { pan, line, submit, quickSubmit, cancel } = obj;
+                pan = pan || false;
+                line = line || false;
+                submit = submit || false;
+                quickSubmit = quickSubmit || false;
+                cancel = cancel || false;
+                
                 if (panBtn) panBtn.disabled = pan;
                 if (lineBtn) lineBtn.disabled = line;
                 if (submitBtn) submitBtn.disabled = submit;
+                if (quickSubmitBtn) quickSubmitBtn.disabled = quickSubmit;
+                if (cancelBtn) cancelBtn.disabled = cancel;
             }
 
             window._LeafletMap.addButtonToControl((btn) => {
                 panBtn = btn;
+                btn.classList.add("tag", "is-info", "is-medium", "is-responsive", "mr-2");
+                
                 const panImg = document.createElement('img');
                 panImg.src = '/svg/geo-pan-fill.svg';
-                panImg.style.width = '24px';
-                panImg.style.verticalAlign = 'middle';
+                // panImg.style.width = "48px";
 
                 btn.appendChild(panImg);
                 btn.onclick = () => {
                     window._LeafletMap.enablePanMode();
-                    setButtonStates({ pan: true, line: false, submit: false });
+                    setButtonStates({ pan: true });
                 };
             });
 
             window._LeafletMap.addButtonToControl((btn) => {
                 lineBtn = btn;
+                btn.classList.add("tag", "is-info", "is-medium", "is-responsive", "mr-2");
+
                 const lineImg = document.createElement('img');
                 lineImg.src = '/svg/geo-line-fill.svg';
-                lineImg.style.width = '24px';
-                lineImg.style.verticalAlign = 'middle';
+                // lineImg.style.width = "48px";
 
                 btn.appendChild(lineImg);
                 btn.onclick = () => {
                     window._LeafletMap.enableLineMode();
-                    setButtonStates({ pan: false, line: true, submit: false });
+                    setButtonStates({ line: true });
                 };
             });
 
             window._LeafletMap.addButtonToControl((btn) => {
                 submitBtn = btn;
                 btn.textContent = 'Submit changes';
+                btn.classList.add("button", "is-primary", "is-responsive", "is-responsive", "mr-2");
 
                 btn.onclick = () => {
-                    setButtonStates({ pan: false, line: false, submit: false });
+                    setButtonStates({});
                     window._LeafletMap.submitData().then(() => {
-                        setButtonStates({ pan: true, line: false, submit: false });
+                        setButtonStates({ pan: true });
                     }).catch(() => {
-                        setButtonStates({ pan: true, line: false, submit: false });
+                        setButtonStates({ pan: true });
                     });
                 };
             });
+            
+            window._LeafletMap.addButtonToControl((btn) => {
+                quickSubmitBtn = btn;
+                btn.textContent = 'Quick submit';
+                btn.classList.add("button", "is-warning", "is-responsive", "is-responsive", "mr-2");
 
-            setButtonStates({ pan: true, line: false, submit: false });
+                btn.onclick = () => {
+                    setButtonStates({});
+                    window._LeafletMap.quickSubmitData().then(() => {
+                        setButtonStates({ pan: true });
+                    }).catch(() => {
+                        setButtonStates({ pan: true });
+                    });
+                };
+            });
+            
+            window._LeafletMap.addButtonToControl((btn) => {
+                cancelBtn = btn;
+                btn.textContent = 'Cancel changes';
+                btn.classList.add("button", "is-danger", "is-responsive", "is-responsive", "mr-2");
+
+                btn.onclick = () => {
+                    window._LeafletMap.cancelChanges();
+                    setButtonStates({ pan: true });
+                };
+            });
+
+            setButtonStates({ pan: true });
         });
     
     </script>

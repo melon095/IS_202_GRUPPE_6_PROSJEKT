@@ -1,22 +1,5 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
-
-    var user = Context.Session.GetString("Username");
 }
 
-@if (!string.IsNullOrEmpty(user))
-{
-    <h1>LOGGED IN AS @Context.Session.GetString("Username")</h1>
-}
-else
-{
-    <h1>NOT LOGGED IN</h1>
-    
-    <form method="post" asp-controller="User" asp-action="Login">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required />
-        </div>
-        <button type="submit">Login</button>
-    </form>
-}
+asd

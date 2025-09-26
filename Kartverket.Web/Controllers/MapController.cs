@@ -61,7 +61,7 @@ public class MapController : Controller
             },
             Properties = new Properties
             {
-                Description = $"{p.MapObject.Name} - {p.Report.Description}"
+                Description = $"{p.Report.Title} - {p.Report.Description}"
             }
         }).ToList();
         
@@ -70,6 +70,8 @@ public class MapController : Controller
         {
             if (mapObject.Count() > 1)
             {
+                var report = mapObject.First().Report;
+                
                 points.Add(new GeoFeature
                 {
                     Geometry = new Geometry
@@ -79,7 +81,7 @@ public class MapController : Controller
                     },
                     Properties = new Properties
                     {
-                        Description = $"{mapObject.First().MapObject.Name} - {mapObject.First().Report.Description} (Line)"
+                        Description = $"{report.Title} - {report.Description} - (Line)"
                     }
                 });
             }
@@ -103,14 +105,21 @@ public class MapController : Controller
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        var user = User.Identity?.Name ?? "unknown";
+        var userId = _dbContext.Users.FirstOrDefault(u => u.UserName == user)?.Id;
+        ArgumentNullException.ThrowIfNull(userId, nameof(userId));
+
+        var report = new ReportTable
+        {
+            Title = body.ReportTitle,
+            Description = body.ReportDescription,
+            UserId = userId.Value
+        };
+        _dbContext.Reports.Add(report);
+
         var objectType = _dbContext.MapObjectTypes.FirstOrDefault();
-        var report = _dbContext.Reports.FirstOrDefault(r => r.Id == body.ReportId);
-        if (objectType == null || report == null)
-            return BadRequest("Invalid report ID or missing map object type.");
-        
         var mapObject = new MapObjectTable
         {
-            Name = "Map Object",
             MapObjectTypeId = objectType.Id
         };
         
@@ -123,7 +132,7 @@ public class MapController : Controller
                 Report = report,
                 Latitude = point.Lat,
                 Longitude = point.Lng,
-                AMSL = point.Eleveation
+                AMSL = point.Elevation
             });
         }
 
@@ -140,7 +149,7 @@ public class MapController : Controller
             },
             Properties = new Properties
             {
-                Description = $"{mapObject.Name} - {p.Report.Description}"
+                Description = $"{report.Title} - {p.Report.Description}"
             }
         }).ToList();
         
@@ -155,7 +164,7 @@ public class MapController : Controller
                 },
                 Properties = new Properties
                 {
-                    Description = $"{mapObject.Name} - {report.Description} (Line)"
+                    Description = $"{report.Title} - {report.Description} (Line)"
                 }
             });
         }

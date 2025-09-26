@@ -1,0 +1,15 @@
+﻿@model Kartverket.Web.Models.User.Request.UserLoginRequestModel
+@{
+    ViewData["Title"] = "Logg inn";
+}
+
+<h1>Logg inn</h1>
+
+<form asp-action="Login" method="post">
+    <div class="form-group">
+        <label asp-for="Username"></label>
+        <input asp-for="Username" class="form-control" />
+        <span asp-validation-for="Username" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Logg inn</button>
+</form>
