@@ -6,14 +6,25 @@
 <h2>Rapporter</h2>
 
 <table class="table">
+    <thead>
+        <!--
+            Thead brukes som en overskrift for tabellen. Her viser vi Navn, Lattitude,
+            Longitude og Altitude
+        -->
+    <th>Obstacle</th>
+    <th>Date reported</th>
+    </thead>
     <tbody>
         @foreach(var report in Model.Reports)
         {
             <tr>
-                <td>@report.User</td>
                 <td>@report.Title</td>
                 <td>@report.CreatedAt</td>
-
+                <td>
+                    <button onclick="window.location.href='Admin/ReportInDepth'">
+                        Test
+                    </button>
+                </td>
             </tr>
         }
     </tbody>

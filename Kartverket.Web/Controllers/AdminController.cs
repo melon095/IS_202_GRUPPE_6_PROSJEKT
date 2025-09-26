@@ -16,7 +16,12 @@ public class AdminController: Controller
         _logger = logger;
         _context = context;
     }
-    
+
+    public ActionResult ReportInDepth()
+    {
+        return View();
+    }
+
     public IActionResult Index()
     {
         var reports = _context.Reports.ToList();
@@ -26,8 +31,7 @@ public class AdminController: Controller
             Model.Reports.Add(new MakeReportList
             {
                 CreatedAt = report.CreatedAt,
-                Title = report.Title,
-                User = report.Title
+                Title = report.Title
             });
         }
         return View(Model);

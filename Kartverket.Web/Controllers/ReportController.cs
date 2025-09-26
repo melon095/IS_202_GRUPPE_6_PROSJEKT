@@ -16,6 +16,7 @@ public class ReportController : Controller
         _dbContext = dbContext;
     }
 
+
     [HttpGet("/report/{id}")]
     public IActionResult Report(string id)
     {
