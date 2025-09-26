@@ -6,39 +6,73 @@
     <title>@ViewData["Title"] - Kartverket.Web</title>
     <script type="importmap"></script>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Kartverket.Web.styles.css" asp-append-version="true" />
+    <link rel="icon" href="~/favicon.ico">
     
     @* LEAFLET START *@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     @* LEAFLET END *@
     
-    @* PICOSS START *@
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@@picocss/pico@2/css/pico.fluid.classless.min.css">
-    @* PICOSS END *@
+    @* BULMA START *@
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    @* BULMA END *@
 </head>
-<body>
+<body style="margin: 0; padding: 0; box-sizing: border-box;">
     <header>
-        <nav>
-            <div>
-                <a asp-area="" asp-controller="Home" asp-action="Index">Kartverket.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <ul>
-                    <li>
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                    </li>
-                    <li>
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Map" asp-action="Index">Map</a>
-                    </li>
-                </ul>
+        <nav class="navbar" role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" href="@Url.Action("Index", "Home")">
+                    <img src="~/svg/kartverket.svg" alt="Kartverket Logo" width="112" height="28">
+                </a>
+
+                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="@Url.Action("Index", "Home")">
+                        Home
+                    </a>
+
+                    <a class="navbar-item" href="@Url.Action("Index", "Map")">
+                        Map
+                    </a>
+                    
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a class="navbar-item" href="@Url.Action("Index", "Admin")">
+                            Admin
+                        </a>
+                    }
+                    
+                    <div class="navbar-end">
+                        <div class="navbar-item">
+                            <div class="buttons">
+                                @if (User.Identity is { IsAuthenticated: true })
+                                {
+                                    <a class="button is-light" href="@Url.Action("Logout", "User")">
+                                        Log out
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a class="button is-primary" href="@Url.Action("Login", "User")">
+                                        <strong>Log in</strong>
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </nav>
     </header>
 
-    <main class="container" style="display: flex; flex-direction: column; min-height: 100vh;">
+    <main style="display: flex; flex-direction: column; min-height: 100vh;">
         @RenderBody()
     </main>
 
@@ -49,7 +83,11 @@
     </footer>
 
     <script>
+    
+        
         (function () {
+            return;
+            
             const frames = [
                 "/cursor/cursor-1.png",
                 "/cursor/cursor-2.png",
@@ -57,15 +95,30 @@
                 "/cursor/cursor-4.png",
                 "/cursor/cursor-5.png"
             ];
-            let index = 0;
 
+            let index = 0;
             setInterval(() => {
                 document.body.style.cursor = `url("${frames[index]}"), auto`;
                 index = (index + 1) % frames.length;
-            }, 100); 
+            }, 100);
         })();
-    </script>
 
+        (function() {
+            const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+
+            $navbarBurgers.forEach( el => {
+                el.addEventListener('click', () => {
+
+                    const target = el.dataset.target;
+                    const $target = document.getElementById(target);
+
+                    el.classList.toggle('is-active');
+                    $target.classList.toggle('is-active');
+                });
+            });
+        })();
+    
+</script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

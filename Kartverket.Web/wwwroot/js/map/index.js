@@ -13,17 +13,6 @@ const TILE_LAYER_COPYRIGHT = `&copy; <a href="http://www.kartverket.no/">Kartver
 const COORD_PRECISION = ".000001";
 const COORD_PRECISION_INT = 6;
 
-// 1. The control button shows a "add" icon and a "pan" icon.
-// 2. When the add button is clicked, and a point has been added, a submit button is shown. 
-// 3. When the submit button is clicked, a form is shown with fields for everything.
-// 4. If submitted
-//       a. The point(s) is added to the map
-//       b. A report is made on the server and the point(s) is linked to the report
-//       c. The form is closed
-// 5. If cancelled
-//       a. The point(s) is removed from the map
-//       b. The form is closed
-
 const clean = (str) => {
     return str.replace(/[\n\r]/g, ' ').trim();
 }
@@ -67,6 +56,10 @@ class LeafletMap {
     
     get map() {
         return this.#mapInst;
+    }
+    
+    get buttonControl() {
+        return this.#buttonControl;
     }
 
     addGeoJson(geo) {
@@ -126,12 +119,12 @@ class LeafletMap {
         this.displayInputPoints();
     }
     
-    async submitData() {
+    async submitData(autoSubmit = false) {
         if (this.#data == null || this.#data.length < 1)
         {
             return;
         }
-        
+
         this.#formPanel.reset();
 
         this.#formPanel.setTitle("Last opp din rapport");
@@ -171,56 +164,70 @@ class LeafletMap {
 
         this.#formPanel.createForm(
             fields,
-            async (data) => {
-                try {
-                    const reportBody = {
-                        title: clean(data.title || "Uten tittel"),
-                        description: clean(data.description || ""),
-                    };
-                    const report = await fetch("/Report/Create", { 
-                        method: "POST",
-                        body: JSON.stringify(reportBody),
-                        headers: { "Content-Type": "application/json" }
-                    })
-                        .then(res => res.json());
-                    
-                    const req = {
-                        reportId: report.id,
-                        points: this.#data,
-                    }
-
-                    const response = await fetch("/Map/Upload", {
-                        method: "POST",
-                        body: JSON.stringify(req),
-                        headers: {"Content-Type": "application/json"}
-                    });
-
-                    if (response.ok) {
-                        const newLine = await response.json();
-                        this.addGeoJson(newLine);
-                    }
-                } catch (error) {
-                    console.error("Det skjedde en feil ved innsending av rapport:", error);
-                    alert("Det skjedde en feil ved innsending av rapport. " + error.message);
-                    return;
-                }
+            async (formData) => {
+                const submissionData = {
+                    ...formData,
+                    points: this.#data
+                };
                 
-                this.#formPanel.reset();
+                await this.#theSubmitFunction(submissionData);
+                
                 this.clearInputPoints();
             },
             () => {
                 this.clearInputPoints();
                 this.#formPanel.reset();
-            }
+            },
+            autoSubmit
         );
 
         this.#formPanel.show();
+    }
+    
+    async quickSubmitData() {
+        // TODO: ADD GPS LOCATION AS POINT!
+        
+        await this.submitData(true);
+    }
+    
+    async #theSubmitFunction(formData) {
+        try {
+            const req = {
+                reportTitle: clean(formData.title) || "Midlertidlig tittel",
+                reportDescription: clean(formData.description) || "Midlertidlig beskrivelse",
+                points: this.#data,
+            }
+
+            const response = await fetch("/Map/Upload", {
+                method: "POST",
+                body: JSON.stringify(req),
+                headers: {"Content-Type": "application/json"}
+            });
+
+            if (response.ok) {
+                let result = await response.json();
+                this.addGeoJson(result);
+            } else {
+                let result = await response.json();
+                for (const key in result) {
+                    this.#formPanel.setErrorOnField(key, result[key]);
+                }
+            }
+        } catch (error) {
+            console.error("Det skjedde en feil ved innsending av rapport:", error);
+            alert("Det skjedde en feil ved innsending av rapport. " + error.message);
+            return;
+        }
+    }
+    
+    cancelChanges() {
+        this.clearInputPoints();
+        this.#formPanel.reset();
     }
 
     addButtonToControl(createCallback) {
         if (this.#buttonControl && this.#buttonControl.container) {
             const button = L.DomUtil.create('button', '', this.#buttonControl.container);
-            button.style.display = 'block';
             
             createCallback(button);
         }
@@ -360,7 +367,7 @@ class Panel {
         }
     }
 
-    createForm(fields, onSubmit, onCancel) {
+    createForm(fields, onSubmit, onCancel, autoSubmit) {
         const form = document.createElement('form');
         form.onsubmit = (e) => {
             e.preventDefault();
@@ -475,5 +482,25 @@ class Panel {
 
         this.setContent('');
         this.#content.appendChild(form);
+        
+        if (autoSubmit) {
+            onSubmit(Object.fromEntries(new FormData(form).entries()));
+            this.hide();
+        }
+        
+        return form;
+    }
+    
+    setErrorOnField(fieldName, message) {
+        const field = this.#content.querySelector(`[name="${fieldName}"]`);
+        if (field) {
+            let errorElem = field.parentElement.querySelector('.panel-error');
+            if (!errorElem) {
+                errorElem = document.createElement('div');
+                errorElem.classList.add('panel-error');
+                field.parentElement.appendChild(errorElem);
+            }
+            errorElem.textContent = message;
+        }
     }
 }
