@@ -61,7 +61,7 @@
                 btn.appendChild(lineImg);
                 btn.onclick = () => {
                     window._LeafletMap.enableLineMode();
-                    setButtonStates({ line: true });
+                    setButtonStates({ line: true, pan: false, submit: false, quickSubmit: false, cancel: false });
                 };
             });
 
@@ -71,26 +71,26 @@
                 btn.classList.add("button", "is-primary", "is-responsive", "is-responsive", "mr-2");
 
                 btn.onclick = () => {
-                    setButtonStates({});
+                    setButtonStates({ });
                     window._LeafletMap.submitData().then(() => {
-                        setButtonStates({ pan: true });
+                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
                     }).catch(() => {
-                        setButtonStates({ pan: true });
+                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true});
                     });
                 };
             });
             
             window._LeafletMap.addButtonToControl((btn) => {
                 quickSubmitBtn = btn;
-                btn.textContent = 'Quick submit';
+                btn.textContent = 'Draft Submit';
                 btn.classList.add("button", "is-warning", "is-responsive", "is-responsive", "mr-2");
 
                 btn.onclick = () => {
                     setButtonStates({});
-                    window._LeafletMap.quickSubmitData().then(() => {
-                        setButtonStates({ pan: true });
+                    window._LeafletMap.draftSubmitData().then(() => {
+                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
                     }).catch(() => {
-                        setButtonStates({ pan: true });
+                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
                     });
                 };
             });
@@ -102,11 +102,11 @@
 
                 btn.onclick = () => {
                     window._LeafletMap.cancelChanges();
-                    setButtonStates({ pan: true });
+                    setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
                 };
             });
 
-            setButtonStates({ pan: true });
+            setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
         });
     
     </script>
