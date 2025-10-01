@@ -167,6 +167,10 @@ class LeafletMap {
         this.displayInputPoints();
     }
     
+    getEditedPoints() {
+        return this.#data;
+    }
+    
     async submitData(autoSubmit = false) {
         if (this.#data == null || this.#data.length < 1)
         {
@@ -257,8 +261,10 @@ class LeafletMap {
                 this.addGeoJson(result);
             } else {
                 let result = await response.json();
-                for (const key in result) {
-                    this.#formPanel.setErrorOnField(key, result[key]);
+                for (let err of result.errors) {
+                    for (let msg of err.errors) {
+                        this.#formPanel.setErrorOnField(err.key.charAt(0).toLowerCase() + err.key.slice(1), msg);
+                    }
                 }
             }
         } catch (error) {
