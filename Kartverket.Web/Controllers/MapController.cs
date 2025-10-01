@@ -103,7 +103,13 @@ public class MapController : Controller
     public IActionResult Upload([FromBody] UploadMapDataModel body)
     {
         if (!ModelState.IsValid)
-            return BadRequest(ModelState);
+        {
+            var errors = ModelState
+                .Where(x => x.Value?.Errors.Count > 0)
+                .Select(x => new { x.Key, Errors = x.Value?.Errors.Select(e => e.ErrorMessage) });
+            
+            return BadRequest(new { Errors = errors });
+        }
 
         var user = User.Identity?.Name ?? "unknown";
         var userId = _dbContext.Users.FirstOrDefault(u => u.UserName == user)?.Id;
