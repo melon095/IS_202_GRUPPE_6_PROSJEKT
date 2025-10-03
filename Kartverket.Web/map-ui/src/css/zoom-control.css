@@ -1,0 +1,18 @@
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	width: 6rem !important;
+	height: 6rem !important;
+	font-size: 20px !important;
+
+	display: flex !important;
+	justify-content: center !important;
+	align-items: center !important;
+	line-height: 1 !important;
+}
+
+.leaflet-touch .leaflet-control-zoom-in {
+	font-size: 22px !important;
+}
+.leaflet-touch .leaflet-control-zoom-out {
+	font-size: 24px !important;
+}

@@ -3,13 +3,41 @@
     ViewData["Title"] = "Logg inn";
 }
 
-<h1>Logg inn</h1>
-
-<form asp-action="Login" method="post">
-    <div class="form-group">
-        <label asp-for="Username"></label>
-        <input asp-for="Username" class="form-control" />
-        <span asp-validation-for="Username" class="text-danger"></span>
+<div class="is-flex is-flex-direction-column is-align-items-center is-justify-content-center" style="min-height: 80vh;">
+    <div class="box" style="width: 300px;">
+        <h1 class="title has-text-centered">Logg inn</h1>
+        <form asp-action="Login" method="post">
+            <div class="field">
+                <label class="label">Brukernavn</label>
+                <div class="control">
+                    <input class="input" asp-for="Username" placeholder="Brukernavn" />
+                </div>
+                <span class="has-text-danger">@Html.ValidationMessageFor(m => m.Username)</span>
+            </div>
+            <div class="field">
+                <label class="label">Passord</label>
+                <div class="control">
+                    <input type="password" class="input" asp-for="Password" placeholder="Passord" />
+                </div>
+                <span class="has-text-danger">@Html.ValidationMessageFor(m => m.Password)</span>
+            </div>
+            <div class="field is-grouped is-grouped-centered">
+                <div class="control">
+                    <button type="submit" class="button is-primary">Logg inn</button>
+                </div>
+            </div>
+        </form>
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="notification is-danger is-light mt-3">
+                <button class="delete" onclick="this.parentElement.style.display='none';"></button>
+                <ul>
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
     </div>
-    <button type="submit" class="btn btn-primary">Logg inn</button>
-</form>
+</div>
