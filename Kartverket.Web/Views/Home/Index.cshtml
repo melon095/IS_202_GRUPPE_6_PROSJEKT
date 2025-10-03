@@ -2,32 +2,67 @@
     ViewData["Title"] = "Home Page";
 }
 
-<div class="is-flex is-flex-direction-column is-gapless">
-    <div class="grid">
-        <div class="cell">
-            <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
-                <a asp-controller="User" asp-action="Login" class="has-text-link">
-                    Pilot
-                </a>
-            </h2>
+@if (User.Identity is { IsAuthenticated: true })
+{
+    if (User.IsInRole("Kartverket"))
+    {
+        
+    }
+    else if (User.IsInRole("Pilot"))
+    {
+        <div class="is-flex is-flex-direction-column is-gapless">
+            <div class="grid">
+                <div class="cell">
+                    <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
+                        <a asp-controller="Map" asp-action="Start" class="has-text-link">
+                            Start en reise
+                        </a>
+                    </h2>
+                </div>
+                <div class="cell">
+                    <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
+                        <a asp-controller="Report" asp-action="GetAll" class="has-text-link">
+                            Mine reiser
+                        </a>
+                    </h2>
+                </div>
+            </div>
         </div>
-        <div class="cell">
-            <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
-                <a asp-controller="User" asp-action="Login" class="has-text-link">
-                    Kartverket
-                </a>
-            </h2>
+    }
+    else
+    {
+        
+    }
+}
+else
+{
+    <div class="is-flex is-flex-direction-column is-gapless">
+        <div class="grid">
+            <div class="cell">
+                <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
+                    <a asp-controller="User" asp-action="Login" class="has-text-link">
+                        Pilot
+                    </a>
+                </h2>
+            </div>
+            <div class="cell">
+                <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
+                    <a asp-controller="User" asp-action="Login" class="has-text-link">
+                        Kartverket
+                    </a>
+                </h2>
+            </div>
+            <div class="cell">
+                <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
+                    <a asp-controller="User" asp-action="Login" class="has-text-link">
+                        TODO
+                    </a>
+                </h2>
+            </div>
         </div>
-        <div class="cell">
-            <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
-                <a asp-controller="User" asp-action="Login" class="has-text-link">
-                    TODO
-                </a>
-            </h2>
-        </div>
-    </div>
 
-    <div class="p-0">
-        <img src="~/images/home/web-home.jpg" class="image" alt="Innloggins bilder"/>
+        <div class="p-0">
+            <img src="~/images/home/web-home.jpg" class="image" alt="Innloggins bilder"/>
+        </div>
     </div>
-</div>
+}

@@ -1,8 +1,11 @@
 using System.Diagnostics;
-using Kartverket.Web.Controllers;
 using Kartverket.Web.Database;
 using Kartverket.Web.Services;
+using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.EntityFrameworkCore;
+using Vite.AspNetCore;
+
+#region Build
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,8 +40,8 @@ builder.Services.AddAuthentication("CookieAuth")
     .AddCookie("CookieAuth", options =>
     {
         options.Cookie.Name = "Kartverket.Auth";
-        options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.LoginPath = "/User/Login";
+        options.AccessDeniedPath = "/User/AccessDenied";
     });
 
 builder.Services.AddSession(options =>
@@ -48,7 +51,14 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddViteServices();
+
+#endregion
+
+#region App
+
 var app = builder.Build();
+StaticWebAssetsLoader.UseStaticWebAssets(app.Environment, app.Configuration);
 
 app.MapDefaultEndpoints();
 
@@ -75,5 +85,13 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+// Note: Must be the at the end.
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebSockets();
+    app.UseViteDevelopmentServer(true);
+}
 
 app.Run();
+
+#endregion

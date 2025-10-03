@@ -1,349 +1,363 @@
-﻿@model MapIndexModel
-@{
+﻿@{
     ViewBag.Title = "Map";
 }
 
-<div id="mapParent" style="display: flex; max-width: none; max-height: none; position: relative; margin: 0; padding: 0;">
-    <div id="map" style="flex: 1; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; padding: 0;"></div>
-    <div id="mapSendPanel", class="panel-right">
-        <div class="panel-right-header">
-            <h3 class="m-0">Last opp din rapport</h3>
-            <button class="panel-close-btn">x</button>
-        </div>
-        <div class="panel-right-content">
-            <form id="reportForm" autocomplete="off" novalidate="novalidate">
-                <div class="panel-form-group">
-                    <label for="title">Tittel</label>
-                    <div class="input-wrapper">
-                        <input type="text" name="title" id="title" required="" placeholder="Skriv inn tittel" autocomplete="off">
-                    </div>
-                </div>
-                <div class="panel-form-group">
-                    <label for="description">Beskrivelse</label>
-                    <div class="input-wrapper">
-                        <textarea name="description" id="description" placeholder="Skriv inn beskrivelse" autocomplete="off"></textarea>
-                    </div>
-                </div>
-                <div class="panel-form-group">
-                    <label for="category">Kategori</label>
-                    <div class="input-wrapper">
-                        <select name="category" id="category" autocomplete="off"></select>
-                    </div>
-                </div>
-                <div class="panel-form-group">
-                    <label for="points">Punkter</label>
-                    <table class="panel-table" id="pointsTable">
-                        <thead>
-                        <tr>
-                            <th>Latitude</th>
-                            <th>Longitude</th>
-                            <th>Høyde (fot)</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                        </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div style="margin-top: 1.5rem;">
-                    <button type="submit" class="panel-btn">Save</button>
-                    <button type="button" class="panel-btn panel-btn-secondary">Cancel</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+@section Styles {
+    <link rel="stylesheet" vite-href="~/src/main.tsx" asp-append-version="true" />
+}
 
 @section Scripts {
-    <script src="~/js/map/index.js"></script>
-    <script>
-        window.addEventListener('load', function () {
-            document.querySelector('header').style.display = 'none';
-            document.querySelector('footer').style.display = 'none';
-
-            const geojson = @Html.Raw(Model.GeoJson);
-            let panBtn = null, lineBtn = null, submitBtn = null, quickSubmitBtn = null, cancelBtn = null;
-
-            const form = document.querySelector('#mapSendPanel form'), 
-                  formTitle = form.querySelector('#title'),
-                  formDescription = form.querySelector('#description'),
-                  formCategory = form.querySelector('#category'),
-                  formPointsTbl = form.querySelector('#pointsTable tbody'),
-                  panel = document.getElementById('mapSendPanel'),
-                  panelCloseBtn = panel.querySelector('.panel-close-btn'),
-                  panelCancelBtn = panel.querySelector('.panel-btn-secondary');
-
-            async function submitData(points) {
-                formPointsTbl.innerHTML = '';
-                points.forEach((pt, idx) => {
-                    const row = document.createElement('tr');
-                    const latCell = document.createElement('td');
-                    const lngCell = document.createElement('td');
-                    const elevCell = document.createElement('td');
-                    const latInput = document.createElement('input');
-                    const lngInput = document.createElement('input');
-                    const elevInput = document.createElement('input');
-                    latInput.type = 'number';
-                    latInput.name = `points[${idx}][lat]`;
-                    latInput.step = '.000001';
-                    latInput.value = pt.lat;
-                    lngInput.type = 'number';
-                    lngInput.name = `points[${idx}][lng]`;
-                    lngInput.step = '.000001';
-                    lngInput.value = pt.lng;
-                    elevInput.type = 'number';
-                    elevInput.name = `points[${idx}][elevation]`;
-                    elevInput.value = pt.elevation || '';
-                    latCell.appendChild(latInput);
-                    lngCell.appendChild(lngInput);
-                    elevCell.appendChild(elevInput);
-                    row.appendChild(latCell);
-                    row.appendChild(lngCell);
-                    row.appendChild(elevCell);
-                    formPointsTbl.appendChild(row);
-                });
-                
-                panel.style.display = 'block';
-                panel.classList.add('open');
-                
-                const validator = new JustValidator(form, {
-                    errorFieldCssClass: 'is-invalid',
-                    errorLabelCssClass: 'is-danger',
-                    focusInvalidField: true,
-                    lockForm: true,
-                    validateBeforeSubmitting: true
-                });
-                
-                validator.addField(formTitle, [
-                    {
-                        rule: 'required',
-                        errorMessage: 'Tittel er påkrevd',
-                    },
-                    {
-                        rule: 'minLength',
-                        value: 3,
-                        errorMessage: 'Tittel må være minst 3 tegn',
-                    },
-                    {
-                        rule: 'maxLength',
-                        value: 100,
-                        errorMessage: 'Tittel kan ikke være mer enn 100 tegn',
-                    },
-                ])
-                    .addField(formDescription, [
-                        {
-                            rule: 'maxLength',
-                            value: 500,
-                            errorMessage: 'Beskrivelse kan ikke være mer enn 500 tegn',
-                        },
-                    ])
-                    .addField(formDescription, [
-                        {
-                            rule: 'required',
-                            errorMessage: 'Kategori er påkrevd',
-                        },
-                    ]);
-
-                formPointsTbl.querySelectorAll('tr').forEach((row, idx) => {
-                    const latInput = row.querySelector('td:nth-child(1) input');
-                    const lngInput = row.querySelector('td:nth-child(2) input');
-                    const elevInput = row.querySelector('td:nth-child(3) input');
-                    
-                    validator.addField(latInput, [
-                        {
-                            rule: 'required',
-                            errorMessage: 'Latitude er påkrevd',
-                        },
-                        {
-                            rule: 'number',
-                            errorMessage: 'Latitude må være et tall',
-                        },
-                        {
-                            rule: 'minNumber',
-                            value: -90,
-                            errorMessage: 'Latitude må være mellom -90 og 90',
-                        },
-                        {
-                            rule: 'maxNumber',
-                            value: 90,
-                            errorMessage: 'Latitude må være mellom -90 og 90',
-                        },
-                    ]);
-                    
-                    validator.addField(lngInput, [
-                        {
-                            rule: 'required',
-                            errorMessage: 'Longitude er påkrevd',
-                        },
-                        {
-                            rule: 'number',
-                            errorMessage: 'Longitude må være et tall',
-                        },
-                        {
-                            rule: 'minNumber',
-                            value: -180,
-                            errorMessage: 'Longitude må være mellom -180 og 180',
-                        },
-                        {
-                            rule: 'maxNumber',
-                            value: 180,
-                            errorMessage: 'Longitude må være mellom -180 og 180',
-                        },
-                    ]);
-                    
-                    validator.addField(elevInput, [
-                        {
-                            rule: 'number',
-                            errorMessage: 'Høyde må være et tall',
-                        },
-                    ]);
-                });
-                
-                validator.onSuccess((e) => {
-                    e.preventDefault();
-                    
-                    const formData = new FormData(form);
-                    debugger;
-                    fetch('/api/reports', {
-                        method: 'POST',
-                        body: formData
-                    }).then(response => {
-                        return response.json();
-                    }).then(data => {
-                        panel.classList.remove('open');
-                        setTimeout(() => { panel.style.display = 'none'; }, 300);
-                        window._LeafletMap.cancelChanges();
-                    }).catch(error => {
-                        alert('Error submitting report. Please try again.');
-                    });
-                });
-            }
-            
-            window._LeafletMap = new LeafletMap(document.getElementById('map'), document.getElementById('mapParent'));
-            window._LeafletMap.addGeoJson(geojson);
-
-            function setButtonStates(obj) {
-                let { pan, line, submit, quickSubmit, cancel } = obj;
-                pan = pan || false;
-                line = line || false;
-                submit = submit || false;
-                quickSubmit = quickSubmit || false;
-                cancel = cancel || false;
-                
-                if (panBtn) panBtn.disabled = pan;
-                if (lineBtn) lineBtn.disabled = line;
-                if (submitBtn) submitBtn.disabled = submit;
-                if (quickSubmitBtn) quickSubmitBtn.disabled = quickSubmit;
-                if (cancelBtn) cancelBtn.disabled = cancel;
-            }
-
-            window._LeafletMap.addButtonToControl((btn) => {
-                panBtn = btn;
-                btn.classList.add("tag", "is-info", "is-medium", "is-responsive", "mr-2");
-                
-                const panImg = document.createElement('img');
-                panImg.src = '/svg/geo-pan-fill.svg';
-                // panImg.style.width = "48px";
-
-                btn.appendChild(panImg);
-                btn.onclick = () => {
-                    window._LeafletMap.enablePanMode();
-                    setButtonStates({ pan: true });
-                };
-            });
-
-            window._LeafletMap.addButtonToControl((btn) => {
-                lineBtn = btn;
-                btn.classList.add("tag", "is-info", "is-medium", "is-responsive", "mr-2");
-
-                const lineImg = document.createElement('img');
-                lineImg.src = '/svg/geo-line-fill.svg';
-                // lineImg.style.width = "48px";
-
-                btn.appendChild(lineImg);
-                btn.onclick = () => {
-                    window._LeafletMap.enableLineMode();
-                    setButtonStates({ line: true, pan: false, submit: false, quickSubmit: false, cancel: false });
-                };
-            });
-
-            window._LeafletMap.addButtonToControl((btn) => {
-                submitBtn = btn;
-                btn.textContent = 'Submit changes';
-                btn.classList.add("button", "is-primary", "is-responsive", "is-responsive", "mr-2");
-
-                btn.onclick = async () => {
-                    setButtonStates({ });
-                    
-                    const points = window._LeafletMap.getEditedPoints();
-                    if (points.length === 0) {
-                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
-                        return;
-                    }
-                    
-                    await submitData(points).then(() => {
-                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
-                    }).catch(() => {
-                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true});
-                    });
-                };
-            });
-            
-            window._LeafletMap.addButtonToControl((btn) => {
-                quickSubmitBtn = btn;
-                btn.textContent = 'Draft Submit';
-                btn.classList.add("button", "is-warning", "is-responsive", "is-responsive", "mr-2");
-
-                btn.onclick = async () => {
-                    setButtonStates({});
-                    const points = window._LeafletMap.getEditedPoints();
-                    if (points.length === 0) {
-                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
-                        return;
-                    }
-
-                    await submitData(points).then(() => {
-                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
-                    }).catch(() => {
-                        setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
-                    });
-                };
-            });
-            
-            window._LeafletMap.addButtonToControl((btn) => {
-                cancelBtn = btn;
-                btn.textContent = 'Cancel changes';
-                btn.classList.add("button", "is-danger", "is-responsive", "is-responsive", "mr-2");
-
-                btn.onclick = () => {
-                    window._LeafletMap.cancelChanges();
-                    setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
-                };
-            });
-
-            if ('ontouchstart' in window || navigator.maxTouchPoints) {
-                window._LeafletMap.addButtonToControl((btn) => {
-                    btn.textContent = 'Fullscreen Temporary';
-                    btn.classList.add("button", "is-danger", "is-responsive", "is-responsive", "mr-2");
-    
-                    btn.onclick = () => {
-                        const elem = document.documentElement;
-                        if (elem.requestFullscreen) {
-                            elem.requestFullscreen();
-                        } else if (elem.webkitRequestFullscreen) {
-                            elem.webkitRequestFullscreen();
-                        } else if (elem.msRequestFullscreen) {
-                            elem.msRequestFullscreen();
-                        }
-                    };
-                });
-            }
-            
-            setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true });
-
-
-        });
-    
-    </script>
+    <script type="module" vite-src="~/src/main.tsx"></script>
 }
+
+<div id="app"></div>
+
+@* @model MapIndexModel *@
+@* @{ *@
+@*     ViewBag.Title = "Map"; *@
+@* } *@
+@* *@
+@* <div id="mapParent" style="display: flex; max-width: none; max-height: none; position: relative; margin: 0; padding: 0;"> *@
+@*     <div id="map" style="flex: 1; position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; margin: 0; padding: 0;"></div> *@
+@*     <div id="mapSendPanel", class="panel-right"> *@
+@*         <div class="panel-right-header"> *@
+@*             <h3 class="m-0">Last opp din rapport</h3> *@
+@*             <button class="panel-close-btn">x</button> *@
+@*         </div> *@
+@*         <div class="panel-right-content"> *@
+@*             <form id="reportForm" autocomplete="off" novalidate="novalidate"> *@
+@*                 <div class="panel-form-group"> *@
+@*                     <label for="title">Tittel</label> *@
+@*                     <div class="input-wrapper"> *@
+@*                         <input type="text" name="title" id="title" required="" placeholder="Skriv inn tittel" autocomplete="off"> *@
+@*                     </div> *@
+@*                 </div> *@
+@*                 <div class="panel-form-group"> *@
+@*                     <label for="description">Beskrivelse</label> *@
+@*                     <div class="input-wrapper"> *@
+@*                         <textarea name="description" id="description" placeholder="Skriv inn beskrivelse" autocomplete="off"></textarea> *@
+@*                     </div> *@
+@*                 </div> *@
+@*                 <div class="panel-form-group"> *@
+@*                     <label for="category">Kategori</label> *@
+@*                     <div class="input-wrapper"> *@
+@*                         <select name="category" id="category" autocomplete="off"></select> *@
+@*                     </div> *@
+@*                 </div> *@
+@*                 <div class="panel-form-group"> *@
+@*                     <label for="points">Punkter</label> *@
+@*                     <table class="panel-table" id="pointsTable"> *@
+@*                         <thead> *@
+@*                         <tr> *@
+@*                             <th>Latitude</th> *@
+@*                             <th>Longitude</th> *@
+@*                             <th>Høyde (fot)</th> *@
+@*                         </tr> *@
+@*                         </thead> *@
+@*                         <tbody> *@
+@*                         <tr> *@
+@*                         </tr> *@
+@*                         </tbody> *@
+@*                     </table> *@
+@*                 </div> *@
+@*                 <div style="margin-top: 1.5rem;"> *@
+@*                     <button type="submit" class="panel-btn">Save</button> *@
+@*                     <button type="button" class="panel-btn panel-btn-secondary">Cancel</button> *@
+@*                 </div> *@
+@*             </form> *@
+@*         </div> *@
+@*     </div> *@
+@* </div> *@
+@* *@
+@* @section Scripts { *@
+@*     <script src="~/js/map/index.js"></script> *@
+@*     <script> *@
+@*         window.addEventListener('load', function () { *@
+@*             document.querySelector('header').style.display = 'none'; *@
+@*             document.querySelector('footer').style.display = 'none'; *@
+@* *@
+@*             const geojson = @Html.Raw(Model.GeoJson); *@
+@*             let panBtn = null, lineBtn = null, submitBtn = null, quickSubmitBtn = null, cancelBtn = null; *@
+@* *@
+@*             const form = document.querySelector('#mapSendPanel form'),  *@
+@*                   formTitle = form.querySelector('#title'), *@
+@*                   formDescription = form.querySelector('#description'), *@
+@*                   formCategory = form.querySelector('#category'), *@
+@*                   formPointsTbl = form.querySelector('#pointsTable tbody'), *@
+@*                   panel = document.getElementById('mapSendPanel'), *@
+@*                   panelCloseBtn = panel.querySelector('.panel-close-btn'), *@
+@*                   panelCancelBtn = panel.querySelector('.panel-btn-secondary'); *@
+@* *@
+@*             async function submitData(points) { *@
+@*                 formPointsTbl.innerHTML = ''; *@
+@*                 points.forEach((pt, idx) => { *@
+@*                     const row = document.createElement('tr'); *@
+@*                     const latCell = document.createElement('td'); *@
+@*                     const lngCell = document.createElement('td'); *@
+@*                     const elevCell = document.createElement('td'); *@
+@*                     const latInput = document.createElement('input'); *@
+@*                     const lngInput = document.createElement('input'); *@
+@*                     const elevInput = document.createElement('input'); *@
+@*                     latInput.type = 'number'; *@
+@*                     latInput.name = `points[${idx}][lat]`; *@
+@*                     latInput.step = '.000001'; *@
+@*                     latInput.value = pt.lat; *@
+@*                     lngInput.type = 'number'; *@
+@*                     lngInput.name = `points[${idx}][lng]`; *@
+@*                     lngInput.step = '.000001'; *@
+@*                     lngInput.value = pt.lng; *@
+@*                     elevInput.type = 'number'; *@
+@*                     elevInput.name = `points[${idx}][elevation]`; *@
+@*                     elevInput.value = pt.elevation || ''; *@
+@*                     latCell.appendChild(latInput); *@
+@*                     lngCell.appendChild(lngInput); *@
+@*                     elevCell.appendChild(elevInput); *@
+@*                     row.appendChild(latCell); *@
+@*                     row.appendChild(lngCell); *@
+@*                     row.appendChild(elevCell); *@
+@*                     formPointsTbl.appendChild(row); *@
+@*                 }); *@
+@*                  *@
+@*                 panel.style.display = 'block'; *@
+@*                 panel.classList.add('open'); *@
+@*                  *@
+@*                 const validator = new JustValidator(form, { *@
+@*                     errorFieldCssClass: 'is-invalid', *@
+@*                     errorLabelCssClass: 'is-danger', *@
+@*                     focusInvalidField: true, *@
+@*                     lockForm: true, *@
+@*                     validateBeforeSubmitting: true *@
+@*                 }); *@
+@*                  *@
+@*                 validator.addField(formTitle, [ *@
+@*                     { *@
+@*                         rule: 'required', *@
+@*                         errorMessage: 'Tittel er påkrevd', *@
+@*                     }, *@
+@*                     { *@
+@*                         rule: 'minLength', *@
+@*                         value: 3, *@
+@*                         errorMessage: 'Tittel må være minst 3 tegn', *@
+@*                     }, *@
+@*                     { *@
+@*                         rule: 'maxLength', *@
+@*                         value: 100, *@
+@*                         errorMessage: 'Tittel kan ikke være mer enn 100 tegn', *@
+@*                     }, *@
+@*                 ]) *@
+@*                     .addField(formDescription, [ *@
+@*                         { *@
+@*                             rule: 'maxLength', *@
+@*                             value: 500, *@
+@*                             errorMessage: 'Beskrivelse kan ikke være mer enn 500 tegn', *@
+@*                         }, *@
+@*                     ]) *@
+@*                     .addField(formDescription, [ *@
+@*                         { *@
+@*                             rule: 'required', *@
+@*                             errorMessage: 'Kategori er påkrevd', *@
+@*                         }, *@
+@*                     ]); *@
+@* *@
+@*                 formPointsTbl.querySelectorAll('tr').forEach((row, idx) => { *@
+@*                     const latInput = row.querySelector('td:nth-child(1) input'); *@
+@*                     const lngInput = row.querySelector('td:nth-child(2) input'); *@
+@*                     const elevInput = row.querySelector('td:nth-child(3) input'); *@
+@*                      *@
+@*                     validator.addField(latInput, [ *@
+@*                         { *@
+@*                             rule: 'required', *@
+@*                             errorMessage: 'Latitude er påkrevd', *@
+@*                         }, *@
+@*                         { *@
+@*                             rule: 'number', *@
+@*                             errorMessage: 'Latitude må være et tall', *@
+@*                         }, *@
+@*                         { *@
+@*                             rule: 'minNumber', *@
+@*                             value: -90, *@
+@*                             errorMessage: 'Latitude må være mellom -90 og 90', *@
+@*                         }, *@
+@*                         { *@
+@*                             rule: 'maxNumber', *@
+@*                             value: 90, *@
+@*                             errorMessage: 'Latitude må være mellom -90 og 90', *@
+@*                         }, *@
+@*                     ]); *@
+@*                      *@
+@*                     validator.addField(lngInput, [ *@
+@*                         { *@
+@*                             rule: 'required', *@
+@*                             errorMessage: 'Longitude er påkrevd', *@
+@*                         }, *@
+@*                         { *@
+@*                             rule: 'number', *@
+@*                             errorMessage: 'Longitude må være et tall', *@
+@*                         }, *@
+@*                         { *@
+@*                             rule: 'minNumber', *@
+@*                             value: -180, *@
+@*                             errorMessage: 'Longitude må være mellom -180 og 180', *@
+@*                         }, *@
+@*                         { *@
+@*                             rule: 'maxNumber', *@
+@*                             value: 180, *@
+@*                             errorMessage: 'Longitude må være mellom -180 og 180', *@
+@*                         }, *@
+@*                     ]); *@
+@*                      *@
+@*                     validator.addField(elevInput, [ *@
+@*                         { *@
+@*                             rule: 'number', *@
+@*                             errorMessage: 'Høyde må være et tall', *@
+@*                         }, *@
+@*                     ]); *@
+@*                 }); *@
+@*                  *@
+@*                 validator.onSuccess((e) => { *@
+@*                     e.preventDefault(); *@
+@*                      *@
+@*                     const formData = new FormData(form); *@
+@*                     debugger; *@
+@*                     fetch('/api/reports', { *@
+@*                         method: 'POST', *@
+@*                         body: formData *@
+@*                     }).then(response => { *@
+@*                         return response.json(); *@
+@*                     }).then(data => { *@
+@*                         panel.classList.remove('open'); *@
+@*                         setTimeout(() => { panel.style.display = 'none'; }, 300); *@
+@*                         window._LeafletMap.cancelChanges(); *@
+@*                     }).catch(error => { *@
+@*                         alert('Error submitting report. Please try again.'); *@
+@*                     }); *@
+@*                 }); *@
+@*             } *@
+@*              *@
+@*             window._LeafletMap = new LeafletMap(document.getElementById('map'), document.getElementById('mapParent')); *@
+@*             window._LeafletMap.addGeoJson(geojson); *@
+@* *@
+@*             function setButtonStates(obj) { *@
+@*                 let { pan, line, submit, quickSubmit, cancel } = obj; *@
+@*                 pan = pan || false; *@
+@*                 line = line || false; *@
+@*                 submit = submit || false; *@
+@*                 quickSubmit = quickSubmit || false; *@
+@*                 cancel = cancel || false; *@
+@*                  *@
+@*                 if (panBtn) panBtn.disabled = pan; *@
+@*                 if (lineBtn) lineBtn.disabled = line; *@
+@*                 if (submitBtn) submitBtn.disabled = submit; *@
+@*                 if (quickSubmitBtn) quickSubmitBtn.disabled = quickSubmit; *@
+@*                 if (cancelBtn) cancelBtn.disabled = cancel; *@
+@*             } *@
+@* *@
+@*             window._LeafletMap.addButtonToControl((btn) => { *@
+@*                 panBtn = btn; *@
+@*                 btn.classList.add("tag", "is-info", "is-medium", "is-responsive", "mr-2"); *@
+@*                  *@
+@*                 const panImg = document.createElement('img'); *@
+@*                 panImg.src = '/svg/geo-pan-fill.svg'; *@
+@*                 // panImg.style.width = "48px"; *@
+@* *@
+@*                 btn.appendChild(panImg); *@
+@*                 btn.onclick = () => { *@
+@*                     window._LeafletMap.enablePanMode(); *@
+@*                     setButtonStates({ pan: true }); *@
+@*                 }; *@
+@*             }); *@
+@* *@
+@*             window._LeafletMap.addButtonToControl((btn) => { *@
+@*                 lineBtn = btn; *@
+@*                 btn.classList.add("tag", "is-info", "is-medium", "is-responsive", "mr-2"); *@
+@* *@
+@*                 const lineImg = document.createElement('img'); *@
+@*                 lineImg.src = '/svg/geo-line-fill.svg'; *@
+@*                 // lineImg.style.width = "48px"; *@
+@* *@
+@*                 btn.appendChild(lineImg); *@
+@*                 btn.onclick = () => { *@
+@*                     window._LeafletMap.enableLineMode(); *@
+@*                     setButtonStates({ line: true, pan: false, submit: false, quickSubmit: false, cancel: false }); *@
+@*                 }; *@
+@*             }); *@
+@* *@
+@*             window._LeafletMap.addButtonToControl((btn) => { *@
+@*                 submitBtn = btn; *@
+@*                 btn.textContent = 'Submit changes'; *@
+@*                 btn.classList.add("button", "is-primary", "is-responsive", "is-responsive", "mr-2"); *@
+@* *@
+@*                 btn.onclick = async () => { *@
+@*                     setButtonStates({ }); *@
+@*                      *@
+@*                     const points = window._LeafletMap.getEditedPoints(); *@
+@*                     if (points.length === 0) { *@
+@*                         setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true }); *@
+@*                         return; *@
+@*                     } *@
+@*                      *@
+@*                     await submitData(points).then(() => { *@
+@*                         setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true }); *@
+@*                     }).catch(() => { *@
+@*                         setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true}); *@
+@*                     }); *@
+@*                 }; *@
+@*             }); *@
+@*              *@
+@*             window._LeafletMap.addButtonToControl((btn) => { *@
+@*                 quickSubmitBtn = btn; *@
+@*                 btn.textContent = 'Draft Submit'; *@
+@*                 btn.classList.add("button", "is-warning", "is-responsive", "is-responsive", "mr-2"); *@
+@* *@
+@*                 btn.onclick = async () => { *@
+@*                     setButtonStates({}); *@
+@*                     const points = window._LeafletMap.getEditedPoints(); *@
+@*                     if (points.length === 0) { *@
+@*                         setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true }); *@
+@*                         return; *@
+@*                     } *@
+@* *@
+@*                     await submitData(points).then(() => { *@
+@*                         setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true }); *@
+@*                     }).catch(() => { *@
+@*                         setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true }); *@
+@*                     }); *@
+@*                 }; *@
+@*             }); *@
+@*              *@
+@*             window._LeafletMap.addButtonToControl((btn) => { *@
+@*                 cancelBtn = btn; *@
+@*                 btn.textContent = 'Cancel changes'; *@
+@*                 btn.classList.add("button", "is-danger", "is-responsive", "is-responsive", "mr-2"); *@
+@* *@
+@*                 btn.onclick = () => { *@
+@*                     window._LeafletMap.cancelChanges(); *@
+@*                     setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true }); *@
+@*                 }; *@
+@*             }); *@
+@* *@
+@*             if ('ontouchstart' in window || navigator.maxTouchPoints) { *@
+@*                 window._LeafletMap.addButtonToControl((btn) => { *@
+@*                     btn.textContent = 'Fullscreen Temporary'; *@
+@*                     btn.classList.add("button", "is-danger", "is-responsive", "is-responsive", "mr-2"); *@
+@*      *@
+@*                     btn.onclick = () => { *@
+@*                         const elem = document.documentElement; *@
+@*                         if (elem.requestFullscreen) { *@
+@*                             elem.requestFullscreen(); *@
+@*                         } else if (elem.webkitRequestFullscreen) { *@
+@*                             elem.webkitRequestFullscreen(); *@
+@*                         } else if (elem.msRequestFullscreen) { *@
+@*                             elem.msRequestFullscreen(); *@
+@*                         } *@
+@*                     }; *@
+@*                 }); *@
+@*             } *@
+@*              *@
+@*             setButtonStates({ pan: true, line: false, submit: true, quickSubmit: true, cancel: true }); *@
+@* *@
+@* *@
+@*         }); *@
+@*      *@
+@*     </script> *@
+@* } *@

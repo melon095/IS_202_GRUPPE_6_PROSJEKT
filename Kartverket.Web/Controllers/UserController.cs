@@ -25,30 +25,22 @@ public class UserController : Controller
         return View();
     }
 
-    [HttpGet]
-    public IActionResult Logout()
-    {
-        HttpContext.SignOutAsync("CookieAuth");
-        HttpContext.Session.Clear();
-
-        return RedirectToAction("Index", "Home");
-    }
-    
     [HttpPost]
     public async Task<IActionResult> Login(UserLoginRequestModel body)
     {
-        var username = body.Username?.Trim();
-        if (string.IsNullOrEmpty(username))
+        if (!ModelState.IsValid)
         {
-            ModelState.AddModelError("Username", "Username is required");
-            return View();
+            return View(body);
         }
 
+        var roleName = "Pilot";
+        
+        var username = body.Username.Trim().ToLower();
         var user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(u => u.UserName == username);
-        var role = _dbContext.Roles.FirstOrDefault(r => r.Name == "User");
+        var role = _dbContext.Roles.FirstOrDefault(r => r.Name == roleName);
         if (role is null)
         {
-            role = new RoleTable { Name = "User" };
+            role = new RoleTable { Name = roleName };
             _dbContext.Roles.Add(role);
         }
         
@@ -82,5 +74,20 @@ public class UserController : Controller
         await HttpContext.SignInAsync("CookieAuth", principal);
 
         return RedirectToAction("Index", "Home");
+    }
+
+    [HttpGet]
+    public IActionResult Logout()
+    {
+        HttpContext.SignOutAsync("CookieAuth");
+        HttpContext.Session.Clear();
+
+        return RedirectToAction("Index", "Home");
+    }
+    
+    [HttpGet]
+    public IActionResult AccessDenied()
+    {
+        return View();
     }
 }
