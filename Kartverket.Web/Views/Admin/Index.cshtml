@@ -21,10 +21,12 @@
                 <td>@report.Title</td>
                 <td>@report.CreatedAt</td>
                 <td>
-                     <a class="nav-link text-dark" asp-area=""
-                     asp-controller="Admin" asp-action="ReportInDepth">
-                     Åpne
-                     </a>
+                    <a class="nav-link text-dark"
+                       asp-controller="Admin"
+                       asp-action="ReportInDepth"
+                       asp-route-id="@report.Id">
+                        Åpne
+                    </a>
                 </td>
             </tr>
         }

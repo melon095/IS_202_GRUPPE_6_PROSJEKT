@@ -1,6 +1,9 @@
-﻿using Kartverket.Web.Database;
+﻿using System;
+using Kartverket.Web.Database;
 using Kartverket.Web.Models;
+using Kartverket.Web.Models.Report.Response;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using static Kartverket.Web.Models.GetAllReportsModel;
 
 namespace Kartverket.Web.Controllers;
@@ -17,9 +20,32 @@ public class AdminController: Controller
         _context = context;
     }
 
-    public ActionResult ReportInDepth()
+    [HttpGet("/Admin/ReportInDepth/{id:guid}")]
+    public IActionResult ReportInDepth(Guid id)
     {
-        return View();
+        var Model = new InDepthReportModel();
+        var report = _context.Reports
+            .Include(r => r.User)
+            .Include(r => r.MapPoints)
+            .FirstOrDefault(r => r.Id == id);
+        foreach (var point in report.MapPoints)
+        {
+            Model.Points.Add(new InDepthReportModel.Point
+                {
+                Lat = point.Latitude,
+                Lng = point.Longitude,
+                //Elevation = point.ASML
+            });
+        }
+        Model.Id = report.Id;
+        Model.Title = report.Title;
+        Model.Description = report.Description;
+        Model.CreatedAt = report.CreatedAt;
+        if (report == null)
+        {
+            return NotFound();
+        }
+        return View(Model);
     }
 
     public IActionResult Index()
@@ -30,6 +56,7 @@ public class AdminController: Controller
         {
             Model.Reports.Add(new MakeReportList
             {
+                Id = report.Id,
                 CreatedAt = report.CreatedAt,
                 Title = report.Title
             });
