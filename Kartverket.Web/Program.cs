@@ -1,11 +1,15 @@
 using System.Diagnostics;
 using Kartverket.Web.Database;
+using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Vite.AspNetCore;
 
-#region Build
+#region Builder
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,13 +37,49 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     });
 });
 
-builder.Services.AddAuthentication("CookieAuth")
-    .AddCookie("CookieAuth", options =>
+// https://source.dot.net/#Microsoft.AspNetCore.Identity/IdentityServiceCollectionExtensions.cs,b869775e5fa5aa5c
+
+builder.Services.AddAuthorization();
+builder.Services.AddAuthentication();
+    // .AddCookie(IdentityConstants.ApplicationScheme, options =>
+    // {
+    //     options.Cookie.Name = "Kartverket.Web.6.Auth";
+    //     options.LoginPath = "/User/Login";
+    //     options.AccessDeniedPath = "/User/AccessDenied";
+    //     options.Events = new CookieAuthenticationEvents()
+    //     {
+    //         OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
+    //     };
+    // });
+
+builder.Services.AddIdentity<UserTable, RoleTable>((o) =>
     {
-        options.Cookie.Name = "Kartverket.Auth";
-        options.LoginPath = "/User/Login";
-        options.AccessDeniedPath = "/User/AccessDenied";
-    });
+        o.Password.RequiredLength = 8;
+        o.Password.RequireDigit = true;
+        o.Password.RequireLowercase = true;
+        o.Password.RequireUppercase = true;
+        o.Password.RequireNonAlphanumeric = false;
+        o.User.RequireUniqueEmail = false;
+        o.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(30);
+        o.Lockout.MaxFailedAccessAttempts = 5;
+        o.Lockout.AllowedForNewUsers = true;
+    })
+    .AddEntityFrameworkStores<DatabaseContext>();
+
+builder.Services.ConfigureApplicationCookie(o =>
+{
+    o.Cookie.Name = "Kartverket.Web.6";
+    o.LoginPath = "/User/Login";
+    o.AccessDeniedPath = "/User/AccessDenied";
+    o.SlidingExpiration = true;
+    o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+});
+
+builder.Services.AddHttpContextAccessor();
+// builder.Services
+//     .AddScoped<SignInManager<UserTable>>()
+//     .AddScoped()
+//     .AddScoped<RoleManager<RoleTable>>();
 
 builder.Services.AddSession(options =>
 {
@@ -63,7 +103,6 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
 {
     var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
     db.Database.Migrate();

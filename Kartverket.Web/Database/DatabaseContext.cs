@@ -1,11 +1,11 @@
 ﻿using Kartverket.Web.Database.Tables;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Database;
 
-public class DatabaseContext : DbContext
+public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>
 {
-    public DbSet<UserTable> Users { get; set; }
     public DbSet<RoleTable> Roles { get; set; }
     
     public DbSet<ReportTable> Reports { get; set; }
@@ -80,16 +80,27 @@ public class DatabaseContext : DbContext
     private void UpdateTimestamps()
     {
         var entries = ChangeTracker.Entries()
-            .Where(e => e is { Entity: BaseModel, State: EntityState.Added or EntityState.Modified });
+            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
         foreach (var entry in entries)
         {
-            var entity = (BaseModel)entry.Entity;
-            entity.UpdatedAt = DateTime.UtcNow;
-
-            if (entry.State == EntityState.Added)
+            if (entry.Entity is BaseModel baseModel)
             {
-                entity.CreatedAt = DateTime.UtcNow;
+                baseModel.UpdatedAt = DateTime.UtcNow;
+                if (entry.State == EntityState.Added)
+                    baseModel.CreatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is UserTable user)
+            {
+                user.UpdatedAt = DateTime.UtcNow;
+                if (entry.State == EntityState.Added)
+                    user.CreatedAt = DateTime.UtcNow;
+            }
+            else if (entry.Entity is RoleTable role)
+            {
+                role.UpdatedAt = DateTime.UtcNow;
+                if (entry.State == EntityState.Added)
+                    role.CreatedAt = DateTime.UtcNow;
             }
         }
     }

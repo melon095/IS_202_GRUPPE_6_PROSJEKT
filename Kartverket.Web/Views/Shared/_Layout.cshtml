@@ -59,6 +59,10 @@
                                 <a class="button is-primary" href="@Url.Action("Login", "User")">
                                     <strong>Logg Inn</strong>
                                 </a>
+                                
+                                <a class="button is-light" href="@Url.Action("Register", "User")">
+                                    Registrer
+                                </a>
                             }
                         </div>
                     </div>
@@ -95,7 +99,6 @@
         })();
         
 </script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

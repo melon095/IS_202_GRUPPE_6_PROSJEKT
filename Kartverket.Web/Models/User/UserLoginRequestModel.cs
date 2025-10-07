@@ -11,5 +11,8 @@ public class UserLoginRequestModel
     [Required(ErrorMessage = "Passord er påkrevd")]
     [MinLength(6, ErrorMessage = "Passord må være minst 6 tegn langt")]
     [MaxLength(100, ErrorMessage = "Passord kan ikke være lengre enn 100 tegn")]
+    [DataType(DataType.Password)]
     public string Password { get; set; }
+    
+    public string ReturnUrl { get; set; }
 }
