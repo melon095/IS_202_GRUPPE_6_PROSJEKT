@@ -5,11 +5,6 @@ import { createRoot } from "react-dom/client";
 import App from "./App.js";
 import { StrictMode } from "react";
 
-const reportId = new URLSearchParams(window.location.search).get("reportId");
-if (!reportId) {
-	throw new Error("reportId is required!");
-}
-
 document.querySelector("header")!.style.display = "none";
 document.querySelector("footer")!.style.display = "none";
 
@@ -18,6 +13,6 @@ const root = createRoot(appElement!);
 
 root.render(
 	<StrictMode>
-		<App reportId={reportId} />
+		<App />
 	</StrictMode>
 );
