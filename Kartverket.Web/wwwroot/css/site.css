@@ -9,12 +9,6 @@
     --muted-border-color: #e5e7eb;
 }
 
-body {
-    cursor: url("/cursor/cursor-0.png"), auto;
-    -webkit-animation: cursor 400ms infinite;
-    animation: cursor 400ms infinite;
-}
-
 .panel-right {
     position: fixed;
     top: 0;

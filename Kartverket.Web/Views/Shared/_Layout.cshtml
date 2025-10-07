@@ -78,26 +78,6 @@
     </footer>
 
     <script>
-    
-        (function () {
-            //if ('ontouchstart' in window || navigator.maxTouchPoints) {
-                return;
-            //}
-            
-            const frames = [
-                "/cursor/cursor-1.png",
-                "/cursor/cursor-2.png",
-                "/cursor/cursor-3.png",
-                "/cursor/cursor-4.png",
-                "/cursor/cursor-5.png"
-            ];
-
-            let index = 0;
-            setInterval(() => {
-                document.body.style.cursor = `url("${frames[index]}"), auto`;
-                index = (index + 1) % frames.length;
-            }, 100);
-        })();
 
         (function() {
             const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
@@ -112,21 +92,6 @@
                     $target.classList.toggle('is-active');
                 });
             });
-        })();
-
-        (function () {
-            if ('ontouchstart' in window || navigator.maxTouchPoints) {
-                document.addEventListener('DOMContentLoaded', () => {
-                    const elem = document.documentElement;
-                    if (elem.requestFullscreen) {
-                        elem.requestFullscreen();
-                    } else if (elem.webkitRequestFullscreen) {
-                        elem.webkitRequestFullscreen();
-                    } else if (elem.msRequestFullscreen) {
-                        elem.msRequestFullscreen();
-                    }
-                });
-            }
         })();
         
 </script>

@@ -9,9 +9,6 @@ using Vite.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
-
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services
     .AddTransient<MapService, MapService>()
@@ -60,14 +57,16 @@ builder.Services.AddViteServices();
 var app = builder.Build();
 StaticWebAssetsLoader.UseStaticWebAssets(app.Environment, app.Configuration);
 
-app.MapDefaultEndpoints();
-
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+
+if (Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true")
+{
+    var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
+    db.Database.Migrate();
 }
 
 app.UseHttpsRedirection();
