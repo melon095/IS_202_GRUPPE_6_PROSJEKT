@@ -1,0 +1,31 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Kartverket.Web/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=Server=db;Database=gruppe6_db;User=root;Password=passord;
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mariadb:latest
+    environment:
+      - MARIADB_DATABASE=gruppe6_kartverket
+      - MARIADB_ROOT_PASSWORD=passord
+    volumes:
+      - gruppe_6_kartverket_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mariadb-admin --user root --password=passord --host localhost ping || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  gruppe_6_kartverket_db_data:
