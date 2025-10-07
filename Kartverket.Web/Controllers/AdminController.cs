@@ -1,7 +1,7 @@
 ﻿using Kartverket.Web.Database;
+using Kartverket.Web.Models.Admin;
 using Kartverket.Web.Models.Admin.Request;
 using Microsoft.AspNetCore.Mvc;
-
 namespace Kartverket.Web.Controllers;
 
 [Controller]
@@ -18,7 +18,18 @@ public class AdminController: Controller
     
     public IActionResult Index()
     {
-        return View();
+        var reports =  _dbContext.Reports;
+        var Model = new GetAllReportsModel();
+        foreach (var report in reports)
+        {
+            Model.Reports.Add(new GetAllReportsModel.MakeReportList
+            {
+                Id = report.Id,
+                Title = report.Title,
+                CreatedAt = report.CreatedAt
+            });
+        }
+        return View(Model);
     }
 
     [HttpGet]

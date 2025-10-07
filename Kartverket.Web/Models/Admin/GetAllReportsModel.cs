@@ -3,7 +3,7 @@
     public class GetAllReportsModel
     {
         // List of reports
-        public List<MakeReportList> Reports { get; set; } = []
+        public List<MakeReportList> Reports { get; set; } = [];
         public class MakeReportList
         {
             public Guid Id { get; set; }
