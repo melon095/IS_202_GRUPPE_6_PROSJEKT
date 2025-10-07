@@ -45,34 +45,12 @@ public class MapController : Controller
         _dbContext = dbContext;
     }
     
-    [HttpGet, Authorize]
+    [HttpGet, Authorize(Roles = "Pilot")]
     public IActionResult Index()
     {
         return View();
     }
-
-    [HttpGet, Authorize(Roles = "Pilot")]
-    public IActionResult Start()
-    {
-        var date = DateTime.UtcNow;
-        var user = User.Identity?.Name ?? "unknown";
-        var userId = _dbContext.Users.FirstOrDefault(u => u.UserName == user)?.Id;
-        ArgumentNullException.ThrowIfNull(userId, nameof(userId));
-        
-        var report = new ReportTable()
-        {
-            Id = Guid.NewGuid(),
-            Title = $"Midlertidlig rapport - {date:yyyy-MM-dd HH:mm}",
-            Description = "",
-            UserId = userId.Value,
-        };
-        
-        _dbContext.Reports.Add(report);
-        _dbContext.SaveChanges();
-        
-        return RedirectToAction("Index", new { reportId = report.Id });
-    }
-
+    
     [HttpGet, Authorize]
     public string GetPoints()
     {

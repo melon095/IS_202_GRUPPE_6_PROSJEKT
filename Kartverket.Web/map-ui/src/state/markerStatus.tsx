@@ -1,6 +1,6 @@
 import { createContext, useContext, useReducer } from "react";
 
-type MarkerStatus = "gps" | "cursor" | "off";
+type MarkerStatus = "gps" | "locating" | "cursor" | "off";
 
 const MarkerContext = createContext<
 	| {

@@ -7,9 +7,10 @@ import {
 	TileLayer,
 	TileLayerProps,
 	GeoJSON,
-	LayersControl,
 	ZoomControl,
 	useMap,
+	Marker,
+	Popup,
 } from "react-leaflet";
 import {
 	useQuery,
@@ -17,9 +18,8 @@ import {
 	QueryClientProvider,
 	useMutation,
 } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GeoJsonObject } from "geojson";
-
 import { usePointStore } from "./store/useLocalPointsStore.js";
 import PointsLayer from "./components/PointsLayer.js";
 import {
@@ -114,6 +114,7 @@ function InputControl() {
 				</Button>
 				<Button
 					className="button is-info"
+					disabled={marker.state === "gps"}
 					onClick={() => {
 						marker.dispatch({ type: "gps" });
 					}}
@@ -122,6 +123,7 @@ function InputControl() {
 				</Button>
 				<Button
 					className="button is-info"
+					disabled={marker.state === "cursor"}
 					onClick={() => {
 						marker.dispatch({ type: "cursor" });
 					}}
@@ -132,18 +134,31 @@ function InputControl() {
 					onClick={() => {
 						marker.dispatch({ type: "off" });
 					}}
-					disabled={marker.state !== "off"}
+					disabled={marker.state === "off"}
 					className="button is-info"
 				>
 					Stop Placing Marker
 				</Button>
 				<Button
 					className="button is-info"
+					disabled={marker.state === "locating"}
 					onClick={() => {
+						marker.dispatch({ type: "locating" });
 						map.locate({ setView: true, maxZoom: 16 });
+						map.once("locationfound", () => {
+							marker.dispatch({ type: "off" });
+						});
+						map.once("locationerror", () => {
+							marker.dispatch({ type: "off" });
+						});
+
+						setTimeout(() => {
+							map.stopLocate();
+							marker.dispatch({ type: "off" });
+						}, 5000);
 					}}
 				>
-					Locate Me
+					{marker.state === "locating" ? "Locating" : "Locate Me"}
 				</Button>
 			</div>
 			<div
@@ -182,15 +197,46 @@ function InputControl() {
 				) : (
 					<Button
 						className="button is-success"
-						onClick={() => {
-							journey.dispatch({ type: "inProgress" });
-						}}
+						onClick={journey.startJourney}
 					>
 						Start Journey
 					</Button>
 				)}
 			</div>
 		</>
+	);
+}
+
+function UserPositionMarker() {
+	const map = useMap();
+	const [position, setPosition] = useState<[number, number] | null>(null);
+
+	useEffect(() => {
+		const onLocationFound = (e: any) => {
+			setPosition([e.latitude, e.longitude]);
+		};
+
+		map.on("locationfound", onLocationFound);
+		return () => {
+			map.off("locationfound", onLocationFound);
+		};
+	}, [map]);
+
+	if (!position) return null;
+
+	return (
+		<Marker position={position}>
+			<Popup>You are here</Popup>
+			<circle
+				center={position}
+				radius={50}
+				pathOptions={{
+					color: "blue",
+					fillColor: "blue",
+					fillOpacity: 0.2,
+				}}
+			/>
+		</Marker>
 	);
 }
 
@@ -209,6 +255,7 @@ function Map() {
 			<PointsLayer points={localPoints} />
 			<MagnificationControl />
 			<InputControl />
+			<UserPositionMarker />
 		</MapContainer>
 	);
 }
@@ -222,10 +269,14 @@ async function fetchGeoJson(): Promise<GeoJsonObject> {
 	return res.json();
 }
 
+interface UploadPointResponse {
+	errors: { key: string; errors: string[] }[] | undefined;
+}
+
 async function uploadPoints(data: {
 	id: string;
 	points: { lat: number; lng: number }[];
-}) {
+}): Promise<UploadPointResponse> {
 	const res = await fetch("/Map/Upload", {
 		method: "POST",
 		headers: {
@@ -234,20 +285,26 @@ async function uploadPoints(data: {
 		body: JSON.stringify(data),
 	});
 
-	if (!res.ok) {
-		throw new Error("Network response was not ok");
-	}
-
 	return res.json();
 }
 
+// Should start to open when the journey status is "ending", but afterwards to close the user to click close manually
 function PointSubmitter() {
 	const journeyStatus = useJourneyMachine();
 	const mutation = useMutation({
 		mutationFn: uploadPoints,
 	});
 
-	if (journeyStatus.state.status !== "ending") return null;
+	const [isOpen, setIsOpen] = useState(false);
+
+	useEffect(() => {
+		if (journeyStatus.state.status === "ending") {
+			setIsOpen(true);
+		}
+	}, [journeyStatus.state.status]);
+
+	if (!isOpen) return null;
+	if (journeyStatus.state.id === null) return null;
 
 	return (
 		<div
@@ -271,7 +328,9 @@ function PointSubmitter() {
 			</pre>
 			{mutation.isError && (
 				<p style={{ color: "red" }}>
-					Feil ved innsending av punkter. Vennligst prøv igjen.
+					{(
+						mutation.data as unknown as UploadPointResponse
+					).errors!.map((error) => error.errors.join(", "))}
 				</p>
 			)}
 			{mutation.isPending && <p>Sender inn punkter...</p>}
@@ -283,6 +342,7 @@ function PointSubmitter() {
 					onClick={() => {
 						mutation.reset();
 						journeyStatus.dispatch({ type: "inProgress" });
+						setIsOpen(false); // Allow manual closing
 					}}
 				>
 					Avbryt
@@ -293,23 +353,21 @@ function PointSubmitter() {
 					onClick={() => {
 						mutation.mutate(
 							{
-								id: journeyStatus.state.id,
+								id: journeyStatus.state.id!,
 								points: usePointStore.getState().points,
 							},
 							{
-								onSuccess: () => {
-									journeyStatus.dispatch({
-										type: "finished",
-									});
-									usePointStore.getState().clearPoints();
-								},
-								onError: () => {
-									alert(
-										"Failed to submit points. Please try again."
-									);
-									journeyStatus.dispatch({
-										type: "inProgress",
-									});
+								onSuccess: (data) => {
+									if (
+										!data.errors ||
+										data.errors.length === 0
+									) {
+										journeyStatus.dispatch({
+											type: "finished",
+										});
+										usePointStore.getState().clearPoints();
+										setIsOpen(false);
+									}
 								},
 							}
 						);
@@ -331,17 +389,11 @@ function Root() {
 	);
 }
 
-interface AppProps {
-	reportId: string;
-}
-
-export default function App(props: AppProps) {
+export default function App() {
 	return (
 		<QueryClientProvider client={queryClient}>
 			<MarkerProvider value={"off"}>
-				<JourneyStatusProvider
-					value={{ id: props.reportId, status: "idle" }}
-				>
+				<JourneyStatusProvider>
 					<Root />
 				</JourneyStatusProvider>
 			</MarkerProvider>
