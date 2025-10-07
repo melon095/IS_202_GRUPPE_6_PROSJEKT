@@ -43,10 +43,6 @@ public class DatabaseContext : DbContext
         modelBuilder.Entity<MapObjectTypeTable>()
             .HasIndex(mot => mot.Name)
             .IsUnique();
-        
-        modelBuilder.Entity<MapObjectTable>()
-            .HasIndex(mo => mo.Name)
-            .IsUnique();
 
         modelBuilder.Entity<ReportFeedbackAssignmentTable>()
             .HasOne(rfa => rfa.User)
