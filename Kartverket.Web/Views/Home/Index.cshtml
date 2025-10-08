@@ -7,6 +7,10 @@
 {
     <p>Du er logget inn som @User.Identity.Name</p>
     <p>Din rolle er @(User.FindAll(ClaimTypes.Role).FirstOrDefault()?.Value)</p>
+    
+    <a asp-controller="User" asp-action="SetRole" asp-route-role="Kartverket" class="button is-link m-2">Bytt til Kartverket</a>
+    <a asp-controller="User" asp-action="SetRole" asp-route-role="Pilot" class="button is-link m-2">Bytt til Pilot</a>
+    <a asp-controller="User" asp-action="SetRole" asp-route-role="User" class="button is-link m-2">Bytt til User</a>
 
     if (User.HasAtleastRole(RoleValue.Kartverket))
     {

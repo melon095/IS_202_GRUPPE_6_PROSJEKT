@@ -5,6 +5,7 @@ using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Vite.AspNetCore;
 
@@ -106,6 +107,19 @@ if (!app.Environment.IsDevelopment())
 {
     var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
     db.Database.Migrate();
+}
+
+{
+    var roleManager = app.Services.CreateScope().ServiceProvider.GetRequiredService<RoleManager<RoleTable>>();
+    foreach (var roleName in RoleValue.AllRoles)
+    {
+        var roleExists = await roleManager.RoleExistsAsync(roleName);
+        if (!roleExists)
+        {
+            var role = new RoleTable { Name = roleName };
+            await roleManager.CreateAsync(role);
+        }
+    }
 }
 
 app.UseHttpsRedirection();

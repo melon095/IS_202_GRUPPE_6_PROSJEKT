@@ -2,11 +2,13 @@
 
 public static class RoleValue
 {
-    public static readonly string User = "User";
-    public static readonly string Pilot = "Pilot";
-    public static readonly string Kartverket = "Kartverket";
+    public const string User = "User";
+    public const string Pilot = "Pilot";
+    public const string Kartverket = "Kartverket";
     
-    public static readonly string AtLeastUser = "AtLeastUser";
-    public static readonly string AtLeastPilot = "AtLeastPilot";
-    public static readonly string AtLeastKartverket = "AtLeastKartverket";
+    public const string AtLeastUser = "AtLeastUser";
+    public const string AtLeastPilot = "AtLeastPilot";
+    public const string AtLeastKartverket = "AtLeastKartverket";
+    
+    public static readonly string[] AllRoles = [User, Pilot, Kartverket];
 }

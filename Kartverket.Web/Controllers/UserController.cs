@@ -150,4 +150,27 @@ public class UserController : Controller
         
         return RedirectToAction("Index", "Home");
     }
+
+    [HttpGet("User/SetRole/{role}"), Authorize(Policy = RoleValue.AtLeastUser)]
+    public async Task<IActionResult> SetRole([FromRoute] string role)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound();
+        }
+        
+        if ((await _roleManager.RoleExistsAsync(role)) == false)
+        {
+            return NotFound();
+        }
+        
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        await _userManager.RemoveFromRolesAsync(user, currentRoles);
+        await _userManager.AddToRoleAsync(user, role);
+
+        await _signInManager.SignInAsync(user, isPersistent: false);
+        
+        return RedirectToAction("Index", "Home");
+    }
 }
