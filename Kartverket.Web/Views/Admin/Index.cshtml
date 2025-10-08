@@ -11,34 +11,80 @@
 *@
 
 <div class="box">
-<h2 class="is-size-3">Rapporter</h2>
+    <h2 class="is-size-3">Rapporter</h2>
 </div>
 
 <div class="box mt-1">
     <table class="table is-fullwidth is-striped is-hoverable">
-    <thead>
-        <tr>
-            <th>Obstacle</th>
-            <th>Date reported</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var report in Model.Reports)
-        {
+        <thead>
             <tr>
-                <td>@report.Title</td>
-                <td>@report.CreatedAt</td>
-                <td>
-                    <a class="nav-link, text-dark"
-                    asp-controller="Admin"
-                    asp-action="ReportInDepth"
-                    asp-route-id="@report.Id"
-                    >
-                    Åpne
-                    </a>
-                </td>
+                <th>Obstacle</th>
+                <th>Date reported</th>
             </tr>
+        </thead>
+        <tbody>
+            @foreach (var report in Model.Reports)
+            {
+                <tr>
+                    <td>@report.Title</td>
+                    <td>@report.CreatedAt</td>
+                    <td>
+                        <a class="nav-link, text-dark"
+                        asp-controller="Admin"
+                        asp-action="ReportInDepth"
+                        asp-route-id="@report.Id"
+                        >
+                            Åpne
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div class="Pagnation">
+    <nav class="pagnation is-centered" role="navigation">
+        @if(Model.CurrentPage > 1)
+        {
+            <a class="pagination-previous"
+            asp-action="Index"
+            asp-route-page="@(Model.CurrentPage - 1)">
+                Previous
+            </a>
         }
-    </tbody>
-</table>
+        else
+        {
+            <a class="pagination-previous" disabled>
+                Previous
+            </a>
+        }
+
+        @if (Model.CurrentPage < Model.TotalPages)
+        {
+            <a class="pagination-next"
+            asp-action="Index"
+            asp-route-page="@(Model.CurrentPage + 1)">
+                Next
+            </a>
+        }
+        else
+        {
+            <a class="pagination-next" disabled>
+                Next
+            </a>
+        }
+        <ul>
+            @for (int i = 1; i <=Model.TotalPages; i++)
+            {
+                <li>
+                    <a class="pagination-link @(i == Model.CurrentPage ? "is-current" : "")"
+                    asp-action="Reports"
+                    asp-route-page="@i">
+                        @i
+                    </a>
+                </li>
+            }
+        </ul>
+
+    </nav>
 </div>

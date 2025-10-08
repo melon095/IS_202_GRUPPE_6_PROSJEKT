@@ -51,12 +51,19 @@ public class AdminController: Controller
     {
         var totalreports = _dbContext.Reports.Count();
         var totalpages = (int)Math.Ceiling(totalreports / (double)ReportPerPage);
+        // Pagnering når det er for mange rapporter
+        // Sorterer etter dato
         var reports =  _dbContext.Reports
             .OrderByDescending(r => r.CreatedAt)
             .Skip((page - 1) * ReportPerPage)
             .Take(ReportPerPage)
             .ToList();
-        var Model = new GetAllReportsModel();
+        var Model = new GetAllReportsModel()
+        {
+            CurrentPage = page,
+            TotalPages = totalpages
+        };
+
         foreach (var report in reports)
         {
             Model.Reports.Add(new GetAllReportsModel.MakeReportList
