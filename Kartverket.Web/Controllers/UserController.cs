@@ -54,10 +54,10 @@ public class UserController : Controller
     }
 
     [HttpGet]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
-        HttpContext.SignOutAsync("CookieAuth");
-        HttpContext.Session.Clear();
+        await _signInManager.SignOutAsync();
+        _httpContextAccessor.HttpContext.Session.Clear();
 
         return RedirectToAction("Index", "Home");
     }
