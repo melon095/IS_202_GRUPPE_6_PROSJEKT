@@ -1,15 +1,21 @@
-﻿@{
+﻿@using System.Security.Claims
+@{
     ViewData["Title"] = "Home Page";
 }
 
 @if (User.Identity is { IsAuthenticated: true })
 {
-    if (User.IsInRole("Kartverket"))
+    <p>Du er logget inn som @User.Identity.Name</p>
+    <p>Din rolle er @(User.FindAll(ClaimTypes.Role).FirstOrDefault()?.Value)</p>
+
+    if (User.HasAtleastRole(RoleValue.Kartverket))
     {
-        
+        <p>Kartverket</p>
     }
-    else if (User.IsInRole("Pilot"))
+    
+    if (User.HasAtleastRole(RoleValue.Pilot))
     {
+        <p>Pilot</p>
         <div class="is-flex is-flex-direction-column is-gapless">
             <div class="grid">
                 <div class="cell">
@@ -29,9 +35,10 @@
             </div>
         </div>
     }
-    else
+
+    if (User.HasAtleastRole(RoleValue.User))
     {
-        
+        <p>User</p>
     }
 }
 else

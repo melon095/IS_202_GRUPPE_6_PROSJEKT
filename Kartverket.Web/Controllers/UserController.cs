@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using Kartverket.Web.AuthPolicy;
+using System.Security.Claims;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.User.Request;
@@ -129,17 +130,17 @@ public class UserController : Controller
             return View(model);
         }
         
-        if ((await _roleManager.RoleExistsAsync(RoleValues.User)) == false)
+        if ((await _roleManager.RoleExistsAsync(RoleValue.User)) == false)
         {
             var role = new RoleTable()
             {
-                Name = RoleValues.User
+                Name = RoleValue.User
             };
         
             await _roleManager.CreateAsync(role);
         }
         
-        await _userManager.AddToRoleAsync(user, RoleValues.User);
+        await _userManager.AddToRoleAsync(user, RoleValue.User);
         await _signInManager.SignInAsync(user, isPersistent: false);
         
         _logger.LogInformation("Bruker {Username} opprettet en ny konto.", model.Username);

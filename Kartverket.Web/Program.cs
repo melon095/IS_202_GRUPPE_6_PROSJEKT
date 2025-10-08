@@ -1,11 +1,10 @@
+using Kartverket.Web.AuthPolicy;
 using System.Diagnostics;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Vite.AspNetCore;
 
@@ -37,20 +36,19 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     });
 });
 
+#region Authentication
+
 // https://source.dot.net/#Microsoft.AspNetCore.Identity/IdentityServiceCollectionExtensions.cs,b869775e5fa5aa5c
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(o =>
+{
+    o.AddPolicy(RoleValue.AtLeastUser, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.User)); });
+    o.AddPolicy(RoleValue.AtLeastPilot, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Pilot)); });
+    o.AddPolicy(RoleValue.AtLeastKartverket, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Kartverket)); });
+});
+builder.Services.AddSingleton<IAuthorizationHandler, MinimumRoleHandler>();
+
 builder.Services.AddAuthentication();
-    // .AddCookie(IdentityConstants.ApplicationScheme, options =>
-    // {
-    //     options.Cookie.Name = "Kartverket.Web.6.Auth";
-    //     options.LoginPath = "/User/Login";
-    //     options.AccessDeniedPath = "/User/AccessDenied";
-    //     options.Events = new CookieAuthenticationEvents()
-    //     {
-    //         OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
-    //     };
-    // });
 
 builder.Services.AddIdentity<UserTable, RoleTable>((o) =>
     {
@@ -88,9 +86,11 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+#endregion // Authentication
+
 builder.Services.AddViteServices();
 
-#endregion
+#endregion // Builder
 
 #region App
 
@@ -132,4 +132,4 @@ if (app.Environment.IsDevelopment())
 
 app.Run();
 
-#endregion
+#endregion // App
