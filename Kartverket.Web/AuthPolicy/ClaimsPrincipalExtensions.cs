@@ -8,10 +8,10 @@ public static class ClaimsPrincipalExtensions
     {
         foreach (var role in MinimumRoleHandler.RoleHierarchy.Keys)
         {
-            var roleValue = new RoleValue(role);
-            var minimumRoleValue = new RoleValue(minimumRole);
+            var l = MinimumRoleHandler.RoleHierarchy[role];
+            var r = MinimumRoleHandler.RoleHierarchy[minimumRole];
             
-            if (user.IsInRole(roleValue) && MinimumRoleHandler.RoleHierarchy[roleValue] >= MinimumRoleHandler.RoleHierarchy[minimumRoleValue])
+            if (user.IsInRole(role) && l >= r)
             {
                 return true;
             }

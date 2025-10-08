@@ -2,4 +2,4 @@
 
 namespace Kartverket.Web.AuthPolicy;
 
-public record MinimumRoleRequirement(RoleValue MinimumRole) : IAuthorizationRequirement;
+public record MinimumRoleRequirement(string MinimumRole) : IAuthorizationRequirement;

@@ -21,23 +21,24 @@
             </div>
             <div class="field">
                 @Html.LabelFor(m => m.Password, new { @class = "label" })
-                <div class="control has-icons-right" style="position: relative;">
-                    @Html.PasswordFor(m => m.Password, new { @class = "input", placeholder = "Passord" })
-                    <span id="togglePassword" style="
-                        cursor: pointer;
-                        position: absolute;
-                        right: 10px;
-                        top: 50%;
-                        transform: translateY(-50%);
-                        z-index: 10;
-                    ">
+
+                <div style="display: flex; align-items: center; position: relative;">
+                    @Html.PasswordFor(m => m.Password, new { 
+                        @class = "input", 
+                        placeholder = "Passord", 
+                        id = "passwordField", 
+                        style = "flex: 1;" 
+                    })
+                    <button type="button" id="togglePassword" style="background: none; border: none; cursor: pointer; margin-left: -35px;">
                         <i class="fas fa-eye"></i>
-                    </span>
+                    </button>
                 </div>
+
                 <span class="has-text-danger">
                     @Html.ValidationMessageFor(m => m.Password)
                 </span>
             </div>
+
             <div class="field is-grouped is-grouped-centered">
                 <div class="control">
                     <button type="submit" class="button is-primary">Logg inn</button>
@@ -53,21 +54,14 @@
 {
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const passwordInput = document.querySelector('input[type="password"]');
-            const toggleIcon = document.querySelector('#togglePassword i');
+                document.getElementById("togglePassword").addEventListener("click", function () {
+                const input = document.getElementById("passwordField");
+                const icon = this.querySelector("i");
+                const isPassword = input.type === "password";
 
-            toggleIcon.style.cursor = 'pointer';
-
-            toggleIcon.addEventListener('click', () => {
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    toggleIcon.classList.remove('fa-eye');
-                    toggleIcon.classList.add('fa-eye-slash');
-                } else {
-                    passwordInput.type = 'password';
-                    toggleIcon.classList.remove('fa-eye-slash');
-                    toggleIcon.classList.add('fa-eye');
-                }
+                input.type = isPassword ? "text" : "password";
+                icon.classList.toggle("fa-eye", !isPassword);
+                icon.classList.toggle("fa-eye-slash", isPassword);
             });
         });
     </script>
