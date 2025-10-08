@@ -22,10 +22,21 @@ pnpm install
 
 Dette vil installere alle nødvendige avhengigheter for prosjektet.
 
-For å utvikle lokalt må du først åpne en terminal og ha denne kommandoen kjørende i bakgrunnen:
+For å utvikle kartet lokalt må du først åpne en terminal og ha denne kommandoen kjørende i bakgrunnen:
 
 ```bash
+cd Kartverket.Web/map-ui
 pnpm run dev
+```
+
+Alternativet, dersom du ikke ønsker å ha tilgang til kartet kan du legge dette til i appsettings.Development.json filen.
+
+```json
+"Vite": {
+  "Server": {
+    "AutoRun": false
+  }
+}
 ```
 
 Mens dette kjører kan du åpne Visual Studio og starte nettsiden.
