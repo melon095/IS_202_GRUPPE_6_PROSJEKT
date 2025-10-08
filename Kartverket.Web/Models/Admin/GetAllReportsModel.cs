@@ -1,4 +1,4 @@
-﻿namespace Kartverket.Web.Models
+﻿namespace Kartverket.Web.Models.Admin
 {
     public class GetAllReportsModel
     {

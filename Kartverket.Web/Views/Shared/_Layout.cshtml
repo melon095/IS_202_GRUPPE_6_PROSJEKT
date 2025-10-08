@@ -38,6 +38,9 @@
                     <a class="navbar-item" href="@Url.Action("Index", "Map")">
                         Kart
                     </a>
+                    <a class="navbar-item" href="@Url.Action("Index", "Admin")">
+                        Admin
+                    </a>
                     
                     @if (User.IsInRole("Admin"))
                     {

@@ -1,5 +1,23 @@
 ﻿@{
     ViewBag.Title = "Admin";
 }
+@model Kartverket.Web.Models.Admin.GetAllReportsModel
+<h2>Rapporter</h2>
 
-<h2>AAAA</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Obstacle</th>
+            <th>Date reported</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var report in Model.Reports)
+        {
+            <tr>
+                <td>@report.Title</td>
+                <td>@report.CreatedAt</td>
+            </tr>
+        }
+    </tbody>
+</table>
