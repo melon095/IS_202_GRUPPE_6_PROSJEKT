@@ -11,6 +11,7 @@ public class AdminController: Controller
 {
     private readonly ILogger<AdminController> _logger;
     private readonly DatabaseContext _dbContext;
+    private const int ReportPerPage = 15;
     
     public AdminController(ILogger<AdminController> logger, DatabaseContext ctx)
     {
@@ -46,9 +47,15 @@ public class AdminController: Controller
         return View(Model);
     }
     
-    public IActionResult Index()
+    public IActionResult Index([FromQuery]int page = 1)
     {
-        var reports =  _dbContext.Reports.ToList();
+        var totalreports = _dbContext.Reports.Count();
+        var totalpages = (int)Math.Ceiling(totalreports / (double)ReportPerPage);
+        var reports =  _dbContext.Reports
+            .OrderByDescending(r => r.CreatedAt)
+            .Skip((page - 1) * ReportPerPage)
+            .Take(ReportPerPage)
+            .ToList();
         var Model = new GetAllReportsModel();
         foreach (var report in reports)
         {
@@ -59,6 +66,7 @@ public class AdminController: Controller
                 CreatedAt = report.CreatedAt
             });
         }
+
         return View(Model);
     }
 
