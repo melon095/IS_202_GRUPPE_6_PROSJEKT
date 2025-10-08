@@ -106,7 +106,7 @@ public class MapController : Controller
         return geojson;
     }
 
-    [HttpPost, Authorize]
+    [HttpPost, Authorize(Policy = RoleValue.AtLeastPilot)]
     public IActionResult Upload([FromBody] UploadMapDataModel body)
     {
         if (!ModelState.IsValid)
@@ -193,9 +193,3 @@ public class MapController : Controller
         return Ok(geojson);
     }
 }
-
-public record MapAddPointModel(Guid ReportId, double Latitude, double Longitude);
-
-public record MapAddLineModel(Guid ReportId, List<MapAddPointModel> Points);
-
-public record UpdateReportModel(string ReportDescription);

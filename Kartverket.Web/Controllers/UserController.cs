@@ -53,7 +53,7 @@ public class UserController : Controller
         return View();
     }
 
-    [HttpGet]
+    [HttpGet, Authorize]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
@@ -62,7 +62,7 @@ public class UserController : Controller
         return RedirectToAction("Index", "Home");
     }
     
-    [HttpGet]
+    [HttpGet, AllowAnonymous]
     public IActionResult Register()
     {
         return View();
@@ -129,16 +129,6 @@ public class UserController : Controller
             }
         
             return View(model);
-        }
-        
-        if ((await _roleManager.RoleExistsAsync(RoleValue.User)) == false)
-        {
-            var role = new RoleTable()
-            {
-                Name = RoleValue.User
-            };
-        
-            await _roleManager.CreateAsync(role);
         }
         
         await _userManager.AddToRoleAsync(user, RoleValue.User);

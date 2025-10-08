@@ -1,5 +1,7 @@
-﻿using Kartverket.Web.Database;
+﻿using Kartverket.Web.AuthPolicy;
+using Kartverket.Web.Database;
 using Kartverket.Web.Models.Admin.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kartverket.Web.Controllers;
@@ -16,6 +18,7 @@ public class AdminController: Controller
         _dbContext = ctx;
     }
     
+    [Authorize(Policy = RoleValue.AtLeastKartverket)]
     public IActionResult Index()
     {
         return View();

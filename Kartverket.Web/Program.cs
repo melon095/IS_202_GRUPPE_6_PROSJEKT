@@ -107,6 +107,9 @@ if (!app.Environment.IsDevelopment())
 {
     var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
     db.Database.Migrate();
+    
+    db.MapObjectTypes.Add(new MapObjectTypeTable() { Name = "Midlertidlig type!" });
+    db.SaveChanges();
 }
 
 {
