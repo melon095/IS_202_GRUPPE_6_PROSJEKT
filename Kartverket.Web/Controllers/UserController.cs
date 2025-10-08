@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
+using Kartverket.Web.Models.User;
 using Kartverket.Web.Models.User.Request;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
@@ -46,7 +47,7 @@ public class UserController : Controller
         return View(model);
     }
     
-    [HttpGet]
+    [HttpGet, AllowAnonymous]
     public IActionResult AccessDenied()
     {
         return View();

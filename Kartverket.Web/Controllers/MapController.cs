@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Kartverket.Web.AuthPolicy;
+using System.Text.Json;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models;
@@ -45,7 +46,7 @@ public class MapController : Controller
         _dbContext = dbContext;
     }
     
-    [HttpGet, Authorize(Roles = "Pilot")]
+    [HttpGet, Authorize(Policy = RoleValue.AtLeastPilot)]
     public IActionResult Index()
     {
         return View();
