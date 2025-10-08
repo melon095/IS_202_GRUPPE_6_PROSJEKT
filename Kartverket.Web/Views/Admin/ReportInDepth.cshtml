@@ -1,0 +1,38 @@
+﻿@{
+    ViewBag.Title = "In-Depth Report";
+}
+@model Kartverket.Web.Models.Report.Response.InDepthReportModel
+
+<h1>@Model.Title</h1>
+<p>@Model.Description</p>
+<p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+
+@if (Model.Points != null && Model.Points.Any())
+{
+    <h2>Points</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>Elevation (m)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < Model.Points.Count; i++)
+            {
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td>@Model.Points[i].Lat</td>
+                    <td>@Model.Points[i].Lng</td>
+                    <td>@Model.Points[i].Elevation</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No points available for this report.</p>
+}
