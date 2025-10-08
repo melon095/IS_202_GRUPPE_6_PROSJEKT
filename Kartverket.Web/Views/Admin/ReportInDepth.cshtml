@@ -2,8 +2,13 @@
     ViewBag.Title = "In-Depth Report";
 }
 @model Kartverket.Web.Models.Report.Response.InDepthReportModel
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
 
-<h1>@Model.Title</h1>
+<div id="model-title">
+    <h2 class="is-size-1">
+    Rapport: @Model.Title
+    </h2>
+</div>
 <p>@Model.Description</p>
 <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
 

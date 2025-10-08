@@ -2,9 +2,14 @@
     ViewBag.Title = "Admin";
 }
 @model Kartverket.Web.Models.Admin.GetAllReportsModel
-<h2>Rapporter</h2>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
 
-<table class="table">
+<div class="box">
+<h2 class="is-size-3">Rapporter</h2>
+</div>
+
+<div class="box mt-1">
+    <table class="table is-fullwidth is-striped is-hoverable">
     <thead>
         <tr>
             <th>Obstacle</th>
@@ -30,3 +35,4 @@
         }
     </tbody>
 </table>
+</div>
