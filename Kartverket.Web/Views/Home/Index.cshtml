@@ -12,12 +12,12 @@
     <a asp-controller="User" asp-action="SetRole" asp-route-role="Pilot" class="button is-link m-2">Bytt til Pilot</a>
     <a asp-controller="User" asp-action="SetRole" asp-route-role="User" class="button is-link m-2">Bytt til User</a>
 
-    if (User.HasAtleastRole(RoleValue.Kartverket))
+    if (User.HasAtLeastRole(RoleValue.Kartverket))
     {
         <p>Knapper for Kartverket</p>
     }
     
-    if (User.HasAtleastRole(RoleValue.Pilot))
+    if (User.HasAtLeastRole(RoleValue.Pilot))
     {
         <p>Knapper Pilot</p>
         <div class="is-flex is-flex-direction-column is-gapless">
@@ -40,7 +40,7 @@
         </div>
     }
 
-    if (User.HasAtleastRole(RoleValue.User))
+    if (User.HasAtLeastRole(RoleValue.User))
     {
         <p>Knapper for User</p>
     }

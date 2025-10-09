@@ -10,11 +10,12 @@
         {
             @Html.AntiForgeryToken()
             <div class="field">
-                <label class="label">Brukernavn</label>
                 @Html.LabelFor(m => m.Username, new { @class = "label" })
+
                 <div class="control">
                     @Html.TextBoxFor(m => m.Username, new { @class = "input", placeholder = "Brukernavn" })
                 </div>
+                
                 <span class="has-text-danger">
                     @Html.ValidationMessageFor(m => m.Username)
                 </span>
@@ -54,7 +55,7 @@
 {
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-                document.getElementById("togglePassword").addEventListener("click", function () {
+            document.getElementById("togglePassword").addEventListener("click", function () {
                 const input = document.getElementById("passwordField");
                 const icon = this.querySelector("i");
                 const isPassword = input.type === "password";

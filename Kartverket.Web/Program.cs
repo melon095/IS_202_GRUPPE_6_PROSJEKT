@@ -75,10 +75,6 @@ builder.Services.ConfigureApplicationCookie(o =>
 });
 
 builder.Services.AddHttpContextAccessor();
-// builder.Services
-//     .AddScoped<SignInManager<UserTable>>()
-//     .AddScoped()
-//     .AddScoped<RoleManager<RoleTable>>();
 
 builder.Services.AddSession(options =>
 {
@@ -108,6 +104,7 @@ if (!app.Environment.IsDevelopment())
     var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
     db.Database.Migrate();
     
+    // TODO: Mildertidlig punkt
     db.MapObjectTypes.Add(new MapObjectTypeTable() { Name = "Midlertidlig type!" });
     db.SaveChanges();
 }
