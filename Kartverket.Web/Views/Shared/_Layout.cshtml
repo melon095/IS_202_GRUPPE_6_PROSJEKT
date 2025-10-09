@@ -10,6 +10,7 @@
     
     @* BULMA START *@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
     @* BULMA END *@
     
     @await RenderSectionAsync("Styles", required: false)
@@ -59,6 +60,10 @@
                                 <a class="button is-primary" href="@Url.Action("Login", "User")">
                                     <strong>Logg Inn</strong>
                                 </a>
+                                
+                                <a class="button is-light" href="@Url.Action("Register", "User")">
+                                    Registrer
+                                </a>
                             }
                         </div>
                     </div>
@@ -95,7 +100,6 @@
         })();
         
 </script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

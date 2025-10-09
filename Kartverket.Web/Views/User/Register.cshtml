@@ -1,0 +1,60 @@
+﻿@model Kartverket.Web.Models.User.Request.UserRegisterRequestModel
+@{
+    ViewBag.Title = "Registrer";
+}
+
+<div class="container">
+    <div class="columns is-centered">
+        <div class="column is-half">
+            <h1 class="title has-text-centered">Register</h1>
+            @using (Html.BeginForm("Register", "User", FormMethod.Post, new { @class = "box" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="field">
+                    @Html.LabelFor(m => m.Username, new { @class = "label" })
+
+                    <div class="control">
+                        @Html.TextBoxFor(m => m.Username, new { @class = "input", placeholder = "Username" })
+                    </div>
+                    
+                    <p class="help is-danger">
+                        @Html.ValidationMessageFor(m => m.Username)
+                    </p>
+                </div>
+
+                <div class="field">
+                    @Html.LabelFor(m => m.Password, new { @class = "label" })
+                    
+                    <div class="control">
+                        @Html.PasswordFor(m => m.Password, new { @class = "input", placeholder = "Password" })
+                    </div>
+                    
+                    <p class="help is-danger">
+                        @Html.ValidationMessageFor(m => m.Password)
+                    </p>
+                </div>
+
+                <div class="field">
+                    @Html.LabelFor(m => m.ConfirmPassword, new { @class = "label" })
+                    
+                    <div class="control">
+                        @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "input", placeholder = "Confirm Password" })
+                    </div>
+                    
+                    <p class="help is-danger">
+                        @Html.ValidationMessageFor(m => m.ConfirmPassword)
+                    </p>
+                </div>
+
+                <div class="field is-grouped is-grouped-centered">
+                    <div class="control">
+                        <button type="submit" class="button is-primary">Register</button>
+                    </div>
+                </div>
+            }
+
+            @Html.ValidationSummary(true, "", new { @class = "notification is-danger" })
+        </div>
+    </div>
+</div>

@@ -1,5 +1,7 @@
-﻿using Kartverket.Web.Database;
+﻿using Kartverket.Web.AuthPolicy;
+using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kartverket.Web.Controllers;
@@ -15,13 +17,7 @@ public class ReportController : Controller
         _dbContext = dbContext;
     }
 
-    [HttpGet]
-    public IActionResult Report(string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    [HttpPost]
+    [HttpPost, Authorize(Policy = RoleValue.AtLeastPilot)]
     public Guid PilotCreate()
     {
         var date = DateTime.UtcNow;
@@ -41,23 +37,5 @@ public class ReportController : Controller
         _dbContext.SaveChanges();
 
         return report.Id;
-    }
-    
-    [HttpGet("/reports")]
-    public IActionResult GetAll()
-    {
-        throw new NotImplementedException();
-    }
-
-    [HttpDelete("/{id}")]
-    public IActionResult Delete(string id)
-    {
-        throw new NotImplementedException();
-    }
-
-    [HttpPut("/{id}")]
-    public IActionResult Update(string id, [FromBody] object reportData)
-    {
-        throw new NotImplementedException();
     }
 }

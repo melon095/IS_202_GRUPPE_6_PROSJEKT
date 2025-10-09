@@ -1,4 +1,4 @@
-﻿@model Kartverket.Web.Models.User.Request.UserLoginRequestModel
+﻿@model Kartverket.Web.Models.User.UserLoginRequestModel
 @{
     ViewData["Title"] = "Logg inn";
 }
@@ -6,38 +6,64 @@
 <div class="is-flex is-flex-direction-column is-align-items-center is-justify-content-center" style="min-height: 80vh;">
     <div class="box" style="width: 300px;">
         <h1 class="title has-text-centered">Logg inn</h1>
-        <form asp-action="Login" method="post">
+        @using (Html.BeginForm("Login", "User", FormMethod.Post))
+        {
+            @Html.AntiForgeryToken()
             <div class="field">
-                <label class="label">Brukernavn</label>
+                @Html.LabelFor(m => m.Username, new { @class = "label" })
+
                 <div class="control">
-                    <input class="input" asp-for="Username" placeholder="Brukernavn" />
+                    @Html.TextBoxFor(m => m.Username, new { @class = "input", placeholder = "Brukernavn" })
                 </div>
-                <span class="has-text-danger">@Html.ValidationMessageFor(m => m.Username)</span>
+                
+                <span class="has-text-danger">
+                    @Html.ValidationMessageFor(m => m.Username)
+                </span>
             </div>
             <div class="field">
-                <label class="label">Passord</label>
-                <div class="control">
-                    <input type="password" class="input" asp-for="Password" placeholder="Passord" />
+                @Html.LabelFor(m => m.Password, new { @class = "label" })
+
+                <div style="display: flex; align-items: center; position: relative;">
+                    @Html.PasswordFor(m => m.Password, new { 
+                        @class = "input", 
+                        placeholder = "Passord", 
+                        id = "passwordField", 
+                        style = "flex: 1;" 
+                    })
+                    <button type="button" id="togglePassword" style="background: none; border: none; cursor: pointer; margin-left: -35px;">
+                        <i class="fas fa-eye"></i>
+                    </button>
                 </div>
-                <span class="has-text-danger">@Html.ValidationMessageFor(m => m.Password)</span>
+
+                <span class="has-text-danger">
+                    @Html.ValidationMessageFor(m => m.Password)
+                </span>
             </div>
+
             <div class="field is-grouped is-grouped-centered">
                 <div class="control">
                     <button type="submit" class="button is-primary">Logg inn</button>
                 </div>
             </div>
-        </form>
-        @if (ViewData.ModelState.ErrorCount > 0)
-        {
-            <div class="notification is-danger is-light mt-3">
-                <button class="delete" onclick="this.parentElement.style.display='none';"></button>
-                <ul>
-                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                    {
-                        <li>@error.ErrorMessage</li>
-                    }
-                </ul>
-            </div>
         }
+        
+        @Html.ValidationSummary(true, "", new { @class = "notification is-danger" })
     </div>
 </div>
+
+@section Scripts
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById("togglePassword").addEventListener("click", function () {
+                const input = document.getElementById("passwordField");
+                const icon = this.querySelector("i");
+                const isPassword = input.type === "password";
+
+                input.type = isPassword ? "text" : "password";
+                icon.classList.toggle("fa-eye", !isPassword);
+                icon.classList.toggle("fa-eye-slash", isPassword);
+            });
+        });
+    </script>
+}

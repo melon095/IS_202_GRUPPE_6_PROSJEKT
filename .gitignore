@@ -369,3 +369,4 @@ FodyWeavers.xsd
 
 Kartverket.Web/wwwroot/map-ui/
 Kartverket.Web/map-ui/node_modules/
+Kartverket.Web/map-ui/.vite/

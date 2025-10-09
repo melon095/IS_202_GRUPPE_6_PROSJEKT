@@ -1,9 +1,11 @@
-﻿namespace Kartverket.Web.Database.Tables;
+﻿using Microsoft.AspNetCore.Identity;
 
-public class RoleTable : BaseModel
+namespace Kartverket.Web.Database.Tables;
+
+public class RoleTable : IdentityRole<Guid>
 {
-    public Guid Id { get; set; }
-    public required string Name { get; set; } 
-    
     public List<UserTable> Users { get; set; }
+    
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }

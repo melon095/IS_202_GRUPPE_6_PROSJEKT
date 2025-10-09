@@ -1,8 +1,12 @@
-﻿using System.Security.Claims;
+﻿using Kartverket.Web.AuthPolicy;
+using System.Security.Claims;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
+using Kartverket.Web.Models.User;
 using Kartverket.Web.Models.User.Request;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,82 +16,152 @@ public class UserController : Controller
 {
     private readonly ILogger<UserController> _logger;
     private readonly DatabaseContext _dbContext;
+    private readonly UserManager<UserTable> _userManager;
+    private readonly SignInManager<UserTable> _signInManager;
+    private readonly RoleManager<RoleTable> _roleManager;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     
-    public UserController(ILogger<UserController> logger, DatabaseContext dbContext)
+    public UserController(ILogger<UserController> logger,
+        DatabaseContext dbContext,
+        UserManager<UserTable> userManager,
+        SignInManager<UserTable> signInManager,
+        RoleManager<RoleTable> roleManager,
+        IHttpContextAccessor httpContextAccessor)
     {
         _logger = logger;
         _dbContext = dbContext;
+        _userManager = userManager;
+        _signInManager = signInManager;
+        _roleManager = roleManager;
+        _httpContextAccessor = httpContextAccessor;
     }
     
-    [HttpGet]
-    public IActionResult Login()
+    [HttpGet, AllowAnonymous]
+    public IActionResult Login(string? returnUrl = null)
+    {
+        UserLoginRequestModel model = new()
+        {
+            ReturnUrl = returnUrl ?? Url.Content("~/")
+        };
+        
+        return View(model);
+    }
+    
+    [HttpGet, AllowAnonymous]
+    public IActionResult AccessDenied()
     {
         return View();
     }
 
-    [HttpPost]
+    [HttpGet, Authorize]
+    public async Task<IActionResult> Logout()
+    {
+        await _signInManager.SignOutAsync();
+        _httpContextAccessor.HttpContext.Session.Clear();
+
+        return RedirectToAction("Index", "Home");
+    }
+    
+    [HttpGet, AllowAnonymous]
+    public IActionResult Register()
+    {
+        return View();
+    }
+
+    [HttpPost, AllowAnonymous]
     public async Task<IActionResult> Login(UserLoginRequestModel body)
     {
         if (!ModelState.IsValid)
         {
             return View(body);
         }
-
-        var roleName = "Pilot";
         
-        var username = body.Username.Trim().ToLower();
-        var user = _dbContext.Users.Include(u => u.Role).FirstOrDefault(u => u.UserName == username);
-        var role = _dbContext.Roles.FirstOrDefault(r => r.Name == roleName);
-        if (role is null)
-        {
-            role = new RoleTable { Name = roleName };
-            _dbContext.Roles.Add(role);
-        }
-        
+        var user = await _userManager.FindByNameAsync(body.Username);
         if (user == null)
         {
-            user = new UserTable
-            {
-                UserName = username,
-                IsActive = true,
-                Email = username,
-                Role = role,
-                RoleId = role.Id
-            };
-
-            _dbContext.Users.Add(user);
-            _dbContext.SaveChanges();
+            ModelState.AddModelError(string.Empty, "Ugyldig brukernavn eller passord.");
+            return View(body);
         }
         
-        HttpContext.Session.SetString("Username", username);
-        
-        var claims = new List<Claim>
+        var result = await _signInManager.PasswordSignInAsync(body.Username, body.Password, false, lockoutOnFailure: true);
+        if (!result.Succeeded)
         {
-            new(ClaimTypes.Name, username),
-        };
-
-        if (user.Role is {} r)
-            claims.Add(new(ClaimTypes.Role, r.Name));
+            ModelState.AddModelError(string.Empty, "Ugyldig brukernavn eller passord.");
+            return View(body);
+        }
         
-        var identity = new ClaimsIdentity(claims, "CookieAuth");
-        var principal = new ClaimsPrincipal(identity);
-        await HttpContext.SignInAsync("CookieAuth", principal);
+        if (result.IsLockedOut)
+        {
+            _logger.LogWarning("Bruker {Username} er låst ute.", body.Username);
+            return View("Lockout");
+        }
+        
+        _httpContextAccessor.HttpContext.Session.SetString("Username", body.Username);
+        _httpContextAccessor.HttpContext.Session.SetString("UserId", user.Id.ToString());
+
+        _logger.LogInformation("Bruker {Username} logget inn.", body.Username);
+        if (!string.IsNullOrEmpty(body.ReturnUrl) && Url.IsLocalUrl(body.ReturnUrl))
+        {
+            return LocalRedirect(body.ReturnUrl);
+        }
 
         return RedirectToAction("Index", "Home");
     }
 
-    [HttpGet]
-    public IActionResult Logout()
+    [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
+    public async Task<IActionResult> Register(UserRegisterRequestModel model)
     {
-        HttpContext.SignOutAsync("CookieAuth");
-        HttpContext.Session.Clear();
+        if (!ModelState.IsValid)
+            return View(model);
 
+        var user = new UserTable
+        {
+            UserName = model.Username,
+            IsActive = true,
+        };
+        
+        var result = await _userManager.CreateAsync(user, model.Password);
+        if (!result.Succeeded)
+        {
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+        
+            return View(model);
+        }
+        
+        await _userManager.AddToRoleAsync(user, RoleValue.User);
+        await _signInManager.SignInAsync(user, isPersistent: false);
+        
+        _logger.LogInformation("Bruker {Username} opprettet en ny konto.", model.Username);
+        
+        _httpContextAccessor.HttpContext.Session.SetString("Username", model.Username);
+        _httpContextAccessor.HttpContext.Session.SetString("UserId", user.Id.ToString());
+        
         return RedirectToAction("Index", "Home");
     }
-    
-    [HttpGet]
-    public IActionResult AccessDenied()
+
+    [HttpGet("User/SetRole/{role}"), Authorize(Policy = RoleValue.AtLeastUser)]
+    public async Task<IActionResult> SetRole([FromRoute] string role)
     {
-        return View();
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound();
+        }
+        
+        if ((await _roleManager.RoleExistsAsync(role)) == false)
+        {
+            return NotFound();
+        }
+        
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        await _userManager.RemoveFromRolesAsync(user, currentRoles);
+        await _userManager.AddToRoleAsync(user, role);
+
+        await _signInManager.SignInAsync(user, isPersistent: false);
+        
+        return RedirectToAction("Index", "Home");
     }
 }
