@@ -11,18 +11,8 @@ export const JourneyProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
 	const store = useJourneyStore();
 
-	const contextValue: JourneyContextType = {
-		...store,
-		addPointToCurrentObject: (point) => {
-			store.addPointToCurrentObject({
-				...point,
-				timestamp: Date.now(),
-			});
-		},
-	};
-
 	return (
-		<JourneyContext.Provider value={contextValue}>
+		<JourneyContext.Provider value={store}>
 			{children}
 		</JourneyContext.Provider>
 	);

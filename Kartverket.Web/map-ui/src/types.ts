@@ -7,7 +7,8 @@ export interface Point {
 export interface PlacedObject {
 	id: string;
 	points: Point[];
-	type?: string;
+	typeId?: string;
+	customType?: string;
 	title?: string;
 	description?: string;
 	createdAt?: string;
@@ -25,4 +26,11 @@ export interface JourneyState {
 	isPlacingObject: boolean;
 	currentObjectPoints: Point[];
 	journeyHistory: Journey[];
+}
+
+export interface ObjectType {
+	id: string;
+	name: string;
+	primaryImageUrl: string;
+	markerImageUrl?: string;
 }

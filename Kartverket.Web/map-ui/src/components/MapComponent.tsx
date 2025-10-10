@@ -12,7 +12,7 @@ import {
 	TileLayerProps,
 	useMapEvent,
 } from "react-leaflet";
-import { useJourney } from "../contextx/journeyContext";
+import { useJourney } from "../contextx/JourneyContext";
 import { useServerSync } from "../hooks/useServerSync";
 import { Point } from "../types";
 

@@ -6,7 +6,10 @@ export interface JourneyFunctions {
 	startJourney: () => void;
 	endJourney: () => void;
 	startPlacingObjects: () => void;
-	stopPlacingObjects: (type?: string) => void;
+	stopPlacingObject: (
+		typeId?: string | undefined,
+		customType?: string | undefined
+	) => void;
 	addPointToCurrentObject: (point: Point) => void;
 	updateObjectInCurrentJourney: (
 		objectId: string,
@@ -56,7 +59,7 @@ export const useJourneyStore = create<JourneyStore>()(
 				set({ isPlacingObject: true, currentObjectPoints: [] });
 			},
 
-			stopPlacingObjects: (type) => {
+			stopPlacingObject: (typeId, customType) => {
 				const { currentJourney, currentObjectPoints } = get();
 				if (!currentJourney || currentObjectPoints.length === 0) {
 					set({ isPlacingObject: false, currentObjectPoints: [] });
@@ -67,7 +70,8 @@ export const useJourneyStore = create<JourneyStore>()(
 				const newObject: PlacedObject = {
 					id: globalThis.crypto.randomUUID(),
 					points: currentObjectPoints,
-					type,
+					typeId: typeId,
+					customType: customType,
 					createdAt: new Date().toISOString(),
 				};
 
@@ -84,6 +88,8 @@ export const useJourneyStore = create<JourneyStore>()(
 			},
 
 			addPointToCurrentObject: (point) => {
+				point.timestamp = Date.now();
+
 				set((state) => ({
 					currentObjectPoints: [...state.currentObjectPoints, point],
 				}));

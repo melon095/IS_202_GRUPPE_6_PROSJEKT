@@ -4,6 +4,9 @@ public class MapObjectTable : BaseModel
 {
     public Guid Id { get; set; }
     
+    public string Title { get; set; }
+    public string Description { get; set; }
+    
     public Guid MapObjectTypeId { get; set; }
     public MapObjectTypeTable MapObjectType { get; set; }
     

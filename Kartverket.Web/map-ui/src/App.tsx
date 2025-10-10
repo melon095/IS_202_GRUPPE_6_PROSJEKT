@@ -2,11 +2,13 @@
 // import "./css/zoom-control.css";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { JourneyProvider, useJourney } from "./contextx/journeyContext";
+import { JourneyProvider, useJourney } from "./contextx/JourneyContext";
 import { useEffect, useState } from "react";
 import { Journey } from "./types";
 import { MapComponent } from "./components/MapComponent";
 import { JourneyControls } from "./components/JourneyControls";
+import { JourneySummary } from "./components/JourneySummary";
+import { ObjectTypesProvider } from "./contextx/ObjectTypesContext";
 
 // import { LatLngTuple } from "leaflet";
 // import {
@@ -533,7 +535,14 @@ import { JourneyControls } from "./components/JourneyControls";
 // /// While the journey is going on, when a object is placed, it will be sent to the server as a temporary object,
 // /// Just to ensure no data loss, it will also be saved locally, to make it work offline.
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			retry: 1,
+			refetchOnWindowFocus: false,
+		},
+	},
+});
 
 const AppContent = () => {
 	const { currentJourney, journeyHistory } = useJourney();
@@ -561,17 +570,37 @@ const AppContent = () => {
 		<div>
 			<div>
 				<MapComponent>
-					<JourneyControls />
+					<JourneyControls>
+						<div>
+							{navigator.onLine
+								? "🟢 Kobla til internett"
+								: "🔴 Mangler internett"}
+						</div>
+					</JourneyControls>
 				</MapComponent>
 			</div>
 
-			{/* {showSummary && summaryJourney && (
-                <div>
-                    <JourneySummary journey={summaryJourney} onClose={handleCloseSummary} />
-                </div>
-            )} */}
-
-			<div>{navigator.onLine ? "🟢 Online" : "🔴 Offline"}</div>
+			{showSummary && summaryJourney && (
+				<div className="modal is-active">
+					<div
+						className="modal-background"
+						onClick={handleCloseSummary}
+					></div>
+					<div className="modal-content">
+						<JourneySummary
+							journey={summaryJourney}
+							onClose={handleCloseSummary}
+						/>
+					</div>
+					<div>
+						<button
+							className="modal-close is-large"
+							aria-label="close"
+							onClick={handleCloseSummary}
+						></button>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };
@@ -580,9 +609,11 @@ const App = () => {
 	return (
 		<>
 			<QueryClientProvider client={queryClient}>
-				<JourneyProvider>
-					<AppContent />
-				</JourneyProvider>
+				<ObjectTypesProvider>
+					<JourneyProvider>
+						<AppContent />
+					</JourneyProvider>
+				</ObjectTypesProvider>
 			</QueryClientProvider>
 		</>
 	);

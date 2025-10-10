@@ -9,7 +9,7 @@
 	top: 1rem;
 	left: 1rem;
 	z-index: 1000;
-	max-width: 320px;
+	max-width: auto;
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 

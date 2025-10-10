@@ -87,6 +87,28 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddViteServices();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Vite", policy =>
+    {
+        if (builder.Environment.IsDevelopment())
+        {
+            var host = builder.Configuration["Vite:Server:Host"] ?? "localhost";
+            policy.WithOrigins($"http://{host}:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        }
+        // else
+        // {
+        //     policy.AllowAnyOrigin()
+        //         .AllowAnyHeader()
+        //         .AllowAnyMethod()
+        //         .AllowCredentials();
+        // }
+    });
+});
+
 #endregion // Builder
 
 #region App
@@ -105,8 +127,8 @@ if (!app.Environment.IsDevelopment())
     db.Database.Migrate();
     
     // TODO: Mildertidlig punkt
-    db.MapObjectTypes.Add(new MapObjectTypeTable() { Name = "Midlertidlig type!" });
-    db.SaveChanges();
+    // db.MapObjectTypes.Add(new MapObjectTypeTable() { Name = "Midlertidlig type!" });
+    // db.SaveChanges();
 }
 
 {
@@ -121,6 +143,8 @@ if (!app.Environment.IsDevelopment())
         }
     }
 }
+
+app.UseCors("Vite");
 
 app.UseHttpsRedirection();
 app.UseRouting();
@@ -147,3 +171,8 @@ if (app.Environment.IsDevelopment())
 app.Run();
 
 #endregion // App
+
+// Level 1 cache on localStorage
+// Level 2 cache on server
+
+// Mismatching cache!

@@ -1,24 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { useJourney } from "../contextx/journeyContext";
+import { useJourney } from "../contextx/JourneyContext";
 import { useServerSync } from "../hooks/useServerSync";
 import { DomEvent } from "leaflet";
+import { ObjectTypeSelector } from "./ObjectTypeSelector";
 
-interface ObjectTypeSelectorProps {
-	onSelect: (type: string) => void;
-	onCancel: () => void;
+interface JourneyControlsProps {
+	children?: React.ReactNode;
 }
 
-const ObjectTypeSelector = ({
-	onSelect,
-	onCancel,
-}: ObjectTypeSelectorProps) => {
-	var _ = onSelect;
-	_ = onCancel;
-
-	return <>Object type selector</>;
-};
-
-export const JourneyControls = () => {
+export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	const {
 		currentJourney,
 		isPlacingObject,
@@ -27,7 +17,7 @@ export const JourneyControls = () => {
 		endJourney,
 		startJourney,
 		startPlacingObjects,
-		stopPlacingObjects,
+		stopPlacingObject,
 	} = useJourney();
 
 	const { syncObject, isSyncing } = useServerSync();
@@ -49,23 +39,23 @@ export const JourneyControls = () => {
 		if (currentObjectPoints.length > 0) {
 			setShowTypeSelector(true);
 		} else {
-			stopPlacingObjects();
+			stopPlacingObject();
 		}
 	};
 
-	const handleTypeSelect = (type: string) => {
-		stopPlacingObjects();
+	const handleTypeSelect = (typeId?: string, customType?: string) => {
+		stopPlacingObject(typeId, customType);
 		setShowTypeSelector(false);
 
-		if (!currentJourney || navigator.onLine) {
-			const lastObject = currentJourney?.objects.slice(-1)[0];
-			if (!lastObject) return;
+		if (!currentJourney || navigator.onLine) return;
 
-			syncObject({
-				object: lastObject,
-				journeyId: currentJourney.id,
-			});
-		}
+		const lastObject = currentJourney?.objects.slice(-1)[0];
+		if (!lastObject) return;
+
+		syncObject({
+			object: lastObject,
+			journeyId: currentJourney.id,
+		});
 	};
 
 	const handleCancelTypeSelect = () => {
@@ -90,6 +80,8 @@ export const JourneyControls = () => {
 							</button>
 						</div>
 					</div>
+
+					<div className="content">{children}</div>
 				</div>
 			</div>
 		);
@@ -148,7 +140,6 @@ export const JourneyControls = () => {
 						</div>
 					)}
 				</div>
-
 				<div className="buttons">
 					{!isPlacingObject ? (
 						<button
@@ -181,6 +172,8 @@ export const JourneyControls = () => {
 						<span>End Journey</span>
 					</button>
 				</div>
+
+				<div className="content">{children}</div>
 			</div>
 		</div>
 	);
