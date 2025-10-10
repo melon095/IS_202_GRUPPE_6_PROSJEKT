@@ -11,7 +11,7 @@ public class AdminController: Controller
 {
     private readonly ILogger<AdminController> _logger;
     private readonly DatabaseContext _dbContext;
-    private const int ReportPerPage = 15;
+    private const int ReportPerPage = 10;
     
     public AdminController(ILogger<AdminController> logger, DatabaseContext ctx)
     {

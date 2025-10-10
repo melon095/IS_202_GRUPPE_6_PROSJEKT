@@ -42,49 +42,59 @@
         </tbody>
     </table>
 </div>
-<div class="Pagnation">
-    <nav class="pagnation is-centered" role="navigation">
-        @if(Model.CurrentPage > 1)
-        {
-            <a class="pagination-previous"
-            asp-action="Index"
-            asp-route-page="@(Model.CurrentPage - 1)">
-                Previous
-            </a>
-        }
-        else
-        {
-            <a class="pagination-previous" disabled>
-                Previous
-            </a>
-        }
-
-        @if (Model.CurrentPage < Model.TotalPages)
-        {
-            <a class="pagination-next"
-            asp-action="Index"
-            asp-route-page="@(Model.CurrentPage + 1)">
-                Next
-            </a>
-        }
-        else
-        {
-            <a class="pagination-next" disabled>
-                Next
-            </a>
-        }
-        <ul>
-            @for (int i = 1; i <=Model.TotalPages; i++)
+<div class="columns is-centered">
+    <div class="Pagnation">
+        <nav class="pagnation is-centered" role="navigation">
+            @if(Model.CurrentPage > 1)
             {
-                <li>
-                    <a class="pagination-link @(i == Model.CurrentPage ? "is-current" : "")"
-                    asp-action="Reports"
-                    asp-route-page="@i">
-                        @i
-                    </a>
-                </li>
+                <a class="pagination-previous"
+                asp-action="Index"
+                asp-route-page="@(Model.CurrentPage - 1)">
+                    Previous
+                </a>
             }
-        </ul>
+            else
+            {
+                <a class="pagination-previous" disabled>
+                    Previous
+                </a>
+            }
 
-    </nav>
+            @if (Model.CurrentPage < Model.TotalPages)
+            {
+                <a class="pagination-next"
+                asp-action="Index"
+                asp-route-page="@(Model.CurrentPage + 1)">
+                    Next
+                </a>
+            }
+            else
+            {
+                <a class="pagination-next" disabled>
+                    Next
+                </a>
+            }
+            <ul class="pagination-list">
+                @for (int i = 1; i <=Model.TotalPages; i++)
+                {
+                    <li>
+                        @if(i == Model.CurrentPage)
+                        {
+                            <a class="pagination-link column is-half" disabled>@i</a>
+                        }
+                        else
+                        {
+                            <a class="pagination-link
+                            column is-half"
+                            asp-action="Index"
+                            asp-route-page="@i">
+                            @i
+                            </a>
+                        }
+                    </li>
+                }
+            </ul>
+
+        </nav>
+    </div>
 </div>
