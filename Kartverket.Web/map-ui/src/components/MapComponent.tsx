@@ -1,20 +1,12 @@
+import { LatLngTuple } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "../css/zoom-control.css";
-import "../css/MapCOmponent.css";
+import React from "react";
+import { MapContainer, TileLayer, TileLayerProps } from "react-leaflet";
 
-import { LatLngTuple, LeafletMouseEvent } from "leaflet";
-import React, { useCallback } from "react";
-import {
-	MapContainer,
-	Marker,
-	Polyline,
-	TileLayer,
-	TileLayerProps,
-	useMapEvent,
-} from "react-leaflet";
-import { useJourney } from "../contextx/JourneyContext";
-import { useServerSync } from "../hooks/useServerSync";
-import { Point } from "../types";
+import "../css/MapComponent.css";
+import "../css/zoom-control.css";
+import { MapClickHandler } from "./MapClickHandler";
+import { ObjectMarkers } from "./ObjectMarkers";
 
 const mapCenter = [58.1465456, 7.9911451] satisfies LatLngTuple;
 
@@ -22,79 +14,6 @@ const tileProps = {
 	attribution: `&copy; <a href="http://www.kartverket.no/">Kartverket</a>`,
 	url: `https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png`,
 } satisfies TileLayerProps;
-
-const MapClickHandler = React.memo(() => {
-	const { isPlacingObject, addPointToCurrentObject, currentJourney } =
-		useJourney();
-	const { syncObject } = useServerSync();
-
-	useMapEvent(
-		"click",
-		useCallback(
-			(e: LeafletMouseEvent) => {
-				if (!isPlacingObject || !currentJourney) return;
-
-				const point: Point = { lat: e.latlng.lat, lng: e.latlng.lng };
-
-				addPointToCurrentObject(point);
-			},
-			[
-				isPlacingObject,
-				addPointToCurrentObject,
-				currentJourney,
-				syncObject,
-			]
-		)
-	);
-
-	return null;
-});
-
-const ObjectMarkers = React.memo(() => {
-	const { currentJourney, currentObjectPoints } = useJourney();
-
-	return (
-		<React.Fragment>
-			{currentJourney?.objects.map((obj) => (
-				<React.Fragment key={obj.id}>
-					{obj?.points.map((point, index) => (
-						<Marker
-							key={`${obj.id}-point-${index}`}
-							position={[point.lat, point.lng]}
-						/>
-					))}
-
-					{obj.points.length > 1 && (
-						<Polyline
-							positions={obj.points.map((point) => [
-								point.lat,
-								point.lng,
-							])}
-							color="blue"
-						/>
-					)}
-				</React.Fragment>
-			))}
-
-			{currentObjectPoints.map((point, idx) => (
-				<Marker
-					key={`current-point-${idx}`}
-					position={[point.lat, point.lng]}
-				/>
-			))}
-
-			{currentObjectPoints.length > 1 && (
-				<Polyline
-					positions={currentObjectPoints.map((point) => [
-						point.lat,
-						point.lng,
-					])}
-					color="red"
-				/>
-			)}
-		</React.Fragment>
-	);
-});
 
 interface MapComponentProps {
 	children?: React.ReactNode;

@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { useJourney } from "../contextx/JourneyContext";
-import { useServerSync } from "../hooks/useServerSync";
 import { DomEvent } from "leaflet";
+import { useEffect, useRef, useState } from "react";
+
+import { useJourney } from "../contexts/JourneyContext";
+import { useServerSync } from "../hooks/useServerSync";
 import { ObjectTypeSelector } from "./ObjectTypeSelector";
 
 interface JourneyControlsProps {

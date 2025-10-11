@@ -1,6 +1,7 @@
-import { createContext, useContext } from "react";
-import { ObjectType } from "../types";
 import { useQuery } from "@tanstack/react-query";
+import { createContext, useContext } from "react";
+
+import { ObjectType } from "../types";
 
 interface ObjectTypesContextType {
 	objectTypes: ObjectType[];

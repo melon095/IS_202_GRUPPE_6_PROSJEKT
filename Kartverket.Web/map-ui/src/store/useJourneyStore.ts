@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { Journey, JourneyState, PlacedObject, Point } from "../types";
 import { createJSONStorage, persist } from "zustand/middleware";
+
+import { Journey, JourneyState, PlacedObject, Point } from "../types";
 
 export interface JourneyFunctions {
 	startJourney: () => void;

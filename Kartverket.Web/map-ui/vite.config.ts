@@ -1,8 +1,8 @@
-﻿import { UserConfig, defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+﻿import react from "@vitejs/plugin-react-swc";
 import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
+import { UserConfig, defineConfig } from "vite";
 
 // Get base folder for certificates.
 const baseFolder =

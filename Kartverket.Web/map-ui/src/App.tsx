@@ -1,11 +1,13 @@
 ﻿import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { JourneyProvider, useJourney } from "./contextx/JourneyContext";
 import { useEffect, useState } from "react";
-import { Journey } from "./types";
-import { MapComponent } from "./components/MapComponent";
+
 import { JourneyControls } from "./components/JourneyControls";
 import { JourneySummary } from "./components/JourneySummary";
-import { ObjectTypesProvider } from "./contextx/ObjectTypesContext";
+import { MapComponent } from "./components/MapComponent";
+import { JourneyProvider, useJourney } from "./contexts/JourneyContext";
+import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
+import { useTranslation } from "./i18n";
+import { Journey } from "./types";
 
 // /// Better journey.
 // /// When the user opens the map, all that is done there from start to end will be recoreded as one single report.
@@ -29,6 +31,7 @@ const queryClient = new QueryClient({
 });
 
 const AppContent = () => {
+	const { t } = useTranslation();
 	const { currentJourney, journeyHistory } = useJourney();
 	const [showSummary, setShowSummary] = useState(false);
 	const [summaryJourney, setSummaryJourney] = useState<Journey | null>(null);
@@ -55,6 +58,7 @@ const AppContent = () => {
 			<div>
 				<MapComponent>
 					<JourneyControls>
+						{t("test")}
 						<div>
 							{navigator.onLine
 								? "🟢 Kobla til internett"

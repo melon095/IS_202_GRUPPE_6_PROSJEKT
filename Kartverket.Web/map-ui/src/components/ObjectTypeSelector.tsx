@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useObjectTypes } from "../contextx/ObjectTypesContext";
+
+import { useObjectTypes } from "../contexts/ObjectTypesContext";
 
 export const CUSTOM_TYPE_ID = "custom";
 
