@@ -1,0 +1,18 @@
+.is-ellipsis {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 16em;
+	display: block;
+}
+
+@media (max-width: 1024px) {
+	.is-ellipsis {
+		max-width: 8em;
+	}
+	.button.is-large,
+	.button.is-medium {
+		font-size: 1.2em;
+		padding: 1em 1.5em;
+	}
+}

@@ -33,19 +33,9 @@ export default defineConfig(async () => {
 	if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
 		// Wait for the certificate to be generated
 		await new Promise<void>((resolve) => {
-			spawn(
-				"dotnet",
-				[
-					"dev-certs",
-					"https",
-					"--export-path",
-					certFilePath,
-					"--format",
-					"Pem",
-					"--no-password",
-				],
-				{ stdio: "inherit" }
-			).on("exit", (code) => {
+			spawn("dotnet", ["dev-certs", "https", "--export-path", certFilePath, "--format", "Pem", "--no-password"], {
+				stdio: "inherit",
+			}).on("exit", (code) => {
 				resolve();
 				if (code) {
 					process.exit(code);

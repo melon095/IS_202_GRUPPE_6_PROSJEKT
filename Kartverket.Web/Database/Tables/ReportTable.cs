@@ -16,5 +16,5 @@ public class ReportTable : BaseModel
     public Guid? FeedbackId { get; set; }
     public ReportFeedbackTable? Feedback { get; set; }
 
-    public List<MapPointTable> MapPoints { get; set; }
+    public List<MapObjectTable> MapObjects { get; set; }
 }

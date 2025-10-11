@@ -7,10 +7,7 @@ public class MapPointTable : BaseModel
     public double Latitude { get; set; }
     public double Longitude { get; set; }
     public int AMSL { get; set; }
-    
-    public Guid ReportId { get; set; }
-    public ReportTable Report { get; set; }
-    
+
     public Guid MapObjectId { get; set; }
     public MapObjectTable MapObject { get; set; }
 }

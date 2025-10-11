@@ -1,24 +1,19 @@
 import { useState } from "react";
 
 import { useObjectTypes } from "../contexts/ObjectTypesContext";
+import { Icon } from "./Icon";
 
 export const CUSTOM_TYPE_ID = "custom";
 
 interface ObjectTypeSelectorProps {
-	onSelect: (
-		typeId?: string | undefined,
-		customType?: string | undefined
-	) => void;
+	onSelect: (typeId?: string, customType?: string) => void;
 	onCancel: () => void;
 }
 
-export const ObjectTypeSelector = ({
-	onSelect,
-	onCancel,
-}: ObjectTypeSelectorProps) => {
+export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorProps) => {
 	const { objectTypes, isLoading, error } = useObjectTypes();
 	const [selectedTypeId, setSelectedTypeId] = useState("");
-	const [customType, setCustomType] = useState<string | undefined>(undefined);
+	const [customType, setCustomType] = useState<string>("");
 
 	const handleConfirm = () => {
 		if (selectedTypeId === CUSTOM_TYPE_ID) {
@@ -46,10 +41,10 @@ export const ObjectTypeSelector = ({
 			<div className="box">
 				<div className="notification is-danger is-light">
 					<p>
-						Klarte ikke å laste inn objekttyper. Men du kan fortsatt
-						legge til et egendefinert objekttype.
+						Klarte ikke å laste inn objekttyper. Men du kan fortsatt legge til et egendefinert objekttype.
 					</p>
 				</div>
+
 				<div className="field">
 					<label className="label">Egendefinert objekttype</label>
 					<div className="control">
@@ -68,24 +63,21 @@ export const ObjectTypeSelector = ({
 						<button
 							className="button is-primary"
 							onClick={() => onSelect(undefined, customType)}
-							disabled={!customType || customType.trim() === ""}
+							disabled={!customType.trim()}
 						>
-							Legg til egendefinert type
+							Legg til egendefinert type (Ikke implementert! Den vil bli ignorert for nå!)
+						</button>
+					</div>
+
+					<div className="control">
+						<button className="button is-light" onClick={() => onSelect(undefined, undefined)}>
+							Hopp Over
 						</button>
 					</div>
 
 					<div className="control">
 						<button className="button is-light" onClick={onCancel}>
-							Kanseller
-						</button>
-					</div>
-
-					<div className="control">
-						<button
-							className="button is-light"
-							onClick={() => onSelect(undefined, undefined)}
-						>
-							Hopp Over
+							Kanseller (Ikke legg til objekt)
 						</button>
 					</div>
 				</div>
@@ -99,48 +91,76 @@ export const ObjectTypeSelector = ({
 
 			<div className="field">
 				<div className="control">
-					{objectTypes.map((type) => (
-						<label key={type.id} className="radio is-block mb-3">
+					{objectTypes.map((type) => {
+						const inputId = `object-type-${type.id}`;
+						return (
+							<div
+								key={type.id}
+								className="radio-box"
+								style={{
+									borderRadius: "8px",
+									border: "1px solid #dbdbdb",
+									cursor: "pointer",
+									display: "flex",
+									alignItems: "center",
+									gap: "1rem",
+									minHeight: "64px",
+									padding: "1rem",
+								}}
+								onClick={() => {
+									console.log("asd");
+									setSelectedTypeId(type.id);
+								}}
+							>
+								<input
+									type="radio"
+									id={inputId}
+									name="object-type"
+									value={type.id}
+									checked={selectedTypeId === type.id}
+									style={{ width: "24px", height: "24px" }}
+								/>
+								<label htmlFor={inputId} style={{ flex: 1, cursor: "pointer" }}>
+									<div className="media">
+										{type.primaryImageUrl && (
+											<div className="media-left">
+												<Icon src={type.primaryImageUrl} alt={type.name} />
+											</div>
+										)}
+										<div className="media-content">
+											<p className="title is-6">{type.name}</p>
+										</div>
+									</div>
+								</label>
+							</div>
+						);
+					})}
+
+					<div
+						style={{
+							borderRadius: "8px",
+							border: "1px solid #dbdbdb",
+							cursor: "pointer",
+							display: "flex",
+							alignItems: "center",
+							gap: "1rem",
+							minHeight: "64px",
+						}}
+						onClick={() => setSelectedTypeId(CUSTOM_TYPE_ID)}
+					>
+						<label className="radio is-block p-3">
 							<input
 								type="radio"
 								name="object-type"
-								value={type.id}
-								checked={selectedTypeId === type.id}
-								onChange={() => setSelectedTypeId(type.id)}
+								value={CUSTOM_TYPE_ID}
+								checked={selectedTypeId === CUSTOM_TYPE_ID}
+								style={{ width: "24px", height: "24px" }}
 							/>
-							<div className="ml-3 is-inline-block">
-								<div className="media">
-									<div className="media-left">
-										<figure className="image is-48x48">
-											<img
-												src={type.primaryImageUrl}
-												alt={type.name}
-												style={{ objectFit: "cover" }}
-											/>
-										</figure>
-									</div>
-									<div className="media-content">
-										<p className="title is-6">
-											{type.name}
-										</p>
-									</div>
-								</div>
-							</div>
+							<span className="ml-3 is-inline-block" style={{ flex: 1 }}>
+								Egendefinert objekttype (Ikke implementert! Den vil bli ignorert for nå!)
+							</span>
 						</label>
-					))}
-
-					<label className="radio is-block">
-						<input
-							type="radio"
-							name="object-type"
-							value={CUSTOM_TYPE_ID}
-							checked={selectedTypeId === CUSTOM_TYPE_ID}
-							onChange={() => setSelectedTypeId(CUSTOM_TYPE_ID)}
-						/>
-						<span className="ml-3 is-inline-block">
-							Egendefinert objekttype
-						</span>
-					</label>
+					</div>
 				</div>
 			</div>
 
@@ -161,30 +181,23 @@ export const ObjectTypeSelector = ({
 			<div className="field is-grouped mt-4">
 				<div className="control">
 					<button
-						className="button is-light"
+						className="button is-light is-primary"
 						onClick={handleConfirm}
-						disabled={
-							selectedTypeId === "" ||
-							(selectedTypeId === CUSTOM_TYPE_ID &&
-								(!customType || customType.trim() === ""))
-						}
+						disabled={selectedTypeId === "" || (selectedTypeId === CUSTOM_TYPE_ID && !customType.trim())}
 					>
 						Legg til
 					</button>
 				</div>
 
 				<div className="control">
-					<button className="button is-light" onClick={onCancel}>
-						Kanseller
+					<button className="button is-light is-danger" onClick={onCancel}>
+						Kanseller (Ikke legg til objekt)
 					</button>
 				</div>
 
 				<div className="control">
-					<button
-						className="button is-info is-light"
-						onClick={() => onSelect(undefined, undefined)}
-					>
-						Hopp Over
+					<button className="button is-light" onClick={() => onSelect(undefined, undefined)}>
+						Legg til objekt uten type
 					</button>
 				</div>
 			</div>

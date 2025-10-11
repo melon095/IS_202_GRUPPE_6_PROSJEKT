@@ -10,5 +10,8 @@ public class MapObjectTable : BaseModel
     public Guid MapObjectTypeId { get; set; }
     public MapObjectTypeTable MapObjectType { get; set; }
     
+    public Guid ReportId { get; set; }
+    public ReportTable Report { get; set; }
+
     public List<MapPointTable> MapPoints { get; set; }
 }

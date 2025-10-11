@@ -1,52 +1,49 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { PlacedObject } from "../types";
+import { FinalizeJourneyData, ResponseError, ServerSyncData, ServerSyncResponse } from "../types";
 
-interface ServerSyncData {
-	object: PlacedObject;
-	journeyId: string;
-}
-
-type ResponseError = Record<string, string[]>;
-
-const extrapolateErrors = async (
-	response: Response
-): Promise<ResponseError[]> => {
+const extrapolateErrors = async (response: Response): Promise<ResponseError[]> => {
 	const json = await response.json();
 
 	return json.errors as ResponseError[];
 };
 
-const syncToServerEndpoint = (data: ServerSyncData): string =>
-	`/Report/SyncObject?journeyId=${data.journeyId}&objectId=${data.object.id}`;
+const syncToServerEndpoint = (data: ServerSyncData): string => {
+	const qp = new URLSearchParams();
+	if (data.journeyId) qp.append("journeyId", data.journeyId);
 
-const syncObjectsToServer = async (body: ServerSyncData): Promise<void> => {
-	const endpoint = syncToServerEndpoint(body);
+	return `/Map/SyncObject?${qp.toString()}`;
+};
+
+const syncObjectsToServer = async (data: ServerSyncData): Promise<ServerSyncResponse> => {
+	const endpoint = syncToServerEndpoint(data);
 
 	const response = await fetch(endpoint, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify(body.object),
+		body: JSON.stringify(data.object),
 	});
 
 	if (!response.ok) {
 		throw await extrapolateErrors(response);
 	}
+
+	return response.json() as Promise<ServerSyncResponse>;
 };
 
-const finalizeJourneyEndpoint = (journeyId: string): string =>
-	`/Report/FinalizeJourney?journeyId=${journeyId}`;
+const finalizeJourneyEndpoint = (journeyId: string): string => `/Map/FinalizeJourney?journeyId=${journeyId}`;
 
-const finalizeJourney = async (journeyId: string): Promise<void> => {
-	const endpoint = finalizeJourneyEndpoint(journeyId);
+const finalizeJourney = async (body: FinalizeJourneyData): Promise<void> => {
+	const endpoint = finalizeJourneyEndpoint(body.journey.id);
 
 	const response = await fetch(endpoint, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
 		},
+		body: JSON.stringify(body),
 	});
 
 	if (!response.ok) {
@@ -75,9 +72,7 @@ export const useServerSync = () => {
 	});
 
 	return {
-		syncObject: syncObjectMutation.mutate,
-		finalizeJourney: finalizeJourneyMutation.mutate,
-		isSyncing: syncObjectMutation.isPending,
-		isFinalizing: finalizeJourneyMutation.isPending,
+		syncObjectMutation: syncObjectMutation,
+		finalizeJourneyMutation: finalizeJourneyMutation,
 	};
 };

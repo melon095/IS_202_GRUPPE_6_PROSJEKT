@@ -3,13 +3,10 @@ import React, { useCallback } from "react";
 import { useMapEvent } from "react-leaflet";
 
 import { useJourney } from "../contexts/JourneyContext";
-import { useServerSync } from "../hooks/useServerSync";
 import { Point } from "../types";
 
 export const MapClickHandler = React.memo(() => {
-	const { isPlacingObject, addPointToCurrentObject, currentJourney } =
-		useJourney();
-	const { syncObject } = useServerSync();
+	const { isPlacingObject, addPointToCurrentObject, currentJourney } = useJourney();
 
 	useMapEvent(
 		"click",
@@ -21,12 +18,7 @@ export const MapClickHandler = React.memo(() => {
 
 				addPointToCurrentObject(point);
 			},
-			[
-				isPlacingObject,
-				addPointToCurrentObject,
-				currentJourney,
-				syncObject,
-			]
+			[isPlacingObject, addPointToCurrentObject, currentJourney]
 		)
 	);
 

@@ -21,12 +21,7 @@ interface MapComponentProps {
 
 export const MapComponent = ({ children }: MapComponentProps) => {
 	return (
-		<MapContainer
-			center={mapCenter}
-			zoom={13}
-			style={{ height: "100vh", width: "100vw" }}
-			zoomControl={false}
-		>
+		<MapContainer center={mapCenter} zoom={13} style={{ height: "100vh", width: "100vw" }} zoomControl={false}>
 			<TileLayer {...tileProps} />
 			<MapClickHandler />
 			<ObjectMarkers />
