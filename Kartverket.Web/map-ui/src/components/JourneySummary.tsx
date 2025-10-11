@@ -6,5 +6,7 @@ interface JourneySummaryProps {
 }
 
 export const JourneySummary = (props: JourneySummaryProps) => {
+	props;
+
 	return <>Journey Summary</>;
 };

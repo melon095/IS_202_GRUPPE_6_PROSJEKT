@@ -2,8 +2,8 @@ import "leaflet/dist/leaflet.css";
 import "../css/zoom-control.css";
 import "../css/MapCOmponent.css";
 
-import { DomEvent, LatLngTuple, LeafletMouseEvent } from "leaflet";
-import React, { useCallback, useEffect, useRef } from "react";
+import { LatLngTuple, LeafletMouseEvent } from "leaflet";
+import React, { useCallback } from "react";
 import {
 	MapContainer,
 	Marker,
@@ -33,9 +33,6 @@ const MapClickHandler = React.memo(() => {
 		useCallback(
 			(e: LeafletMouseEvent) => {
 				if (!isPlacingObject || !currentJourney) return;
-				// TODO
-				e.originalEvent.preventDefault();
-				e.originalEvent.view.L.DomEvent.stopPropagation(e);
 
 				const point: Point = { lat: e.latlng.lat, lng: e.latlng.lng };
 
