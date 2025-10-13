@@ -7,11 +7,12 @@ export interface JourneyFunctions {
 	startJourney: () => void;
 	undoEndJourney: () => void;
 	endJourney: () => void;
-	updateJourneyMeta: (updates: Partial<Journey>) => void;
+	deleteEndJourney: () => void;
+	updateFinishedJourneyMeta: (updates: Partial<Journey>) => void;
 	startPlacingObjects: () => void;
 	stopPlacingObject: (typeId?: string | undefined, customType?: string | undefined) => PlacedObject | undefined;
 	addPointToCurrentObject: (point: Point) => void;
-	updateObjectInCurrentJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
+	updateObjectinFinishedJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
 	clearCurrentObjectPoints: () => void;
 }
 
@@ -21,6 +22,7 @@ export const useJourneyStore = create<JourneyStore>()(
 	persist(
 		(set, get) => ({
 			currentJourney: null,
+			finishedJourney: null,
 			isPlacingObject: false,
 			currentObjectPoints: [],
 			journeyHistory: [],
@@ -36,15 +38,13 @@ export const useJourneyStore = create<JourneyStore>()(
 			},
 
 			undoEndJourney: () => {
-				const { currentJourney } = get();
-				if (!currentJourney || !currentJourney.endTime) return;
+				const { finishedJourney } = get();
+				if (!finishedJourney) return;
 
-				const updatedJourney: Journey = {
-					...currentJourney,
-					endTime: undefined,
-				};
-
-				set({ currentJourney: updatedJourney });
+				set({
+					currentJourney: finishedJourney,
+					finishedJourney: null,
+				});
 			},
 
 			endJourney: () => {
@@ -57,23 +57,28 @@ export const useJourneyStore = create<JourneyStore>()(
 				};
 
 				set(() => ({
-					currentJourney: completedJourney,
+					currentJourney: null,
+					finishedJourney: completedJourney,
 					isPlacingObject: false,
 					currentObjectPoints: [],
-					// journeyHistory: [completedJourney, ...state.journeyHistory],
 				}));
 			},
 
-			updateJourneyMeta: (updates) => {
-				const { currentJourney } = get();
-				if (!currentJourney) return;
+			deleteEndJourney: () => {
+				set({ finishedJourney: null });
+			},
 
-				const updatedJourney: Journey = {
-					...currentJourney,
+			updateFinishedJourneyMeta: (updates) => {
+				const { finishedJourney } = get();
+
+				if (!finishedJourney) return;
+
+				const updatedJourney = {
+					...finishedJourney,
 					...updates,
 				};
 
-				set({ currentJourney: updatedJourney });
+				set({ finishedJourney: updatedJourney });
 			},
 
 			startPlacingObjects: () => {
@@ -118,21 +123,21 @@ export const useJourneyStore = create<JourneyStore>()(
 				}));
 			},
 
-			updateObjectInCurrentJourney: (objectId, updates) => {
-				const { currentJourney } = get();
+			updateObjectinFinishedJourney: (objectId, updates) => {
+				const { finishedJourney } = get();
 
-				if (!currentJourney) return;
+				if (!finishedJourney) return;
 
-				const updatedObjects = currentJourney.objects.map((obj) =>
+				const updatedObjects = finishedJourney.objects.map((obj) =>
 					obj.id === objectId ? { ...obj, ...updates } : obj
 				);
 
-				set({
-					currentJourney: {
-						...currentJourney,
-						objects: updatedObjects,
-					},
-				});
+				const updatedJourney = {
+					...finishedJourney,
+					objects: updatedObjects,
+				};
+
+				set({ finishedJourney: updatedJourney });
 			},
 
 			clearCurrentObjectPoints: () => set({ currentObjectPoints: [] }),

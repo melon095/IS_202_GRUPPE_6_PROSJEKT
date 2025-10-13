@@ -1,3 +1,4 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 
@@ -20,7 +21,7 @@ interface JourneySummaryProps {
 }
 
 export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: JourneySummaryProps) => {
-	const { updateObjectInCurrentJourney, updateJourneyMeta } = useJourney();
+	const { updateObjectinFinishedJourney, updateFinishedJourneyMeta } = useJourney();
 	const { getObjectTypeById } = useObjectTypes();
 	const [editingObjectId, setEditingObjectId] = useState<string | null>(null);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
@@ -44,7 +45,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 		}
 	}, [deleteConfirmId]);
 
-	const debouncedSave = useDebouncedCallback(updateJourneyMeta, DEBOUNCE_TIMEOUT);
+	const debouncedSave = useDebouncedCallback(updateFinishedJourneyMeta, DEBOUNCE_TIMEOUT);
 
 	useEffect(() => {
 		debouncedSave({ title: journeyTitle, description: journeyDescription });
@@ -55,7 +56,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 	};
 
 	const handleSaveObject = (objectId: string, updates: Partial<PlacedObject>) => {
-		updateObjectInCurrentJourney(objectId, updates);
+		updateObjectinFinishedJourney(objectId, updates);
 	};
 
 	const handleFinalize = () => {
@@ -222,7 +223,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 															style={{ marginBottom: "0.5em" }}
 														>
 															<span className="icon is-medium">
-																<i className="fas fa-edit"></i>
+																<FontAwesomeIcon icon={["fas", "edit"]} />
 															</span>
 															<span>Edit</span>
 														</button>
@@ -231,25 +232,27 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 															<button
 																className="button is-success is-medium ml-2"
 																onClick={() =>
-																	updateObjectInCurrentJourney(obj.id!, {
+																	updateObjectinFinishedJourney(obj.id!, {
 																		deleted: false,
 																	})
 																}
 																style={{ marginBottom: "0.5em" }}
 															>
 																<span className="icon is-medium">
-																	<i className="fas fa-undo"></i>
+																	<FontAwesomeIcon icon={["fas", "undo"]} />
 																</span>
 																<span>Restore</span>
 															</button>
 														) : (
 															<button
-																className={`button is-danger is-medium ml-2 ${
-																	deleteConfirmId === obj.id ? "is-outlined" : ""
+																className={`button is-medium ml-2 ${
+																	deleteConfirmId === obj.id
+																		? "is-danger"
+																		: "is-warning"
 																}`}
 																onClick={() => {
 																	if (deleteConfirmId === obj.id) {
-																		updateObjectInCurrentJourney(obj.id!, {
+																		updateObjectinFinishedJourney(obj.id!, {
 																			deleted: true,
 																		});
 																	} else {
@@ -259,7 +262,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 																style={{ marginBottom: "0.5em" }}
 															>
 																<span className="icon is-medium">
-																	<i className="fas fa-trash"></i>
+																	<FontAwesomeIcon icon={["fas", "trash"]} />
 																</span>
 																<span>
 																	{deleteConfirmId === obj.id ? "Confirm?" : "Delete"}
@@ -287,14 +290,14 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 							{isSubmitting ? (
 								<>
 									<span className="icon is-large">
-										<i className="fas fa-spinner fa-spin-pulse"></i>
+										<FontAwesomeIcon icon={["fas", "spinner"]} spinPulse />
 									</span>
 									<span>Submitting</span>
 								</>
 							) : (
 								<>
 									<span className="icon is-large">
-										<i className="fas fa-check"></i>
+										<FontAwesomeIcon icon={["fas", "check"]} />
 									</span>
 									<span>Submit & Close</span>
 								</>
@@ -307,7 +310,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 							className="button is-light is-large is-fullwidth"
 						>
 							<span className="icon is-large">
-								<i className="fas fa-times"></i>
+								<FontAwesomeIcon icon={["fas", "times"]} />
 							</span>
 							<span>Close</span>
 						</button>

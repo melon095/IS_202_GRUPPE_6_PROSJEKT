@@ -121,7 +121,7 @@ if (!app.Environment.IsDevelopment())
     db.Database.Migrate();
     
     // TODO: Mildertidlig punkt
-    if (db.MapObjectTypes.Any(m => m.Name == "Midlertidlig type!")) return;
+    if (db.MapObjectTypes.Any(m => m.Name == "Midlertidlig type!")) goto b;
     
     db.MapObjectTypes.Add(new MapObjectTypeTable()
     {
@@ -131,6 +131,7 @@ if (!app.Environment.IsDevelopment())
     });
     db.SaveChanges();
 }
+b:
 
 {
     var roleManager = app.Services.CreateScope().ServiceProvider.GetRequiredService<RoleManager<RoleTable>>();

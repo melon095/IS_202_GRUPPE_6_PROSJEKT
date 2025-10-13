@@ -1,3 +1,4 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 
@@ -78,7 +79,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 							<div className="control">
 								<button onClick={startJourney} className="button is-success is-large">
 									<span className="icon">
-										<i className="fas fa-play"></i>
+										<FontAwesomeIcon icon={["fas", "play"]} />
 									</span>
 									<span>Start Journey</span>
 								</button>
@@ -99,7 +100,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 							<h4 className="title is-5 mb-3">
 								<span className="icon-text">
 									<span className="icon has-text-success">
-										<i className="fas fa-route"></i>
+										<FontAwesomeIcon icon={["fas", "route"]} />
 									</span>
 									<span>Journey Active!</span>
 								</span>
@@ -121,7 +122,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								<div className="notification is-info is-light is-small py-2">
 									<span className="icon-text">
 										<span className="icon">
-											<i className="fas fa-sync fa-spin"></i>
+											<FontAwesomeIcon icon={["fas", "sync"]} spin />
 										</span>
 										<span>Syncing to server...</span>
 									</span>
@@ -132,7 +133,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 							{!isPlacingObject ? (
 								<button onClick={handleStartPlacingObject} className="button is-primary">
 									<span className="icon">
-										<i className="fas fa-map-marker-alt"></i>
+										<FontAwesomeIcon icon={["fas", "map-marker-alt"]} />
 									</span>
 									<span>Place Object</span>
 								</button>
@@ -140,14 +141,14 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								<>
 									<button onClick={handleStopPlacingObject} className="button is-warning">
 										<span className="icon">
-											<i className="fas fa-stop"></i>
+											<FontAwesomeIcon icon={["fas", "stop"]} />
 										</span>
 										<span>Stop Placing ({currentObjectPoints.length})</span>
 									</button>
 
 									<button onClick={clearCurrentObjectPoints} className="button is-light">
 										<span className="icon">
-											<i className="fas fa-trash-alt"></i>
+											<FontAwesomeIcon icon={["fas", "trash-alt"]} />
 										</span>
 										<span>Clear Points</span>
 									</button>
@@ -156,7 +157,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 
 							<button onClick={endJourney} className="button is-danger">
 								<span className="icon">
-									<i className="fas fa-stop-circle"></i>
+									<FontAwesomeIcon icon={["fas", "stop-circle"]} />
 								</span>
 								<span>End Journey</span>
 							</button>

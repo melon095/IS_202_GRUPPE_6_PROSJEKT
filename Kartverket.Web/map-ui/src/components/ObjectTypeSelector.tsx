@@ -1,3 +1,4 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
 import { useObjectTypes } from "../contexts/ObjectTypesContext";
@@ -28,7 +29,7 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 			<div className="box">
 				<div className="has-text-centered">
 					<span className="icon">
-						<i className="fas fa-spinner fa-spin"></i>
+						<FontAwesomeIcon icon={["fas", "spinner"]} spin />
 					</span>
 					<p>Laster inn objekttyper...</p>
 				</div>

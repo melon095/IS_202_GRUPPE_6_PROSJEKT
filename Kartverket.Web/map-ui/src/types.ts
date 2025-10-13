@@ -28,9 +28,9 @@ export interface Journey {
 
 export interface JourneyState {
 	currentJourney: Journey | null;
+	finishedJourney: Journey | null;
 	isPlacingObject: boolean;
 	currentObjectPoints: Point[];
-	// journeyHistory: Journey[];
 }
 
 export interface ObjectType {
