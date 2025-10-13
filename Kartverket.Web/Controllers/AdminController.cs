@@ -46,22 +46,32 @@ public class AdminController: Controller
         }
         return View(Model);
     }
-    
-    public IActionResult Index([FromQuery]int page = 1)
+
+    [HttpGet]
+    public IActionResult Index([FromQuery]int page = 1, [FromQuery]DateOnly? sortDate = null)
     {
-        var totalreports = _dbContext.Reports.Count();
-        var totalpages = (int)Math.Ceiling(totalreports / (double)ReportPerPage);
+        sortDate ??= DateOnly.FromDateTime(DateTime.Now);
         // Pagnering når det er for mange rapporter
         // Sorterer etter dato
-        var reports =  _dbContext.Reports
+        var reportQuery = _dbContext.Reports.AsQueryable();
+
+        reportQuery = reportQuery
+            .Where(r => DateOnly.FromDateTime(r.CreatedAt) <= sortDate.Value);
+
+        var totalReports = reportQuery.Count();
+        var totalpages = (int)Math.Ceiling(totalReports / (double)ReportPerPage);
+
+        var reports = reportQuery
             .OrderByDescending(r => r.CreatedAt)
             .Skip((page - 1) * ReportPerPage)
             .Take(ReportPerPage)
             .ToList();
+
         var Model = new GetAllReportsModel()
         {
             CurrentPage = page,
-            TotalPages = totalpages
+            TotalPages = totalpages,
+            SortDate = sortDate.Value
         };
 
         foreach (var report in reports)

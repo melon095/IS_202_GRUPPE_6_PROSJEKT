@@ -4,6 +4,7 @@
     {
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
+        public DateOnly SortDate { get; set; }
         // List of reports
         public List<MakeReportList> Reports { get; set; } = [];
         public class MakeReportList
