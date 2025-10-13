@@ -2,7 +2,6 @@ using Kartverket.Web.AuthPolicy;
 using System.Diagnostics;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
-using Kartverket.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Identity;
@@ -14,11 +13,6 @@ using Vite.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
-builder.Services
-    .AddTransient<MapService, MapService>()
-    .AddTransient<UserService, UserService>()
-    .AddTransient<GeoJSONService, GeoJSONService>()
-    .AddTransient<ReportService, ReportService>();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
 {
@@ -127,8 +121,15 @@ if (!app.Environment.IsDevelopment())
     db.Database.Migrate();
     
     // TODO: Mildertidlig punkt
-    // db.MapObjectTypes.Add(new MapObjectTypeTable() { Name = "Midlertidlig type!" });
-    // db.SaveChanges();
+    if (db.MapObjectTypes.Any(m => m.Name == "Midlertidlig type!")) return;
+    
+    db.MapObjectTypes.Add(new MapObjectTypeTable()
+    {
+        Name = "Midlertidlig type!",
+        PrimaryImageUrl = "/images/map-objects/test.svg",
+        MarkerImageUrl = null,
+    });
+    db.SaveChanges();
 }
 
 {

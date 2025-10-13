@@ -1,8 +1,8 @@
-﻿import { UserConfig, defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+﻿import react from "@vitejs/plugin-react-swc";
 import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
+import { UserConfig, defineConfig } from "vite";
 
 // Get base folder for certificates.
 const baseFolder =
@@ -33,19 +33,9 @@ export default defineConfig(async () => {
 	if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
 		// Wait for the certificate to be generated
 		await new Promise<void>((resolve) => {
-			spawn(
-				"dotnet",
-				[
-					"dev-certs",
-					"https",
-					"--export-path",
-					certFilePath,
-					"--format",
-					"Pem",
-					"--no-password",
-				],
-				{ stdio: "inherit" }
-			).on("exit", (code) => {
+			spawn("dotnet", ["dev-certs", "https", "--export-path", certFilePath, "--format", "Pem", "--no-password"], {
+				stdio: "inherit",
+			}).on("exit", (code) => {
 				resolve();
 				if (code) {
 					process.exit(code);

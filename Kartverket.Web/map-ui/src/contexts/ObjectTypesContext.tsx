@@ -1,6 +1,7 @@
-import { createContext, useContext } from "react";
-import { ObjectType } from "../types";
 import { useQuery } from "@tanstack/react-query";
+import { createContext, useContext } from "react";
+
+import { ObjectType } from "../types";
 
 interface ObjectTypesContextType {
 	objectTypes: ObjectType[];
@@ -10,9 +11,7 @@ interface ObjectTypesContextType {
 	getObjectTypeByName: (name: string) => ObjectType | undefined;
 }
 
-const ObjectTypeContext = createContext<ObjectTypesContextType | undefined>(
-	undefined
-);
+const ObjectTypeContext = createContext<ObjectTypesContextType | undefined>(undefined);
 
 const fetchObjectTypes = async (): Promise<ObjectType[]> => {
 	const response = await fetch("/ObjectTypes/List");
@@ -22,9 +21,7 @@ const fetchObjectTypes = async (): Promise<ObjectType[]> => {
 	return response.json();
 };
 
-export const ObjectTypesProvider: React.FC<{ children: React.ReactNode }> = ({
-	children,
-}) => {
+export const ObjectTypesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const {
 		data: objectTypes = [],
 		isLoading,
@@ -55,19 +52,13 @@ export const ObjectTypesProvider: React.FC<{ children: React.ReactNode }> = ({
 		getObjectTypeByName,
 	};
 
-	return (
-		<ObjectTypeContext.Provider value={contextValue}>
-			{children}
-		</ObjectTypeContext.Provider>
-	);
+	return <ObjectTypeContext.Provider value={contextValue}>{children}</ObjectTypeContext.Provider>;
 };
 
 export const useObjectTypes = (): ObjectTypesContextType => {
 	const context = useContext(ObjectTypeContext);
 	if (!context) {
-		throw new Error(
-			"useObjectTypes must be used within an ObjectTypesProvider"
-		);
+		throw new Error("useObjectTypes must be used within an ObjectTypesProvider");
 	}
 	return context;
 };

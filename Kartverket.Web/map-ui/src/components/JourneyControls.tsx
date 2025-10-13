@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
-import { useJourney } from "../contextx/JourneyContext";
-import { useServerSync } from "../hooks/useServerSync";
 import { DomEvent } from "leaflet";
+import { useEffect, useRef, useState } from "react";
+
+import { useJourney } from "../contexts/JourneyContext";
+import { useServerSync } from "../hooks/useServerSync";
 import { ObjectTypeSelector } from "./ObjectTypeSelector";
 
 interface JourneyControlsProps {
@@ -20,7 +21,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		stopPlacingObject,
 	} = useJourney();
 
-	const { syncObject, isSyncing } = useServerSync();
+	const { syncObjectMutation } = useServerSync();
 	const [showTypeSelector, setShowTypeSelector] = useState(false);
 	const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -44,18 +45,23 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	};
 
 	const handleTypeSelect = (typeId?: string, customType?: string) => {
-		stopPlacingObject(typeId, customType);
+		const lastObject = stopPlacingObject(typeId, customType);
 		setShowTypeSelector(false);
 
-		if (!currentJourney || navigator.onLine) return;
+		if (!currentJourney || !navigator.onLine || !lastObject) return;
 
-		const lastObject = currentJourney?.objects.slice(-1)[0];
-		if (!lastObject) return;
-
-		syncObject({
-			object: lastObject,
-			journeyId: currentJourney.id,
-		});
+		syncObjectMutation.mutate(
+			{
+				object: lastObject,
+				journeyId: currentJourney.id,
+			},
+			{
+				onSuccess(data) {
+					currentJourney.id = data.journeyId;
+					lastObject.id = data.objectId;
+				},
+			}
+		);
 	};
 
 	const handleCancelTypeSelect = () => {
@@ -63,118 +69,103 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		clearCurrentObjectPoints();
 	};
 
-	if (!currentJourney) {
-		return (
-			<div className="journey-controls-overlay">
-				<div className="box">
-					<div className="field">
-						<div className="control">
-							<button
-								onClick={startJourney}
-								className="button is-success is-large"
-							>
-								<span className="icon">
-									<i className="fas fa-play"></i>
+	return (
+		<div ref={overlayRef} style={{ zIndex: 1000 }}>
+			{currentJourney === null ? (
+				<div className="journey-controls-overlay">
+					<div className="box">
+						<div className="field">
+							<div className="control">
+								<button onClick={startJourney} className="button is-success is-large">
+									<span className="icon">
+										<i className="fas fa-play"></i>
+									</span>
+									<span>Start Journey</span>
+								</button>
+							</div>
+						</div>
+
+						<div className="content">{children}</div>
+					</div>
+				</div>
+			) : showTypeSelector ? (
+				<div className="journey-controls-overlay">
+					<ObjectTypeSelector onSelect={handleTypeSelect} onCancel={handleCancelTypeSelect} />
+				</div>
+			) : (
+				<div className="journey-controls-overlay">
+					<div className="box">
+						<div className="content">
+							<h4 className="title is-5 mb-3">
+								<span className="icon-text">
+									<span className="icon has-text-success">
+										<i className="fas fa-route"></i>
+									</span>
+									<span>Journey Active!</span>
 								</span>
-								<span>Start Journey</span>
+							</h4>
+
+							<div className="tags has-addons mb-3">
+								<span className="tag is-dark">Objects Placed</span>
+								<span className="tag is-info">{currentJourney.objects.length}</span>
+							</div>
+
+							{currentObjectPoints.length > 0 && (
+								<div className="tags has-addons mb-3">
+									<span className="tag is-dark">Current object points</span>
+									<span className="tag is-warning">{currentObjectPoints.length}</span>
+								</div>
+							)}
+
+							{syncObjectMutation.isPending && (
+								<div className="notification is-info is-light is-small py-2">
+									<span className="icon-text">
+										<span className="icon">
+											<i className="fas fa-sync fa-spin"></i>
+										</span>
+										<span>Syncing to server...</span>
+									</span>
+								</div>
+							)}
+						</div>
+						<div className="buttons">
+							{!isPlacingObject ? (
+								<button onClick={handleStartPlacingObject} className="button is-primary">
+									<span className="icon">
+										<i className="fas fa-map-marker-alt"></i>
+									</span>
+									<span>Place Object</span>
+								</button>
+							) : (
+								<>
+									<button onClick={handleStopPlacingObject} className="button is-warning">
+										<span className="icon">
+											<i className="fas fa-stop"></i>
+										</span>
+										<span>Stop Placing ({currentObjectPoints.length})</span>
+									</button>
+
+									<button onClick={clearCurrentObjectPoints} className="button is-light">
+										<span className="icon">
+											<i className="fas fa-trash-alt"></i>
+										</span>
+										<span>Clear Points</span>
+									</button>
+								</>
+							)}
+
+							<button onClick={endJourney} className="button is-danger">
+								<span className="icon">
+									<i className="fas fa-stop-circle"></i>
+								</span>
+								<span>End Journey</span>
 							</button>
 						</div>
+
+						<div className="content">{children}</div>
 					</div>
-
-					<div className="content">{children}</div>
 				</div>
-			</div>
-		);
-	}
-
-	if (showTypeSelector) {
-		return (
-			<div className="journey-controls-overlay">
-				<ObjectTypeSelector
-					onSelect={handleTypeSelect}
-					onCancel={handleCancelTypeSelect}
-				/>
-			</div>
-		);
-	}
-
-	return (
-		<div ref={overlayRef} className="journey-controls-overlay">
-			<div className="box">
-				<div className="content">
-					<h4 className="title is-5 mb-3">
-						<span className="icon-text">
-							<span className="icon has-text-success">
-								<i className="fas fa-route"></i>
-							</span>
-							<span>Journey Active!</span>
-						</span>
-					</h4>
-
-					<div className="tags has-addons mb-3">
-						<span className="tag is-dark">Objects Placed</span>
-						<span className="tag is-info">
-							{currentJourney.objects.length}
-						</span>
-					</div>
-
-					{currentObjectPoints.length > 0 && (
-						<div className="tags has-addons mb-3">
-							<span className="tag is-dark">
-								Current object points
-							</span>
-							<span className="tag is-warning">
-								{currentObjectPoints.length}
-							</span>
-						</div>
-					)}
-
-					{isSyncing && (
-						<div className="notification is-info is-light is-small py-2">
-							<span className="icon-text">
-								<span className="icon">
-									<i className="fas fa-sync fa-spin"></i>
-								</span>
-								<span>Syncing to server...</span>
-							</span>
-						</div>
-					)}
-				</div>
-				<div className="buttons">
-					{!isPlacingObject ? (
-						<button
-							onClick={handleStartPlacingObject}
-							className="button is-primary"
-						>
-							<span className="icon">
-								<i className="fas fa-map-marker-alt"></i>
-							</span>
-							<span>Place Object</span>
-						</button>
-					) : (
-						<button
-							onClick={handleStopPlacingObject}
-							className="button is-warning"
-						>
-							<span className="icon">
-								<i className="fas fa-stop"></i>
-							</span>
-							<span>
-								Stop Placing ({currentObjectPoints.length})
-							</span>
-						</button>
-					)}
-
-					<button onClick={endJourney} className="button is-danger">
-						<span className="icon">
-							<i className="fas fa-stop-circle"></i>
-						</span>
-						<span>End Journey</span>
-					</button>
-				</div>
-
-				<div className="content">{children}</div>
-			</div>
+			)}
 		</div>
 	);
 };

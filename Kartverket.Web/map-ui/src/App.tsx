@@ -1,11 +1,13 @@
 ﻿import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { JourneyProvider, useJourney } from "./contextx/JourneyContext";
-import { useEffect, useState } from "react";
-import { Journey } from "./types";
-import { MapComponent } from "./components/MapComponent";
+import { useEffect, useMemo, useState } from "react";
+
 import { JourneyControls } from "./components/JourneyControls";
 import { JourneySummary } from "./components/JourneySummary";
-import { ObjectTypesProvider } from "./contextx/ObjectTypesContext";
+import { MapComponent } from "./components/MapComponent";
+import { JourneyProvider, useJourney } from "./contexts/JourneyContext";
+import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
+import { useServerSync } from "./hooks/useServerSync";
+import { useTranslation } from "./i18n";
 
 // /// Better journey.
 // /// When the user opens the map, all that is done there from start to end will be recoreded as one single report.
@@ -29,25 +31,56 @@ const queryClient = new QueryClient({
 });
 
 const AppContent = () => {
-	const { currentJourney, journeyHistory } = useJourney();
+	const { t } = useTranslation();
+	const { currentJourney, undoEndJourney } = useJourney();
 	const [showSummary, setShowSummary] = useState(false);
-	const [summaryJourney, setSummaryJourney] = useState<Journey | null>(null);
+	const { finalizeJourneyMutation } = useServerSync();
+
+	const completedJourney = useMemo(() => {
+		if (currentJourney?.endTime) {
+			return currentJourney;
+		}
+
+		return null;
+	}, [currentJourney]);
 
 	useEffect(() => {
-		if (!currentJourney && journeyHistory.length > 0) {
-			const lastJourney = journeyHistory[journeyHistory.length - 1];
-
-			// endTime means completed
-			if (lastJourney.endTime) {
-				setSummaryJourney(lastJourney);
-				setShowSummary(true);
-			}
-		}
-	}, [currentJourney, journeyHistory]);
+		setShowSummary(completedJourney !== null);
+	}, [completedJourney]);
 
 	const handleCloseSummary = () => {
 		setShowSummary(false);
-		setSummaryJourney(null);
+		if (currentJourney) undoEndJourney();
+	};
+
+	const handleSubmitSummary = () => {
+		if (!completedJourney) return;
+		const objs = completedJourney.objects
+			.filter((obj) => obj.deleted === false)
+			.map((obj) => ({
+				id: obj.id!,
+				title: obj.title,
+				description: obj.description,
+				points: obj.points,
+				typeId: obj.typeId,
+				customType: obj.customType,
+			}));
+
+		finalizeJourneyMutation.mutate(
+			{
+				journey: {
+					id: completedJourney.id,
+					title: completedJourney.title,
+					description: completedJourney.description,
+				},
+				objects: objs,
+			},
+			{
+				onSuccess: () => {
+					handleCloseSummary();
+				},
+			}
+		);
 	};
 
 	return (
@@ -55,36 +88,20 @@ const AppContent = () => {
 			<div>
 				<MapComponent>
 					<JourneyControls>
-						<div>
-							{navigator.onLine
-								? "🟢 Kobla til internett"
-								: "🔴 Mangler internett"}
-						</div>
+						{t("test")}
+						<div>{navigator.onLine ? "🟢 Kobla til internett" : "🔴 Mangler internett"}</div>
 					</JourneyControls>
+
+					{showSummary && completedJourney && (
+						<JourneySummary
+							journey={completedJourney}
+							onClose={handleCloseSummary}
+							onSubmit={handleSubmitSummary}
+							isSubmitting={finalizeJourneyMutation.isPending}
+						/>
+					)}
 				</MapComponent>
 			</div>
-
-			{showSummary && summaryJourney && (
-				<div className="modal is-active">
-					<div
-						className="modal-background"
-						onClick={handleCloseSummary}
-					></div>
-					<div className="modal-content">
-						<JourneySummary
-							journey={summaryJourney}
-							onClose={handleCloseSummary}
-						/>
-					</div>
-					<div>
-						<button
-							className="modal-close is-large"
-							aria-label="close"
-							onClick={handleCloseSummary}
-						></button>
-					</div>
-				</div>
-			)}
 		</div>
 	);
 };

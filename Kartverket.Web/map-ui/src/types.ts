@@ -1,21 +1,26 @@
 export interface Point {
 	lat: number;
 	lng: number;
-	timestamp?: number;
+	// TODO: Elevation!
+	elevation?: number;
+	timestamp?: string;
 }
 
 export interface PlacedObject {
-	id: string;
+	id?: string;
 	points: Point[];
 	typeId?: string;
 	customType?: string;
 	title?: string;
 	description?: string;
-	createdAt?: string;
+	createdAt: string;
+	deleted?: boolean;
 }
 
 export interface Journey {
 	id: string;
+	title?: string;
+	description?: string;
 	startTime: number;
 	endTime?: number;
 	objects: PlacedObject[];
@@ -25,7 +30,7 @@ export interface JourneyState {
 	currentJourney: Journey | null;
 	isPlacingObject: boolean;
 	currentObjectPoints: Point[];
-	journeyHistory: Journey[];
+	// journeyHistory: Journey[];
 }
 
 export interface ObjectType {
@@ -34,3 +39,33 @@ export interface ObjectType {
 	primaryImageUrl: string;
 	markerImageUrl?: string;
 }
+
+export interface ServerSyncData {
+	object: PlacedObject;
+	journeyId?: string;
+}
+
+export interface ServerSyncResponse {
+	journeyId: string;
+	objectId: string;
+}
+
+export interface FinalizeJourneyObject {
+	id: string;
+	title?: string;
+	description?: string;
+	points: Point[];
+	typeId?: string;
+	customType?: string;
+}
+
+export interface FinalizeJourneyData {
+	journey: {
+		id: string;
+		title?: string;
+		description?: string;
+	};
+	objects: FinalizeJourneyObject[];
+}
+
+export type ResponseError = Record<string, string[]>;

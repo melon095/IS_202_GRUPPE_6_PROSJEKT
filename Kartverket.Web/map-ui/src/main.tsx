@@ -1,9 +1,9 @@
-﻿import "//unpkg.com/react-scan/dist/auto.global.js";
-
-import "vite/modulepreload-polyfill";
+﻿import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import "vite/modulepreload-polyfill";
+
 import App from "./App.js";
-import { StrictMode } from "react";
+import "//unpkg.com/react-scan/dist/auto.global.js";
 
 document.querySelector("header")!.style.display = "none";
 document.querySelector("footer")!.style.display = "none";

@@ -1,20 +1,17 @@
 import { create } from "zustand";
-import { Journey, JourneyState, PlacedObject, Point } from "../types";
 import { createJSONStorage, persist } from "zustand/middleware";
+
+import { Journey, JourneyState, PlacedObject, Point } from "../types";
 
 export interface JourneyFunctions {
 	startJourney: () => void;
+	undoEndJourney: () => void;
 	endJourney: () => void;
+	updateJourneyMeta: (updates: Partial<Journey>) => void;
 	startPlacingObjects: () => void;
-	stopPlacingObject: (
-		typeId?: string | undefined,
-		customType?: string | undefined
-	) => void;
+	stopPlacingObject: (typeId?: string | undefined, customType?: string | undefined) => PlacedObject | undefined;
 	addPointToCurrentObject: (point: Point) => void;
-	updateObjectInCurrentJourney: (
-		objectId: string,
-		updates: Partial<PlacedObject>
-	) => void;
+	updateObjectInCurrentJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
 	clearCurrentObjectPoints: () => void;
 }
 
@@ -38,6 +35,18 @@ export const useJourneyStore = create<JourneyStore>()(
 				set({ currentJourney: journey });
 			},
 
+			undoEndJourney: () => {
+				const { currentJourney } = get();
+				if (!currentJourney || !currentJourney.endTime) return;
+
+				const updatedJourney: Journey = {
+					...currentJourney,
+					endTime: undefined,
+				};
+
+				set({ currentJourney: updatedJourney });
+			},
+
 			endJourney: () => {
 				const { currentJourney } = get();
 				if (!currentJourney) return;
@@ -47,12 +56,24 @@ export const useJourneyStore = create<JourneyStore>()(
 					endTime: Date.now(),
 				};
 
-				set((state) => ({
-					currentJourney: null,
+				set(() => ({
+					currentJourney: completedJourney,
 					isPlacingObject: false,
 					currentObjectPoints: [],
-					journeyHistory: [completedJourney, ...state.journeyHistory],
+					// journeyHistory: [completedJourney, ...state.journeyHistory],
 				}));
+			},
+
+			updateJourneyMeta: (updates) => {
+				const { currentJourney } = get();
+				if (!currentJourney) return;
+
+				const updatedJourney: Journey = {
+					...currentJourney,
+					...updates,
+				};
+
+				set({ currentJourney: updatedJourney });
 			},
 
 			startPlacingObjects: () => {
@@ -85,10 +106,12 @@ export const useJourneyStore = create<JourneyStore>()(
 					isPlacingObject: false,
 					currentObjectPoints: [],
 				});
+
+				return newObject;
 			},
 
 			addPointToCurrentObject: (point) => {
-				point.timestamp = Date.now();
+				point.timestamp = new Date().toISOString();
 
 				set((state) => ({
 					currentObjectPoints: [...state.currentObjectPoints, point],
