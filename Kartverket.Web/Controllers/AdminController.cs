@@ -1,4 +1,5 @@
-﻿using Kartverket.Web.Database;
+﻿using System.Drawing;
+using Kartverket.Web.Database;
 using Kartverket.Web.Models.Admin;
 using Kartverket.Web.Models.Admin.Request;
 using Kartverket.Web.Models.Report.Response;
@@ -22,28 +23,34 @@ public class AdminController: Controller
     [HttpGet("/Admin/ReportInDepth/{id:guid}")]
     public IActionResult ReportInDepth(Guid id)
     {
-        var Model = new InDepthReportModel();
         var report = _dbContext.Reports
             .Include(r => r.User)
             .Include(r => r.MapPoints)
             .FirstOrDefault(r => r.Id == id);
-        foreach(var point in report.MapPoints)
+        if (report == null)
         {
-            Model.Points.Add(new InDepthReportModel.Point
+            return NotFound();
+        }
+        var Model = new InDepthReportModel
+        {
+            Id = report.Id,
+            Title = report.Title,
+            Description = report.Description,
+            CreatedAt = report.CreatedAt
+        };
+
+        var objectData = new InDepthReportModel.ObjectDataModel();
+
+        foreach (var point in report.MapPoints)
+        {
+            objectData.Points.Add(new InDepthReportModel.ObjectDataModel.Point
             {
                 Lat = point.Latitude,
                 Lng = point.Longitude,
                 Elevation = point.AMSL
             });
         }
-        Model.Id = report.Id;
-        Model.Title = report.Title;
-        Model.Description = report.Description;
-        Model.CreatedAt = report.CreatedAt;
-        if(report == null)
-        {
-            return NotFound();
-        }
+        Model.Objects.Add(objectData);
         return View(Model);
     }
 

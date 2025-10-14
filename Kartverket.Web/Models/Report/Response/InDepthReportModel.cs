@@ -8,13 +8,19 @@
 
         public DateTime CreatedAt { get; set; }
 
-        public List<Point> Points { get; set; } = [];
+        public List<ObjectDataModel> Objects { get; set; } = [];
 
-        public struct Point
+        public class ObjectDataModel
         {
-            public double Lat { get; set; }
-            public double Lng { get; set; }
-            public double Elevation { get; set; }
+            public List<Point> Points { get; set; } = [];
+            
+            public struct Point
+            {
+                public double Lat { get; set; }
+                public double Lng { get; set; }
+                public double Elevation { get; set; }
+            }
+
         }
     }
 }

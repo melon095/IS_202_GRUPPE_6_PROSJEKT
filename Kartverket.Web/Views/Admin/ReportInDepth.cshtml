@@ -2,42 +2,61 @@
     ViewBag.Title = "In-Depth Report";
 }
 @model Kartverket.Web.Models.Report.Response.InDepthReportModel
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
 
 <div id="model-title">
-    <h2 class="is-size-1">
-    Rapport: @Model.Title
+    <h2 class="is-size-2">
+        Rapport: @Model.Title
     </h2>
 </div>
-<p>@Model.Description</p>
-<p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+<div class="columns is-flex is-justify-content-space-between is-align-items-center  ">
 
-@if (Model.Points != null && Model.Points.Any())
+    <div class="column is-5 box" >
+        <p>Description:</p>
+        <br />
+        <p>@Model.Description</p>    
+    </div>
+    <div id="map" class="column is-4 box">
+
+    </div>
+</div>
+<div>
+    <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+</div>
+
+@section styles
 {
-    <h2>Points</h2>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Latitude</th>
-                <th>Longitude</th>
-                <th>Elevation (m)</th>
-            </tr>
-        </thead>
-        <tbody>
-            @for (int i = 0; i < Model.Points.Count; i++)
-            {
-                <tr>
-                    <td>@(i + 1)</td>
-                    <td>@Model.Points[i].Lat</td>
-                    <td>@Model.Points[i].Lng</td>
-                    <td>@Model.Points[i].Elevation</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+        }
+    </style>
 }
-else
-{
-    <p>No points available for this report.</p>
+@section Scripts{
+    <script src ="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+
+        const map = L.map('map').setView([58.152704227316775, 7.961763885116014], 15);
+
+        L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
+            attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
+        }).addTo(map);
+        L.marker([58.15270224625122, 7.961746926569928]).addTo(map).bindPopup("Test");
+
+        const objects = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Objects));
+        objects.forEach(obj => {
+            if (obj.Points && obj.Points.length > 0) 
+            {
+                obj.Points.forEach(point => 
+                    {
+                if (point.Lat && point.Lng)
+                {
+                    L.marker([point.Lat, point.Lng]).addTo(map).bindPopup("test");
+                }
+            });
+            }
+        });
+    </script>
 }
