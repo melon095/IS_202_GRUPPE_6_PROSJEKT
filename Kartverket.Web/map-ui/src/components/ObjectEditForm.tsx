@@ -61,7 +61,7 @@ export const ObjectEditForm = ({ object, onSave, onCancel }: ObjectEditFormProps
 			<div className="field is-grouped is-grouped-multiline">
 				<div className="control is-expanded">
 					<button type="button" className="button is-link is-fullwidth" onClick={onCancel}>
-						Lukk
+						{t("objectEditForm.actions.close")}
 					</button>
 				</div>
 			</div>

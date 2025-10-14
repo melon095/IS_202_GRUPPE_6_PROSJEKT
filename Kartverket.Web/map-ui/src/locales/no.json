@@ -3,8 +3,9 @@
         "header": "Start Reise",
         "objects_count": "Objekter plassert",
         "point_count": "Punkter plassert",
-        "syncing": "Synkroniserer...",
+        "syncing": "Synkroniserer",
         "buttons": {
+            "start": "Start reise",
             "place": "Plasser objekt",
             "end": "Avslutt reise",
             "stop": "Bekreft ({{count}})",
@@ -78,18 +79,7 @@
             }
         },
         "actions": {
-            "close": "Lukk",
-            "save": "Lagre",
-            "cancel": "Avbryt"
-        },
-        "validation": {
-            "maxLength": "Maksimalt {{max}} tegn",
-            "required": "Dette feltet er påkrevd"
-        },
-        "status": {
-            "saving": "Lagrer...",
-            "saved": "Lagret",
-            "error": "Feil ved lagring"
+            "close": "Lukk"
         }
     },
     "objectTypeSelector": {
@@ -98,9 +88,7 @@
             "message": "Laster inn objekttyper..."
         },
         "error": {
-            "title": "Klarte ikke å laste inn objekttyper",
-            "message": "Klarte ikke å laste inn objekttyper. Men du kan fortsatt legge til et egendefinert objekttype.",
-            "fallbackOption": "Du kan fortsatt legge til en egendefinert objekttype."
+            "title": "Klarte ikke å laste inn objekttyper"
         },
         "customType": {
             "label": "Egendefinert objekttype",
@@ -114,16 +102,6 @@
             "addWithoutType": "Legg til objekt uten type",
             "skip": "Hopp Over",
             "cancel": "Kanseller (Ikke legg til objekt)"
-        },
-        "validation": {
-            "noTypeSelected": "Velg en objekttype først",
-            "customTypeRequired": "Skriv inn navn på egendefinert type",
-            "customTypeEmpty": "Egendefinert type kan ikke være tom"
-        },
-        "accessibility": {
-            "selectObjectType": "Velg objekttype",
-            "objectTypeOption": "Objekttype: {{typeName}}",
-            "customTypeOption": "Egendefinert objekttype"
         }
     }
 }
