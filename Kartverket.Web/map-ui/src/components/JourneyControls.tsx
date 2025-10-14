@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useJourney } from "../contexts/JourneyContext";
 import { useServerSync } from "../hooks/useServerSync";
+import { useTranslation } from "../i18n";
 import { ObjectTypeSelector } from "./ObjectTypeSelector";
 
 interface JourneyControlsProps {
@@ -11,6 +12,7 @@ interface JourneyControlsProps {
 }
 
 export const JourneyControls = ({ children }: JourneyControlsProps) => {
+	const { t } = useTranslation();
 	const {
 		currentJourney,
 		isPlacingObject,
@@ -81,7 +83,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 									<span className="icon">
 										<FontAwesomeIcon icon={["fas", "play"]} />
 									</span>
-									<span>Start Journey</span>
+									<span>{t("controls.buttons.start")}</span>
 								</button>
 							</div>
 						</div>
@@ -102,18 +104,18 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 									<span className="icon has-text-success">
 										<FontAwesomeIcon icon={["fas", "route"]} />
 									</span>
-									<span>Journey Active!</span>
+									<span>{t("controls.header")}</span>
 								</span>
 							</h4>
 
 							<div className="tags has-addons mb-3">
-								<span className="tag is-dark">Objects Placed</span>
+								<span className="tag is-dark">{t("controls.objects_count")}</span>
 								<span className="tag is-info">{currentJourney.objects.length}</span>
 							</div>
 
 							{currentObjectPoints.length > 0 && (
 								<div className="tags has-addons mb-3">
-									<span className="tag is-dark">Current object points</span>
+									<span className="tag is-dark">{t("controls.point_count")}</span>
 									<span className="tag is-warning">{currentObjectPoints.length}</span>
 								</div>
 							)}
@@ -124,7 +126,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 										<span className="icon">
 											<FontAwesomeIcon icon={["fas", "sync"]} spin />
 										</span>
-										<span>Syncing to server...</span>
+										<span>{t("controls.syncing")}</span>
 									</span>
 								</div>
 							)}
@@ -135,7 +137,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 									<span className="icon">
 										<FontAwesomeIcon icon={["fas", "map-marker-alt"]} />
 									</span>
-									<span>Place Object</span>
+									<span>{t("controls.buttons.place")}</span>
 								</button>
 							) : (
 								<>
@@ -143,14 +145,14 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 										<span className="icon">
 											<FontAwesomeIcon icon={["fas", "stop"]} />
 										</span>
-										<span>Stop Placing ({currentObjectPoints.length})</span>
+										<span>{t("controls.buttons.stop", { count: currentObjectPoints.length })}</span>
 									</button>
 
 									<button onClick={clearCurrentObjectPoints} className="button is-light">
 										<span className="icon">
 											<FontAwesomeIcon icon={["fas", "trash-alt"]} />
 										</span>
-										<span>Clear Points</span>
+										<span>{t("controls.buttons.clear")}</span>
 									</button>
 								</>
 							)}
@@ -159,7 +161,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								<span className="icon">
 									<FontAwesomeIcon icon={["fas", "stop-circle"]} />
 								</span>
-								<span>End Journey</span>
+								<span>{t("controls.buttons.end")}</span>
 							</button>
 						</div>
 

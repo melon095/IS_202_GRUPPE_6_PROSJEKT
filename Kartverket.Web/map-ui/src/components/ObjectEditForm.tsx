@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import { useDebouncedCallback } from "../hooks/useDebouncedCallback";
 import { PlacedObject } from "../types";
@@ -12,6 +13,7 @@ interface ObjectEditFormProps {
 }
 
 export const ObjectEditForm = ({ object, onSave, onCancel }: ObjectEditFormProps) => {
+	const { t } = useTranslation();
 	const [title, setTitle] = useState(object.title);
 	const [description, setDescription] = useState(object.description || "");
 
@@ -27,14 +29,14 @@ export const ObjectEditForm = ({ object, onSave, onCancel }: ObjectEditFormProps
 	return (
 		<form className="box is-tablet">
 			<div className="field">
-				<label className="label is-size-7-tablet">Tittel</label>
+				<label className="label is-size-7-tablet">{t("objectEditForm.form.title.label")}</label>
 				<div className="control">
 					<input
 						className="input is-fullwidth"
 						type="text"
 						value={title}
 						onChange={(e) => setTitle(e.target.value)}
-						placeholder="Tittel"
+						placeholder={t("objectEditForm.form.title.placeholder")}
 						maxLength={100}
 						autoComplete="off"
 					/>
@@ -42,13 +44,13 @@ export const ObjectEditForm = ({ object, onSave, onCancel }: ObjectEditFormProps
 			</div>
 
 			<div className="field">
-				<label className="label is-size-7-tablet">Beskrivelse</label>
+				<label className="label is-size-7-tablet">{t("objectEditForm.form.description.label")}</label>
 				<div className="control">
 					<textarea
 						className="input is-fullwidth"
 						value={description}
 						onChange={(e) => setDescription(e.target.value)}
-						placeholder="Beskrivelse"
+						placeholder={t("objectEditForm.form.description.placeholder")}
 						maxLength={100}
 						autoComplete="off"
 						rows={3}

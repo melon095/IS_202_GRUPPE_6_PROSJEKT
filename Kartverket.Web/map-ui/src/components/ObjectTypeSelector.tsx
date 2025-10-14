@@ -2,6 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
 import { useObjectTypes } from "../contexts/ObjectTypesContext";
+import { useTranslation } from "../i18n";
 import { Icon } from "./Icon";
 
 export const CUSTOM_TYPE_ID = "custom";
@@ -12,6 +13,7 @@ interface ObjectTypeSelectorProps {
 }
 
 export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorProps) => {
+	const { t } = useTranslation();
 	const { objectTypes, isLoading, error } = useObjectTypes();
 	const [selectedTypeId, setSelectedTypeId] = useState("");
 	const [customType, setCustomType] = useState<string>("");
@@ -31,7 +33,7 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 					<span className="icon">
 						<FontAwesomeIcon icon={["fas", "spinner"]} spin />
 					</span>
-					<p>Laster inn objekttyper...</p>
+					<p>{t("objectTypeSelector.loading.message")}</p>
 				</div>
 			</div>
 		);
@@ -42,19 +44,20 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 			<div className="box">
 				<div className="notification is-danger is-light">
 					<p>
-						Klarte ikke å laste inn objekttyper. Men du kan fortsatt legge til et egendefinert objekttype.
+						<FontAwesomeIcon icon={["fas", "triangle-exclamation"]} />{" "}
+						{t("objectTypeSelector.error.message")}
 					</p>
 				</div>
 
 				<div className="field">
-					<label className="label">Egendefinert objekttype</label>
+					<label className="label">{t("objectTypeSelector.customType.label")}</label>
 					<div className="control">
 						<input
 							className="input"
 							type="text"
 							value={customType}
 							onChange={(e) => setCustomType(e.target.value)}
-							placeholder="F.eks. 'Min spesielle type'"
+							placeholder={t("objectTypeSelector.customType.placeholder")}
 						/>
 					</div>
 				</div>
@@ -66,19 +69,20 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 							onClick={() => onSelect(undefined, customType)}
 							disabled={!customType.trim()}
 						>
-							Legg til egendefinert type (Ikke implementert! Den vil bli ignorert for nå!)
+							{t("objectTypeSelector.customType.radioLabel")}{" "}
+							{t("objectTypeSelector.customType.notImplementedWarning")}
 						</button>
 					</div>
 
 					<div className="control">
 						<button className="button is-light" onClick={() => onSelect(undefined, undefined)}>
-							Hopp Over
+							{t("objectTypeSelector.actions.skip")}
 						</button>
 					</div>
 
 					<div className="control">
 						<button className="button is-light" onClick={onCancel}>
-							Kanseller (Ikke legg til objekt)
+							{t("objectTypeSelector.actions.cancel")}
 						</button>
 					</div>
 				</div>
@@ -88,7 +92,7 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 
 	return (
 		<div className="box">
-			<h4 className="title is-5">Hva type er dette objektet?</h4>
+			<h4 className="title is-5">{t("objectTypeSelector.title")}</h4>
 
 			<div className="field">
 				<div className="control">
@@ -158,7 +162,8 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 								style={{ width: "24px", height: "24px" }}
 							/>
 							<span className="ml-3 is-inline-block" style={{ flex: 1 }}>
-								Egendefinert objekttype (Ikke implementert! Den vil bli ignorert for nå!)
+								{t("objectTypeSelector.customType.radioLabel")}{" "}
+								{t("objectTypeSelector.customType.notImplementedWarning")}
 							</span>
 						</label>
 					</div>
@@ -173,7 +178,7 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 							type="text"
 							value={customType}
 							onChange={(e) => setCustomType(e.target.value)}
-							placeholder="F.eks. 'Min spesielle type'"
+							placeholder={t("objectTypeSelector.customType.placeholder")}
 						/>
 					</div>
 				</div>
@@ -182,23 +187,23 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 			<div className="field is-grouped mt-4">
 				<div className="control">
 					<button
-						className="button is-light is-primary"
+						className="button  is-primary"
 						onClick={handleConfirm}
 						disabled={selectedTypeId === "" || (selectedTypeId === CUSTOM_TYPE_ID && !customType.trim())}
 					>
-						Legg til
+						{t("objectTypeSelector.actions.add")}
 					</button>
 				</div>
 
 				<div className="control">
 					<button className="button is-light is-danger" onClick={onCancel}>
-						Kanseller (Ikke legg til objekt)
+						{t("objectTypeSelector.actions.cancel")}
 					</button>
 				</div>
 
 				<div className="control">
 					<button className="button is-light" onClick={() => onSelect(undefined, undefined)}>
-						Legg til objekt uten type
+						{t("objectTypeSelector.actions.addWithoutType")}
 					</button>
 				</div>
 			</div>

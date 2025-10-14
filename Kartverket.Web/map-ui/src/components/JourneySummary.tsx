@@ -6,6 +6,7 @@ import { useJourney } from "../contexts/JourneyContext";
 import { useObjectTypes } from "../contexts/ObjectTypesContext";
 import "../css/JourneySummary.css";
 import { useDebouncedCallback } from "../hooks/useDebouncedCallback";
+import { useTranslation } from "../i18n";
 import { Journey, PlacedObject } from "../types";
 import { Icon } from "./Icon";
 import { ObjectEditForm } from "./ObjectEditForm";
@@ -21,6 +22,7 @@ interface JourneySummaryProps {
 }
 
 export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: JourneySummaryProps) => {
+	const { t } = useTranslation();
 	const { updateObjectinFinishedJourney, updateFinishedJourneyMeta } = useJourney();
 	const { getObjectTypeById } = useObjectTypes();
 	const [editingObjectId, setEditingObjectId] = useState<string | null>(null);
@@ -104,21 +106,31 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 				{/* Main container */}
 				<div className="box is-tablet">
 					<div>
-						<h2 className="title is-size-4-tablet">Journey Summary</h2>
-						<p className="is-size-6-tablet">Started: {formatTime(journey.startTime)}</p>
-						{journey.endTime && <p className="is-size-6-tablet">Ended: {formatTime(journey.endTime)}</p>}
-						<p className="is-size-6-tablet">Objects Placed: {journey.objects.length}</p>
+						<h2 className="title is-size-4-tablet">{t("journeySummary.title")}</h2>
+						<p className="is-size-6-tablet">
+							{t("journeySummary.meta.started", { time: formatTime(journey.startTime) })}
+						</p>
+						{journey.endTime && (
+							<p className="is-size-6-tablet">
+								{t("journeySummary.meta.ended", { time: formatTime(journey.endTime) })}
+							</p>
+						)}
+						<p className="is-size-6-tablet">
+							{t("journeySummary.meta.objectsPlaced", { count: journey.objects.length })}
+						</p>
 					</div>
 
 					<div className="columns is-tablet mb-4">
 						<div className="column is-half">
 							<div className="field">
-								<label className="label is-size-6-tablet">Journey Title</label>
+								<label className="label is-size-6-tablet">
+									{t("journeySummary.form.journeyTitle.label")}
+								</label>
 								<div className="control">
 									<input
 										className="input is-medium"
 										type="text"
-										placeholder="Enter journey title..."
+										placeholder={t("journeySummary.form.journeyTitle.placeholder")}
 										value={journeyTitle}
 										onChange={(e) => setJourneyTitle(e.target.value)}
 										autoComplete="off"
@@ -128,11 +140,13 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 						</div>
 						<div className="column is-half">
 							<div className="field">
-								<label className="label is-size-6-tablet">Journey Description</label>
+								<label className="label is-size-6-tablet">
+									{t("journeySummary.form.journeyDescription.label")}
+								</label>
 								<div className="control">
 									<textarea
 										className="textarea is-medium"
-										placeholder="Enter journey description..."
+										placeholder={t("journeySummary.form.journeyDescription.placeholder")}
 										value={journeyDescription}
 										onChange={(e) => setJourneyDescription(e.target.value)}
 										rows={2}
@@ -143,20 +157,32 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 					</div>
 
 					<div>
-						<h3 className="subtitle is-size-5-tablet">Placed Objects</h3>
+						<h3 className="subtitle is-size-5-tablet">{t("journeySummary.objects.title")}</h3>
 						{journey.objects.length === 0 ? (
-							<p>No objects were placed during this journey.</p>
+							<p>{t("journeySummary.objects.emptyState")}</p>
 						) : (
 							<div className="table-container">
 								<table className="table is-fullwidth is-striped is-hoverable is-narrow">
 									<thead>
 										<tr>
-											<th className="is-size-6-tablet">Type</th>
-											<th className="is-size-6-tablet">Title</th>
-											<th className="is-size-6-tablet">Description</th>
-											<th className="is-size-6-tablet">Pts</th>
-											<th className="is-size-6-tablet">Created</th>
-											<th className="is-size-6-tablet">Deleted</th>
+											<th className="is-size-6-tablet">
+												{t("journeySummary.objects.table.headers.type")}
+											</th>
+											<th className="is-size-6-tablet">
+												{t("journeySummary.objects.table.headers.title")}
+											</th>
+											<th className="is-size-6-tablet">
+												{t("journeySummary.objects.table.headers.description")}
+											</th>
+											<th className="is-size-6-tablet">
+												{t("journeySummary.objects.table.headers.points")}
+											</th>
+											<th className="is-size-6-tablet">
+												{t("journeySummary.objects.table.headers.created")}
+											</th>
+											<th className="is-size-6-tablet">
+												{t("journeySummary.objects.table.headers.deleted")}
+											</th>
 											<th className="is-size-6-tablet"></th>
 										</tr>
 									</thead>
@@ -225,7 +251,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 															<span className="icon is-medium">
 																<FontAwesomeIcon icon={["fas", "edit"]} />
 															</span>
-															<span>Edit</span>
+															<span>{t("journeySummary.actions.edit")}</span>
 														</button>
 
 														{obj.deleted ? (
@@ -241,7 +267,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 																<span className="icon is-medium">
 																	<FontAwesomeIcon icon={["fas", "undo"]} />
 																</span>
-																<span>Restore</span>
+																<span>{t("journeySummary.actions.restore")}</span>
 															</button>
 														) : (
 															<button
@@ -265,7 +291,9 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 																	<FontAwesomeIcon icon={["fas", "trash"]} />
 																</span>
 																<span>
-																	{deleteConfirmId === obj.id ? "Confirm?" : "Delete"}
+																	{deleteConfirmId === obj.id
+																		? t("journeySummary.actions.deleteConfirm")
+																		: t("journeySummary.actions.delete")}
 																</span>
 															</button>
 														)}
@@ -292,14 +320,14 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 									<span className="icon is-large">
 										<FontAwesomeIcon icon={["fas", "spinner"]} spinPulse />
 									</span>
-									<span>Submitting</span>
+									<span>{t("journeySummary.actions.submitting")}</span>
 								</>
 							) : (
 								<>
 									<span className="icon is-large">
 										<FontAwesomeIcon icon={["fas", "check"]} />
 									</span>
-									<span>Submit & Close</span>
+									<span>{t("journeySummary.actions.submit")}</span>
 								</>
 							)}
 						</button>
@@ -312,7 +340,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 							<span className="icon is-large">
 								<FontAwesomeIcon icon={["fas", "times"]} />
 							</span>
-							<span>Close</span>
+							<span>{t("journeySummary.actions.close")}</span>
 						</button>
 					</div>
 				</div>
