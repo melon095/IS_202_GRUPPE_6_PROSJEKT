@@ -19,64 +19,38 @@ på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgt
     </h2>
 </div>
 <body>
-<!-- 1. Kolonne-->
-<div class="main-container">
+    <!-- 1. Kolonne-->
+    <div class="main-container">
 
-    <div class="column-flex">
-        <div class="box row-flex">
-        <h2>Report Description:</h2>
-        <br />
-        <p>@Model.Description</p>
-        <br />
-        <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
-        </div>
+        <div class="column-flex">
+            <div class="box row-flex">
+                <h2>Report Description:</h2>
+                <br />
+                <p>@Model.Description</p>
+                <br />
+                <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+            </div>
 
-        <div class="box row-flex" id="ObjTable">
-            <h2>Objects</h2>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>Object Num</th>
-                        <th>Markers</th>
-                        <th><button>View</button></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Object 1</td>
-                        <td>5</td>
-                        <td>Click</td>
-                    </tr>
-                    <tr>
-                        <td>Object 2</td>
-                        <td>5</td>
-                        <td>Click</td>
-                    </tr>
-                    <tr>
-                        <td>Object 3</td>
-                        <td>5</td>
-                        <td>Click</td>
-                    </tr>
-                                        <tr>
-                        <td>Object 3</td>
-                        <td>5</td>
-                        <td>Click</td>
-                    </tr>
-                    <tr>
-                        <td>Object 3</td>
-                        <td>5</td>
-                        <td>Click</td>
-                    </tr>
-                    <tr>
-                        <td>Object 3</td>
-                        <td>5</td>
-                        <td>Click</td>
-                    </tr>
-                    <tr>
-                        <td>Object 3</td>
-                        <td>5</td>
-                        <td>Click</td>
-                    </tr>
+            <div class="box row-flex" id="ObjTable">
+                <h2>Objects</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Object Num</th>
+                            <th>Markers</th>
+                            <th>View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var obj in Model.Objects)
+                        {
+                            var i = 1;
+                            <tr>
+                                <td>Object @i</td>
+                                <td>@(obj.Points.Count)</td>
+                                <td><button>Click</button></td>
+                            </tr>
+                        }
                 </tbody>
             </table>
         </div>
@@ -142,7 +116,7 @@ på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgt
     <script src ="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
 
-        const map = L.map('map').setView([58.152704227316775, 7.961763885116014], 15);
+        const map = L.map('map').setView([58.16358810163733, 8.00377215125247], 15);
 
         L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
             attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
