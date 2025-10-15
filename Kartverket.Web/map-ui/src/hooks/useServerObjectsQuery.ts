@@ -20,7 +20,7 @@ export const useServerObjectsQuery = () => {
 			const res = await fetch(`/Map/GetObjects${since}`, {
 				method: "GET",
 			});
-			if (!res.ok) throw extrapolateErrors(res);
+			if (!res.ok) throw await extrapolateErrors(res);
 
 			const data = (await res.json()) as ServerStateResponse;
 

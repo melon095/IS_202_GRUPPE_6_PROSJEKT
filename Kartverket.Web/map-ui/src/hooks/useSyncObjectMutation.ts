@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { ServerSyncData, ServerSyncResponse } from "../types";
+import { ResponseError, ServerSyncData, ServerSyncResponse } from "../types";
 import { extrapolateErrors } from "../utils/extrapolateErrors";
 
 const syncToServerEndpoint = (data: ServerSyncData): string => {
@@ -30,10 +30,10 @@ const syncObjectsToServer = async (data: ServerSyncData): Promise<ServerSyncResp
 
 export const useSyncObjectMutation = () => {
 	const queryClient = useQueryClient();
-	return useMutation<ServerSyncResponse, Error, ServerSyncData>({
+	return useMutation<ServerSyncResponse, ResponseError, ServerSyncData>({
 		mutationFn: syncObjectsToServer,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["objects"] });
+			queryClient.invalidateQueries({ queryKey: ["serverSideObjects"] });
 		},
 		onError: (error) => {
 			console.error("Failed to sync object to server:", error);

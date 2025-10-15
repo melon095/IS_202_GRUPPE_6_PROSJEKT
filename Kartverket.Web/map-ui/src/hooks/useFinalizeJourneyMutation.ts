@@ -17,9 +17,7 @@ const finalizeJourney = async (body: FinalizeJourneyData): Promise<void> => {
 	});
 
 	if (!response.ok) {
-		const a = await extrapolateErrors(response);
-		console.log(a);
-		throw a;
+		throw await extrapolateErrors(response);
 	}
 };
 

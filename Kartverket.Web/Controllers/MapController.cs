@@ -2,15 +2,12 @@
 using System.Text.Json;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
-using Kartverket.Web.Models;
 using Kartverket.Web.Models.Map.Request;
 using Kartverket.Web.Models.Map.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Mime;
 
 namespace Kartverket.Web.Controllers;
 
@@ -57,60 +54,6 @@ public class MapController : Controller
     {
         return View();
     }
-    
-    // [HttpGet, Authorize]
-    // public string GetPoints()
-    // {
-    //     var geoFeatures = _dbContext.MapPoints
-    //         .Include(p => p.MapObject)
-    //         .ThenInclude(mo => mo.Report)
-    //         .ToList();
-    //
-    //     var points = geoFeatures.Select(p => new GeoFeature
-    //     {
-    //         Geometry = new Geometry
-    //         {
-    //             Coordinates = new [] {p.Longitude, p.Latitude}
-    //         },
-    //         Properties = new Properties
-    //         {
-    //             Description = $"{p.Report.Title} - {p.Report.Description}"
-    //         }
-    //     }).ToList();
-    //     
-    //     var mapObjects = geoFeatures.GroupBy(p => p.MapObjectId);
-    //     foreach (var mapObject in mapObjects)
-    //     {
-    //         if (mapObject.Count() > 1)
-    //         {
-    //             var report = mapObject.First().Report;
-    //             
-    //             points.Add(new GeoFeature
-    //             {
-    //                 Geometry = new Geometry
-    //                 {
-    //                     Type = "LineString",
-    //                     Coordinates = mapObject.Select(p => new [] {p.Longitude, p.Latitude}).ToList()
-    //                 },
-    //                 Properties = new Properties
-    //                 {
-    //                     Description = $"{report.Title} - {report.Description} - (Line)"
-    //                 }
-    //             });
-    //         }
-    //     }
-    //     
-    //     //TODO: Better
-    //     var obj = new
-    //     {
-    //         type = "FeatureCollection",
-    //         features = points
-    //     };
-    //
-    //     var geojson = JsonSerializer.Serialize(obj, jsonOpts);
-    //     
-    //     return geojson;
-    // }
 
     [HttpPost, Authorize(Policy = RoleValue.AtLeastPilot)]
     public async Task<IActionResult> SyncObject(
@@ -137,8 +80,7 @@ public class MapController : Controller
             _dbContext.Reports.Add(report);
         }
 
-        var objectType = _dbContext.MapObjectTypes
-            .FirstOrDefault(ot => ot.Name == body.TypeId);
+        var objectType = _dbContext.MapObjectTypes.FirstOrDefault(ot => ot.Id == body.TypeId);
         if (objectType == null)
         {
             objectType = _dbContext.MapObjectTypes.FirstOrDefault();

@@ -7,7 +7,6 @@ import { MapComponent } from "./components/MapComponent";
 import { JourneyProvider, useJourney } from "./contexts/JourneyContext";
 import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
 import { useFinalizeJourneyMutation } from "./hooks/useFinalizeJourneyMutation";
-import { useTranslation } from "./i18n";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -19,7 +18,6 @@ const queryClient = new QueryClient({
 });
 
 const AppContent = () => {
-	const { t } = useTranslation();
 	const { finishedJourney, undoEndJourney, deleteEndJourney } = useJourney();
 	const [showSummary, setShowSummary] = useState(false);
 	const finalizeJourneyMutation = useFinalizeJourneyMutation();
@@ -71,7 +69,6 @@ const AppContent = () => {
 			<div>
 				<MapComponent>
 					<JourneyControls>
-						{t("test")}
 						<div>{navigator.onLine ? "🟢 Kobla til internett" : "🔴 Mangler internett"}</div>
 					</JourneyControls>
 

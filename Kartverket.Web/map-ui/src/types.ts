@@ -3,7 +3,7 @@ export interface Point {
 	lng: number;
 	// TODO: Elevation!
 	elevation?: number;
-	timestamp?: string;
+	createdAt?: string;
 }
 
 export interface PlacedObject {
@@ -70,7 +70,7 @@ export interface FinalizeJourneyData {
 
 export interface ServerStateObjects {
 	id: string;
-	title: string;
+	title: string | null;
 	points: Point[];
 	typeId?: string;
 }

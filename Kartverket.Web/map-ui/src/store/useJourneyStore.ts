@@ -25,7 +25,6 @@ export const useJourneyStore = create<JourneyStore>()(
 			finishedJourney: null,
 			isPlacingObject: false,
 			currentObjectPoints: [],
-			journeyHistory: [],
 
 			startJourney: () => {
 				const journey: Journey = {
@@ -117,7 +116,7 @@ export const useJourneyStore = create<JourneyStore>()(
 			},
 
 			addPointToCurrentObject: (point) => {
-				point.timestamp = new Date().toISOString();
+				point.createdAt = new Date().toISOString();
 
 				set((state) => ({
 					currentObjectPoints: [...state.currentObjectPoints, point],
