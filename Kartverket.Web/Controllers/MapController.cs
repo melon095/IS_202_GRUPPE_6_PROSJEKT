@@ -162,6 +162,8 @@ public class MapController : Controller
                 var objectTypeCache = _dbContext.MapObjectTypes.ToDictionary(ot => ot.Id, ot => ot);
                 foreach (var obj in body.Objects)
                 {
+                    if (obj.Deleted == true) _logger.LogWarning("DELETED er ikke implementert!");
+                    
                     // TODO: Custom object types!
                     if (obj.TypeId != null && objectTypeCache.TryGetValue(obj.TypeId.Value, out var objectType))
                     {
@@ -217,7 +219,7 @@ public class MapController : Controller
                             existingPoints.Add(pointKey);
                         }
                     }
-                } 
+                }
 
                 await transaction.CommitAsync();
             }

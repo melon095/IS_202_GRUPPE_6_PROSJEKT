@@ -13,12 +13,12 @@ export interface PlacedObject {
 	customType?: string;
 	title?: string;
 	description?: string;
-	createdAt: string;
 	deleted: boolean;
+	createdAt: string;
 }
 
 export interface Journey {
-	id: string;
+	id?: string;
 	title?: string;
 	description?: string;
 	startTime: number;

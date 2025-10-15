@@ -14,6 +14,8 @@ export interface JourneyFunctions {
 	addPointToCurrentObject: (point: Point) => void;
 	updateObjectinFinishedJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
 	clearCurrentObjectPoints: () => void;
+	updateJourneyId: (newId: string) => void;
+	updateObjectId: (obj: PlacedObject, newId: string) => void;
 }
 
 export interface JourneyStore extends JourneyState, JourneyFunctions {}
@@ -28,7 +30,6 @@ export const useJourneyStore = create<JourneyStore>()(
 
 			startJourney: () => {
 				const journey: Journey = {
-					id: globalThis.crypto.randomUUID(),
 					startTime: Date.now(),
 					objects: [],
 				};
@@ -141,6 +142,37 @@ export const useJourneyStore = create<JourneyStore>()(
 			},
 
 			clearCurrentObjectPoints: () => set({ currentObjectPoints: [] }),
+
+			updateJourneyId: (newId) => {
+				const { currentJourney } = get();
+				if (!currentJourney) return;
+
+				set({
+					currentJourney: {
+						...currentJourney,
+						id: newId,
+					},
+				});
+			},
+
+			updateObjectId: (obj, newId) => {
+				const { currentJourney } = get();
+				if (!currentJourney) return;
+
+				const objectInStore = currentJourney.objects.find((o) => o === obj);
+				if (!objectInStore) return;
+
+				const updatedObjects = currentJourney.objects.map((o) =>
+					o === objectInStore ? { ...o, id: newId } : o
+				);
+
+				set({
+					currentJourney: {
+						...currentJourney,
+						objects: updatedObjects,
+					},
+				});
+			},
 		}),
 		{
 			name: "journey-store",

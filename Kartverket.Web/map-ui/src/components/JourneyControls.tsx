@@ -22,6 +22,8 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		startJourney,
 		startPlacingObjects,
 		stopPlacingObject,
+		updateJourneyId,
+		updateObjectId,
 	} = useJourney();
 
 	const syncObjectMutation = useSyncObjectMutation();
@@ -60,8 +62,8 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 			},
 			{
 				onSuccess(data) {
-					currentJourney.id = data.journeyId;
-					lastObject.id = data.objectId;
+					updateJourneyId(data.journeyId);
+					updateObjectId(lastObject, data.objectId);
 				},
 			}
 		);

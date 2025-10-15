@@ -34,17 +34,17 @@ const AppContent = () => {
 	const handleSubmitSummary = () => {
 		if (!finishedJourney) return;
 		const { id, title, description } = finishedJourney;
+		if (!id) return;
 
-		const objs = finishedJourney.objects
-			.filter((obj) => obj.deleted === false)
-			.map((obj) => ({
-				id: obj.id!,
-				title: obj.title,
-				description: obj.description,
-				points: obj.points,
-				typeId: obj.typeId,
-				customType: obj.customType,
-			}));
+		const objs = finishedJourney.objects.map((obj) => ({
+			id: obj.id!,
+			title: obj.title,
+			description: obj.description,
+			deleted: obj.deleted,
+			points: obj.points,
+			typeId: obj.typeId,
+			customType: obj.customType,
+		}));
 
 		finalizeJourneyMutation.mutate(
 			{
