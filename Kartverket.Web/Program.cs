@@ -146,10 +146,10 @@ b:
     }
 }
 
-app.UseCors("Vite");
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors("Vite");
 
 app.UseSession();
 app.UseAuthentication();
