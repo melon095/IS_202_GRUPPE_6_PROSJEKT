@@ -1,0 +1,135 @@
+﻿@{
+    ViewBag.Title = "In-Depth Report";
+}
+@model Kartverket.Web.Models.Report.Response.InDepthReportModel
+
+@*
+Et kart som viser enten alle objekter og de sine punkter og hvis du velger en objekt 
+på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgte.
+
+*@
+
+<div id="model-title">
+    <h2 class="is-size-2">
+        Rapport: @Model.Title
+    </h2>
+</div>
+<body>
+    <!-- 1. Kolonne-->
+    <div class="main-container">
+
+        <div class="column-flex">
+            <div class="box row-flex">
+                <h2>Report Description:</h2>
+                <br />
+                <p>@Model.Description</p>
+                <br />
+                <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+            </div>
+
+            <div class="box row-flex" id="ObjTable">
+                <h2>Objects</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Object Num</th>
+                            <th>Markers</th>
+                            <th>View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach(var obj in Model.Objects)
+                        {
+                            var i = 1;
+                            <tr>
+                                <td>Object @i</td>
+                                <td>@(obj.Points.Count)</td>
+                                <td><button id="showIn">Click</button></td>
+                            </tr>
+                        }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+<!--2. kolonne-->
+<div class="column-flex">
+    <div class="box" style="flex: 1">
+        <h3 class="title is-4">Object title</h3>
+                <p>Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc.</p>
+    </div>
+</div>
+<!--3. kolonne-->
+<div class="column-flex">
+    <div>
+        <div id="map" class="column-flex box"></div>
+    </div>
+</div>
+</div>
+
+</body>
+
+@section styles
+{
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .main-container {
+            display: flex;
+            height: 100vh;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .column-flex {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 1rem;
+        }
+
+        .row-flex {
+            flex: 1;
+        }
+
+        #ObjTable {
+            overflow-y: auto;
+        }
+
+        #map {
+            height: 100vh;
+            width: auto;
+        }
+    </style>
+}
+@section Scripts{
+    <script src ="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+
+        const map = L.map('map').setView([58.16358810163733, 8.00377215125247], 15);
+
+        L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
+            attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
+        }).addTo(map);
+
+        const objects = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Objects));
+        objects.forEach(obj => {
+            if (obj.Points && obj.Points.length > 0) 
+            {
+                obj.Points.forEach(point => 
+                    {
+                if (point.Lat && point.Lng)
+                {
+                    L.marker([point.Lat, point.Lng]).addTo(map).bindPopup("test");
+                }
+            });
+            }
+        });
+    </script>
+}
