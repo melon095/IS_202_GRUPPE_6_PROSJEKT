@@ -2,7 +2,6 @@ using Kartverket.Web.AuthPolicy;
 using System.Diagnostics;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
-using Kartverket.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Identity;
@@ -14,11 +13,6 @@ using Vite.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
-builder.Services
-    .AddTransient<MapService, MapService>()
-    .AddTransient<UserService, UserService>()
-    .AddTransient<GeoJSONService, GeoJSONService>()
-    .AddTransient<ReportService, ReportService>();
 
 builder.Services.AddDbContext<DatabaseContext>(options =>
 {
@@ -87,6 +81,28 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddViteServices();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Vite", policy =>
+    {
+        if (builder.Environment.IsDevelopment())
+        {
+            var host = builder.Configuration["Vite:Server:Host"] ?? "localhost";
+            policy.WithOrigins($"http://{host}:5173")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        }
+        // else
+        // {
+        //     policy.AllowAnyOrigin()
+        //         .AllowAnyHeader()
+        //         .AllowAnyMethod()
+        //         .AllowCredentials();
+        // }
+    });
+});
+
 #endregion // Builder
 
 #region App
@@ -105,9 +121,17 @@ if (!app.Environment.IsDevelopment())
     db.Database.Migrate();
     
     // TODO: Mildertidlig punkt
-    db.MapObjectTypes.Add(new MapObjectTypeTable() { Name = "Midlertidlig type!" });
+    if (db.MapObjectTypes.Any(m => m.Name == "Midlertidlig type!")) goto b;
+    
+    db.MapObjectTypes.Add(new MapObjectTypeTable()
+    {
+        Name = "Midlertidlig type!",
+        PrimaryImageUrl = "/images/map-objects/test.svg",
+        MarkerImageUrl = null,
+    });
     db.SaveChanges();
 }
+b:
 
 {
     var roleManager = app.Services.CreateScope().ServiceProvider.GetRequiredService<RoleManager<RoleTable>>();
@@ -122,8 +146,10 @@ if (!app.Environment.IsDevelopment())
     }
 }
 
+
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors("Vite");
 
 app.UseSession();
 app.UseAuthentication();
@@ -147,3 +173,8 @@ if (app.Environment.IsDevelopment())
 app.Run();
 
 #endregion // App
+
+// Level 1 cache on localStorage
+// Level 2 cache on server
+
+// Mismatching cache!

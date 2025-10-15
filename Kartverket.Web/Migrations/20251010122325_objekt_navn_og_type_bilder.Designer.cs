@@ -4,6 +4,7 @@ using Kartverket.Web.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kartverket.Web.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20251010122325_objekt_navn_og_type_bilder")]
+    partial class objekt_navn_og_type_bilder
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,9 +41,6 @@ namespace Kartverket.Web.Migrations
                     b.Property<Guid>("MapObjectTypeId")
                         .HasColumnType("char(36)");
 
-                    b.Property<Guid>("ReportId")
-                        .HasColumnType("char(36)");
-
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("longtext");
@@ -51,8 +51,6 @@ namespace Kartverket.Web.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("MapObjectTypeId");
-
-                    b.HasIndex("ReportId");
 
                     b.ToTable("MapObjects");
                 });
@@ -109,12 +107,17 @@ namespace Kartverket.Web.Migrations
                     b.Property<Guid>("MapObjectId")
                         .HasColumnType("char(36)");
 
+                    b.Property<Guid>("ReportId")
+                        .HasColumnType("char(36)");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("MapObjectId");
+
+                    b.HasIndex("ReportId");
 
                     b.ToTable("MapPoints");
                 });
@@ -441,15 +444,7 @@ namespace Kartverket.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Kartverket.Web.Database.Tables.ReportTable", "Report")
-                        .WithMany("MapObjects")
-                        .HasForeignKey("ReportId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("MapObjectType");
-
-                    b.Navigation("Report");
                 });
 
             modelBuilder.Entity("Kartverket.Web.Database.Tables.MapPointTable", b =>
@@ -460,7 +455,15 @@ namespace Kartverket.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Kartverket.Web.Database.Tables.ReportTable", "Report")
+                        .WithMany("MapPoints")
+                        .HasForeignKey("ReportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("MapObject");
+
+                    b.Navigation("Report");
                 });
 
             modelBuilder.Entity("Kartverket.Web.Database.Tables.ReportFeedbackAssignmentTable", b =>
@@ -580,7 +583,7 @@ namespace Kartverket.Web.Migrations
 
             modelBuilder.Entity("Kartverket.Web.Database.Tables.ReportTable", b =>
                 {
-                    b.Navigation("MapObjects");
+                    b.Navigation("MapPoints");
                 });
 
             modelBuilder.Entity("Kartverket.Web.Database.Tables.RoleTable", b =>

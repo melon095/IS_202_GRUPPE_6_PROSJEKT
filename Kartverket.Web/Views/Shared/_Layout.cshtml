@@ -13,6 +13,18 @@
     <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
     @* BULMA END *@
     
+    <style>
+        img.icon {
+            filter: invert(0);
+        }
+        
+        @@media (prefers-color-scheme: dark) {
+            img.icon {
+                filter: invert(1);
+            }
+        }
+    </style>
+    
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body style="margin: 0; padding: 0; box-sizing: border-box;">
