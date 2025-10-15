@@ -78,7 +78,7 @@
 		}
 	},
 	"objectTypeSelector": {
-		"title": "Hva type er dette objektet?",
+		"title": "Hvilken type er dette objektet?",
 		"loading": {
 			"message": "Laster inn objekttyper..."
 		},
@@ -95,7 +95,7 @@
 			"add": "Legg til",
 			"addCustomType": "Legg til egendefinert type",
 			"addWithoutType": "Legg til objekt uten type",
-			"skip": "Hopp Over",
+			"skip": "Hopp over",
 			"cancel": "Kanseller (Ikke legg til objekt)"
 		}
 	}

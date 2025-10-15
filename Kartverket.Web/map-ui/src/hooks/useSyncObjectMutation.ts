@@ -5,7 +5,6 @@ import { extrapolateErrors } from "../utils/extrapolateErrors";
 
 const syncToServerEndpoint = (data: ServerSyncData): string => {
 	const qp = new URLSearchParams();
-	console.log(data);
 	if (data.journeyId) qp.append("journeyId", data.journeyId);
 
 	return `/Map/SyncObject?${qp.toString()}`;
