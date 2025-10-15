@@ -58,13 +58,8 @@
             "submitting": "Sender inn",
             "close": "Lukk"
         },
-        "states": {
-            "offline": {
-                "warning": "Du er offline. Endringer vil bli lagret lokalt."
-            }
-        },
-        "accessibility": {
-            "closeModal": "lukk"
+        "errors": {
+            "title": "Noe gikk galt under innsending av reisesammendrag. Vennligst prøv igjen."
         }
     },
     "objectEditForm": {

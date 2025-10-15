@@ -8,7 +8,9 @@ using Kartverket.Web.Models.Map.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Mime;
 
 namespace Kartverket.Web.Controllers;
 
@@ -188,74 +190,152 @@ public class MapController : Controller
         if (!ModelState.IsValid) return BadRequest(ModelState);
         var user = await _userManager.GetUserAsync(User);
         ArgumentNullException.ThrowIfNull(user, nameof(user));
+        var strategy = _dbContext.Database.CreateExecutionStrategy();
         var report = _dbContext.Reports
             .Include(r => r.User)
             .Include(r => r.MapObjects)
             .ThenInclude(mo => mo.MapPoints)
             .FirstOrDefault(r => r.Id == journeyId);
-        if (report == null)
-        {
-            report = new ReportTable
-            {
-                Id = Guid.NewGuid(),
-                Title = body.Journey.Title,
-                Description = body.Journey.Description,
-                User = user,
-            };
-            _dbContext.Reports.Add(report);
-        }
         
-        report.Title = body.Journey.Title;
-        report.Description = body.Journey.Description;
-        
-        var objectTypeCache = _dbContext.MapObjectTypes.ToDictionary(ot => ot.Id, ot => ot);
-        foreach (var obj in body.Objects)
+        await strategy.ExecuteAsync(async () => 
         {
-            // TODO: Custom object types!
-            if (obj.TypeId != null && objectTypeCache.TryGetValue(obj.TypeId.Value, out var objectType))
+            await using var transaction = await _dbContext.Database.BeginTransactionAsync();
+            try
             {
-            }
-            else
-            {
-                objectType = objectTypeCache.Values.FirstOrDefault();
-                _logger.LogWarning("Unknown object type: {TypeId}", obj.TypeId);
-            }
-            
-            var mapObject = report.MapObjects?.FirstOrDefault(mo => mo.Id == obj.Id);
-            if (mapObject == null)
-            {
-                mapObject = new MapObjectTable
+                if (report == null)
                 {
-                    Id = obj.Id,
-                    MapObjectType = objectType!,
-                    Title = obj.Title,
-                    Description = obj.Description
-                };
-                _dbContext.MapObjects.Add(mapObject);
-            }
-
-            // Filters out duplicates
-            // TODO: Cleaner!
-            mapObject.MapPoints = obj.Points.Select(p => new MapPointTable
-            {
-                MapObject = mapObject,
-                Latitude = p.Lat,
-                Longitude = p.Lng,
-                AMSL = p.Elevation,
-                CreatedAt = p.CreatedAt
-            }).ToList();
-            
-            var existingPoints = _dbContext.MapPoints
-                .Where(mp => mp.MapObjectId == mapObject.Id)
-                .ToList();
-            var newPoints = mapObject.MapPoints
-                .Where(p => !existingPoints.Any(ep => ep.Latitude == p.Latitude && ep.Longitude == p.Longitude && ep.CreatedAt == p.CreatedAt))
-                .ToList();
-            _dbContext.MapPoints.AddRange(newPoints);
-        } 
+                    report = new ReportTable
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = body.Journey.Title,
+                        Description = body.Journey.Description,
+                        User = user,
+                    };
+                    _dbContext.Reports.Add(report);
+                }
         
-        await _dbContext.SaveChangesAsync();
+                report.Title = body.Journey.Title;
+                report.Description = body.Journey.Description;
+        
+                var objectTypeCache = _dbContext.MapObjectTypes.ToDictionary(ot => ot.Id, ot => ot);
+                foreach (var obj in body.Objects)
+                {
+                    // TODO: Custom object types!
+                    if (obj.TypeId != null && objectTypeCache.TryGetValue(obj.TypeId.Value, out var objectType))
+                    {
+                    }
+                    else
+                    {
+                        objectType = objectTypeCache.Values.FirstOrDefault();
+                        _logger.LogWarning("Unknown object type: {TypeId}", obj.TypeId);
+                    }
+            
+                    var mapObject = report.MapObjects?.FirstOrDefault(mo => mo.Id == obj.Id);
+                    if (mapObject == null)
+                    {
+                        mapObject = new MapObjectTable
+                        {
+                            Id = obj.Id,
+                            MapObjectType = objectType!,
+                            Title = obj.Title,
+                            Description = obj.Description
+                        };
+                        _dbContext.MapObjects.Add(mapObject);
+                    }
+                    else {
+                        mapObject.Title = obj.Title;
+                        mapObject.Description = obj.Description;
+                    }
+            
+
+                    mapObject.Report = report;
+                    mapObject.MapObjectType = objectType!;
+            
+                    var existingPoints = new HashSet<(double Latitude, double Longitude, int AMSL, DateTime CreatedAt)>(
+                        mapObject.MapPoints?.Select(p => (p.Latitude, p.Longitude, p.AMSL, p.CreatedAt)) ?? []
+                    );
+
+                    foreach (var point in obj.Points)
+                    {
+                        var pointKey = (point.Lat, point.Lng, point.Elevation, point.CreatedAt);
+            
+                        if (!existingPoints.Contains(pointKey))
+                        {
+                            var mapPoint = new MapPointTable
+                            {
+                                Id = Guid.NewGuid(),
+                                Latitude = point.Lat,
+                                Longitude = point.Lng,
+                                AMSL = point.Elevation,
+                                CreatedAt = point.CreatedAt,
+                                MapObject = mapObject
+                            };
+                            _dbContext.MapPoints.Add(mapPoint);
+                
+                            existingPoints.Add(pointKey);
+                        }
+                    }
+                } 
+
+                await transaction.CommitAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error finalizing journey");
+                transaction.Rollback();
+                throw;
+            }
+        });
         
         return Ok(new { JourneyId = report.Id });
     }
+ 
+    [HttpGet]
+    public async Task<IActionResult> GetObjects([FromQuery] DateTime? since = null)
+    {
+        // TODO: Cache in memory!
+        var query = _dbContext.MapObjects
+            .Include(mo => mo.MapObjectType)
+            .Include(mo => mo.MapPoints)
+            .AsQueryable();
+        
+        if (since != null)
+        {
+            query = query.Where(mo => mo.MapPoints.Any(mp => mp.CreatedAt >= since));
+        }
+        
+        var mapObjects = await query.ToListAsync();
+        
+        var result = mapObjects.Select(mo => new MapObjectsDataModel
+        {
+            Id = mo.Id,
+            TypeId = mo.MapObjectType?.Id,
+            Title = mo.Title,
+            Points = mo.MapPoints.Select(mp => new MapPointDataModel
+            {
+                Lat = mp.Latitude,
+                Lng = mp.Longitude,
+                Elevation = mp.AMSL,
+                CreatedAt = mp.CreatedAt
+            }).OrderBy(p => p.CreatedAt).ToList()
+        }).ToList();
+        
+        return Ok(result);
+    }
+}
+
+public class MapObjectsDataModel
+{
+    public Guid Id { get; set; }
+    public Guid? TypeId { get; set; }
+    public string? Title { get; set; }
+    public List<MapPointDataModel> Points { get; set; } = [];
+}
+
+public class MapPointDataModel
+{
+    public double Lat { get; set; }
+    public double Lng { get; set; }
+    public double Elevation { get; set; }
+    public DateTime CreatedAt { get; set; }
 }

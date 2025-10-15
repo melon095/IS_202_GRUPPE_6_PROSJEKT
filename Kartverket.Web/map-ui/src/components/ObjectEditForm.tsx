@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { useDebouncedCallback } from "../hooks/useDebouncedCallback";
 import { PlacedObject } from "../types";
-
-const DEBOUNCE_TIMEOUT = 500;
 
 interface ObjectEditFormProps {
 	object: PlacedObject;
@@ -17,14 +14,11 @@ export const ObjectEditForm = ({ object, onSave, onCancel }: ObjectEditFormProps
 	const [title, setTitle] = useState(object.title);
 	const [description, setDescription] = useState(object.description || "");
 
-	const debouncedSave = useDebouncedCallback(onSave, DEBOUNCE_TIMEOUT);
-
 	useEffect(() => {
-		debouncedSave({
-			title,
-			description,
-		});
-	}, [title, description, debouncedSave]);
+		if (title !== object.title || description !== object.description) {
+			onSave({ title, description });
+		}
+	}, [title, description, onSave, object.title, object.description]);
 
 	return (
 		<form className="box is-tablet">

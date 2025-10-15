@@ -14,7 +14,7 @@ export interface PlacedObject {
 	title?: string;
 	description?: string;
 	createdAt: string;
-	deleted?: boolean;
+	deleted: boolean;
 }
 
 export interface Journey {
@@ -67,5 +67,14 @@ export interface FinalizeJourneyData {
 	};
 	objects: FinalizeJourneyObject[];
 }
+
+export interface ServerStateObjects {
+	id: string;
+	title: string;
+	points: Point[];
+	typeId?: string;
+}
+
+export type ServerStateResponse = ServerStateObjects[];
 
 export type ResponseError = Record<string, string[]>;

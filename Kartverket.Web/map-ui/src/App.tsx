@@ -6,7 +6,7 @@ import { JourneySummary } from "./components/JourneySummary";
 import { MapComponent } from "./components/MapComponent";
 import { JourneyProvider, useJourney } from "./contexts/JourneyContext";
 import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
-import { useServerSync } from "./hooks/useServerSync";
+import { useFinalizeJourneyMutation } from "./hooks/useFinalizeJourneyMutation";
 import { useTranslation } from "./i18n";
 
 const queryClient = new QueryClient({
@@ -22,7 +22,7 @@ const AppContent = () => {
 	const { t } = useTranslation();
 	const { finishedJourney, undoEndJourney, deleteEndJourney } = useJourney();
 	const [showSummary, setShowSummary] = useState(false);
-	const { finalizeJourneyMutation } = useServerSync();
+	const finalizeJourneyMutation = useFinalizeJourneyMutation();
 
 	useEffect(() => {
 		setShowSummary(finishedJourney !== null);
@@ -81,6 +81,8 @@ const AppContent = () => {
 							onClose={handleCloseSummary}
 							onSubmit={handleSubmitSummary}
 							isSubmitting={finalizeJourneyMutation.isPending}
+							isError={finalizeJourneyMutation.isError}
+							errors={finalizeJourneyMutation.error}
 						/>
 					)}
 				</MapComponent>

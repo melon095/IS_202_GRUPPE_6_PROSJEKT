@@ -3,7 +3,7 @@ import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 
 import { useJourney } from "../contexts/JourneyContext";
-import { useServerSync } from "../hooks/useServerSync";
+import { useSyncObjectMutation } from "../hooks/useSyncObjectMutation";
 import { useTranslation } from "../i18n";
 import { ObjectTypeSelector } from "./ObjectTypeSelector";
 
@@ -24,7 +24,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		stopPlacingObject,
 	} = useJourney();
 
-	const { syncObjectMutation } = useServerSync();
+	const syncObjectMutation = useSyncObjectMutation();
 	const [showTypeSelector, setShowTypeSelector] = useState(false);
 	const overlayRef = useRef<HTMLDivElement>(null);
 

@@ -113,7 +113,6 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 									padding: "1rem",
 								}}
 								onClick={() => {
-									console.log("asd");
 									setSelectedTypeId(type.id);
 								}}
 							>

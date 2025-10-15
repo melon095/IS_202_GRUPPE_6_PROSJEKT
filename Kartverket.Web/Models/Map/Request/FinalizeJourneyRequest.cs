@@ -4,8 +4,8 @@ namespace Kartverket.Web.Models.Map.Request;
 public class FinalizeJourneyObject
 {
     public Guid Id { get; set; }
-    public string Title { get; set; }
-    public string Description { get; set; }
+    public string Title { get; set; } = "";
+    public string Description { get; set; } = "";
     public List<FinalizeJourneyPointDataModel> Points { get; set; }
     public Guid? TypeId { get; set; } = null;
     public string? CustomType { get; set; } = null;

@@ -99,6 +99,7 @@ export const useJourneyStore = create<JourneyStore>()(
 					typeId: typeId,
 					customType: customType,
 					createdAt: new Date().toISOString(),
+					deleted: false,
 				};
 
 				const updatedJourney: Journey = {

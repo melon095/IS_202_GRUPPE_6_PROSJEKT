@@ -5,23 +5,23 @@ import { useEffect, useRef, useState } from "react";
 import { useJourney } from "../contexts/JourneyContext";
 import { useObjectTypes } from "../contexts/ObjectTypesContext";
 import "../css/JourneySummary.css";
-import { useDebouncedCallback } from "../hooks/useDebouncedCallback";
 import { useTranslation } from "../i18n";
-import { Journey, PlacedObject } from "../types";
+import { Journey, PlacedObject, ResponseError } from "../types";
 import { Icon } from "./Icon";
 import { ObjectEditForm } from "./ObjectEditForm";
 
 const DELETE_TIMEOUT = 2000;
-const DEBOUNCE_TIMEOUT = 500;
 
 interface JourneySummaryProps {
 	journey: Journey;
 	onClose: () => void;
 	onSubmit: () => void;
 	isSubmitting: boolean;
+	isError: boolean;
+	errors: ResponseError | null;
 }
 
-export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: JourneySummaryProps) => {
+export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isError, errors }: JourneySummaryProps) => {
 	const { t } = useTranslation();
 	const { updateObjectinFinishedJourney, updateFinishedJourneyMeta } = useJourney();
 	const { getObjectTypeById } = useObjectTypes();
@@ -47,11 +47,9 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 		}
 	}, [deleteConfirmId]);
 
-	const debouncedSave = useDebouncedCallback(updateFinishedJourneyMeta, DEBOUNCE_TIMEOUT);
-
 	useEffect(() => {
-		debouncedSave({ title: journeyTitle, description: journeyDescription });
-	}, [journeyTitle, journeyDescription, debouncedSave]);
+		updateFinishedJourneyMeta({ title: journeyTitle, description: journeyDescription });
+	}, [journeyTitle, journeyDescription, updateFinishedJourneyMeta]);
 
 	const handleEditObject = (objectId: string) => {
 		setEditingObjectId(objectId);
@@ -105,6 +103,19 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 			>
 				{/* Main container */}
 				<div className="box is-tablet">
+					{isError && errors && (
+						<div className="notification is-danger">
+							<h4 className="title is-size-5">{t("journeySummary.errors.title")}</h4>
+							<ul>
+								{Object.entries(errors).map(([key, value]) => (
+									<li key={key}>
+										{/* //TODO i18n and make it user friendly! */}
+										<strong>{key}:</strong> {value}
+									</li>
+								))}
+							</ul>
+						</div>
+					)}
 					<div>
 						<h2 className="title is-size-4-tablet">{t("journeySummary.title")}</h2>
 						<p className="is-size-6-tablet">
@@ -312,7 +323,9 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting }: Jou
 					<div className="mt-4 is-flex is-flex-direction-column-tablet is-justify-content-space-between is-align-items-stretch">
 						<button
 							onClick={handleFinalize}
-							disabled={isSubmitting || (journey.objects.length > 0 && !navigator.onLine)}
+							disabled={
+								isSubmitting || (journey.objects.length > 0 && !navigator.onLine) || !journeyTitle
+							}
 							className="button is-primary is-large is-fullwidth"
 						>
 							{isSubmitting ? (
