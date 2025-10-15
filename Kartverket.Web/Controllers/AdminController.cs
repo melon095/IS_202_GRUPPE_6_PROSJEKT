@@ -55,7 +55,7 @@ public class AdminController: Controller
     }
 
     [HttpGet]
-    public IActionResult Index([FromQuery]int page = 1, [FromQuery]DateOnly? sortDate = null)
+    public IActionResult Index([FromQuery]int page = 1, [FromQuery]DateOnly? sortDate = null, [FromQuery] string sortOrder = "desc")
     {
         sortDate ??= DateOnly.FromDateTime(DateTime.Now);
         // Pagnering når det er for mange rapporter
@@ -68,8 +68,13 @@ public class AdminController: Controller
         var totalReports = reportQuery.Count();
         var totalpages = (int)Math.Ceiling(totalReports / (double)ReportPerPage);
 
+        reportQuery = sortOrder.ToLower() switch
+        {
+            "asc" => reportQuery.OrderBy(r => r.CreatedAt),
+            _ => reportQuery.OrderByDescending(r => r.CreatedAt)
+        };
+
         var reports = reportQuery
-            .OrderByDescending(r => r.CreatedAt)
             .Skip((page - 1) * ReportPerPage)
             .Take(ReportPerPage)
             .ToList();
@@ -90,6 +95,8 @@ public class AdminController: Controller
                 CreatedAt = report.CreatedAt
             });
         }
+
+        ViewBag.SortOrder = sortOrder.ToLower();
 
         return View(Model);
     }

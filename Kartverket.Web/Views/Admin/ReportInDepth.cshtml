@@ -4,10 +4,6 @@
 @model Kartverket.Web.Models.Report.Response.InDepthReportModel
 
 @*
-En boks som viser informasjon om rapport
-En tabell hvor hver rad er en objekt. En knapp på tabellen skal velge objektet
-En boks skal vise informasjon on en objekt.
-
 Et kart som viser enten alle objekter og de sine punkter og hvis du velger en objekt 
 på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgte.
 
@@ -48,7 +44,7 @@ på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgt
                             <tr>
                                 <td>Object @i</td>
                                 <td>@(obj.Points.Count)</td>
-                                <td><button>Click</button></td>
+                                <td><button id="showIn">Click</button></td>
                             </tr>
                         }
                 </tbody>
@@ -60,7 +56,7 @@ på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgt
 <div class="column-flex">
     <div class="box" style="flex: 1">
         <h3 class="title is-4">Object title</h3>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                <p>Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc.</p>
     </div>
 </div>
 <!--3. kolonne-->
