@@ -16,7 +16,7 @@ public class ObjectTypesController : Controller
 
     public async Task<ObjectTypesResponse> List()
     {
-        var objectTypes = await _dbContext.MapObjectTypes
+        var objectTypes = await _dbContext.HindranceTypes
             .Select(ot => new ObjectTypesResponse.ObjectType
             {
                 Id = ot.Id,

@@ -1,67 +1,82 @@
 ﻿using Kartverket.Web.Database.Tables;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Kartverket.Web.Database;
 
-public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>
+public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IUnitOfWork
 {
+    private IDbContextTransaction? _transaction;
+
     public DbSet<RoleTable> Roles { get; set; }
-    
+
     public DbSet<ReportTable> Reports { get; set; }
     public DbSet<ReportFeedbackTable> ReportFeedbacks { get; set; }
-    public DbSet<ReportFeedbackAssignmentTable> ReportFeedbackAssignments { get; set; }
-    
-    public DbSet<MapObjectTable> MapObjects { get; set; }
-    public DbSet<MapObjectTypeTable> MapObjectTypes { get; set; }
-    public DbSet<MapPointTable> MapPoints { get; set; }
-    
+
+    public DbSet<HindranceObjectTable> HindranceObjects { get; set; }
+    public DbSet<HindranceTypeTable> HindranceTypes { get; set; }
+    public DbSet<HindrancePointTable> HindrancePoints { get; set; }
+
     public DatabaseContext()
     {
-        
     }
 
     public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
     {
-        
     }
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<UserTable>()
             .HasIndex(u => u.UserName)
             .IsUnique();
-        
+
         modelBuilder.Entity<UserTable>()
             .HasIndex(u => u.Email)
             .IsUnique();
-        
+
+        modelBuilder.Entity<UserTable>()
+            .HasMany(u => u.Reports)
+            .WithOne(r => r.ReportedBy)
+            .HasForeignKey(r => r.ReportedById)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<UserTable>()
+            .HasMany(u => u.ReportFeedbacks)
+            .WithOne(rf => rf.FeedbackBy)
+            .HasForeignKey(rf => rf.FeedbackById)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<RoleTable>()
             .HasIndex(r => r.Name)
             .IsUnique();
-        
-        modelBuilder.Entity<MapObjectTypeTable>()
+
+        modelBuilder.Entity<HindranceTypeTable>()
             .HasIndex(mot => mot.Name)
             .IsUnique();
 
-        modelBuilder.Entity<ReportFeedbackAssignmentTable>()
-            .HasOne(rfa => rfa.User)
-            .WithMany(u => u.ReportFeedbackAssignments)
-            .HasForeignKey(rfa => rfa.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
-        
         modelBuilder.Entity<ReportTable>()
-            .HasOne(r => r.User)
+            .HasOne(r => r.ReportedBy)
             .WithMany(u => u.Reports)
-            .HasForeignKey(r => r.UserId)
+            .HasForeignKey(r => r.ReportedById)
             .OnDelete(DeleteBehavior.Restrict);
-        
-        modelBuilder.Entity<ReportFeedbackTable>()
-            .HasOne(rf => rf.Report)
-            .WithOne(r => r.Feedback)
-            .HasForeignKey<ReportTable>(r => r.FeedbackId)
+
+        modelBuilder.Entity<ReportTable>()
+            .HasMany(r => r.HindranceObjects)
+            .WithOne(mo => mo.Report)
+            .HasForeignKey(mo => mo.ReportId)
             .OnDelete(DeleteBehavior.Cascade);
-        
+
+        modelBuilder.Entity<ReportTable>()
+            .HasMany(r => r.Feedbacks)
+            .WithOne(rf => rf.Report)
+            .HasForeignKey(rf => rf.ReportId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ReportFeedbackTable>()
+            .HasOne(rf => rf.Report);
+
         base.OnModelCreating(modelBuilder);
     }
 
@@ -70,20 +85,70 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>
         UpdateTimestamps();
         return base.SaveChanges();
     }
-    
+
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         UpdateTimestamps();
         return await base.SaveChangesAsync(cancellationToken);
     }
-    
+
+    public Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_transaction != null)
+            return Task.CompletedTask;
+
+        var strategy = Database.CreateExecutionStrategy();
+        return strategy.ExecuteAsync(async () =>
+        {
+            var transaction = await Database.BeginTransactionAsync(cancellationToken);
+            _transaction = transaction;
+        });
+    }
+
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_transaction == null)
+            return;
+
+        try
+        {
+            await SaveChangesAsync(cancellationToken);
+            await _transaction.CommitAsync(cancellationToken);
+        }
+        catch
+        {
+            await RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
+        finally
+        {
+            await _transaction.DisposeAsync();
+            _transaction = null;
+        }
+    }
+
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_transaction == null)
+            return;
+
+        try
+        {
+            await _transaction.RollbackAsync(cancellationToken);
+        }
+        finally
+        {
+            await _transaction.DisposeAsync();
+            _transaction = null;
+        }
+    }
+
     private void UpdateTimestamps()
     {
         var entries = ChangeTracker.Entries()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
         foreach (var entry in entries)
-        {
             if (entry.Entity is BaseModel baseModel)
             {
                 baseModel.UpdatedAt = DateTime.UtcNow;
@@ -102,6 +167,5 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>
                 if (entry.State == EntityState.Added)
                     role.CreatedAt = DateTime.UtcNow;
             }
-        }
     }
 }
