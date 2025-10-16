@@ -7,7 +7,7 @@ namespace Kartverket.Web.Database.Tables;
 public enum FeedbackStatus
 {
     Draft,
-    InProgress,
+    Submitted,
     Resolved,
     Closed
 }

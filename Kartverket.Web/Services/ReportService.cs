@@ -47,4 +47,14 @@ public class ReportService
             .ThenInclude(ho => ho.HindranceType)
             .FirstOrDefaultAsync(r => r.Id == reportId && r.Status == FeedbackStatus.Draft, cancellationToken);
     }
+
+    public void FinaliseReport(ReportTable report, string title, string description)
+    {
+        if (_logger.IsEnabled(LogLevel.Debug))
+            _logger.LogDebug("Finalising report {ReportId}", report.Id);
+
+        report.Title = title;
+        report.Description = description;
+        report.Status = FeedbackStatus.Submitted;
+    }
 }

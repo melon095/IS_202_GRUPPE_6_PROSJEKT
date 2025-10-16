@@ -1,6 +1,7 @@
 using Kartverket.Web.AuthPolicy;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
+using Kartverket.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Identity;
@@ -31,7 +32,10 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     });
 });
 
-builder.Services.AddScoped<IUnitOfWork, DatabaseContext>();
+builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DatabaseContext>())
+    .AddScoped<ReportService>()
+    .AddScoped<HindranceService>()
+    .AddScoped<JourneyOrchestrator>();
 
 #region Authentication
 

@@ -15,6 +15,7 @@ public class MapController : Controller
     private readonly ILogger<MapController> _logger;
     private readonly ReportService _reportService;
     private readonly HindranceService _hindranceService;
+    private readonly JourneyOrchestrator _journeyOrchestrator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<UserTable> _userManager;
 
@@ -43,19 +44,21 @@ public class MapController : Controller
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
         var user = await _userManager.GetUserAsync(User);
-        ArgumentNullException.ThrowIfNull(user, nameof(user));
+        if (user == null) return Unauthorized();
 
-        var draftReport = await _reportService.GetDraft(journeyId ?? Guid.Empty, cancellationToken);
-        draftReport ??= await _reportService.CreateDraft(user.Id, cancellationToken);
+        try
+        {
+            var (resultJourneyId, resultObjectId) = await _unitOfWork.ExecuteInTransactionAsync(
+                () => _journeyOrchestrator.SyncObject(user.Id, journeyId, body, cancellationToken),
+                cancellationToken);
 
-        var hindranceType = await _hindranceService.GetHindranceTypeById(body.TypeId, cancellationToken);
-        var mapObjectDraft =
-            await _hindranceService.CreateHindranceObjectDraft(draftReport.Id, hindranceType.Id, cancellationToken);
-        var mapPoints = await _hindranceService.AddHindrancePoints(mapObjectDraft.Id, body.Points, cancellationToken);
-        await _hindranceService.LinkHindranceObjectToReport(draftReport.Id, mapObjectDraft.Id, cancellationToken);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-        return Ok(new { JourneyId = draftReport.Id, ObjectId = mapObjectDraft.Id });
+            return Ok(new { JourneyId = resultJourneyId, ObjectId = resultObjectId });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error syncing object for user {UserId}", user.Id);
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpPost]
@@ -68,157 +71,54 @@ public class MapController : Controller
         if (!ModelState.IsValid) return BadRequest(ModelState);
         if (journeyId is null) return BadRequest("JourneyId is required");
 
-        var user = await _userManager.GetUserAsync(User);
-        ArgumentNullException.ThrowIfNull(user, nameof(user));
         try
         {
-            await _unitOfWork.BeginTransactionAsync(cancellationToken);
-            {
-                var report = await _reportService.GetDraft(journeyId.Value, cancellationToken);
-            }
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+            var resultId = await _unitOfWork.ExecuteInTransactionAsync(
+                () => _journeyOrchestrator.Finalise(journeyId.Value, body, cancellationToken),
+                cancellationToken);
+
+            return Ok(new { JourneyId = resultId });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Journey finalization failed for {JourneyId}", journeyId);
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error finalizing journey");
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
+            _logger.LogError(ex, "Error finalizing journey {JourneyId}", journeyId);
+            return StatusCode(500, ex.Message);
         }
-        //
-        // var strategy = _dbContext.Database.CreateExecutionStrategy();
-        // var report = _dbContext.Reports
-        //     .Include(r => r.ReportedBy)
-        //     .Include(r => r.MapObjects)
-        //     .ThenInclude(mo => mo.MapPoints)
-        //     .FirstOrDefault(r => r.Id == journeyId);
-        //
-        // await strategy.ExecuteAsync(async () =>
-        // {
-        //     await using var transaction = await _dbContext.Database.BeginTransactionAsync();
-        //     try
-        //     {
-        //         if (report == null)
-        //         {
-        //             report = new ReportTable
-        //             {
-        //                 Id = Guid.NewGuid(),
-        //                 Title = body.Journey.Title,
-        //                 Description = body.Journey.Description,
-        //                 ReportedBy = user,
-        //                 Status = FeedbackStatus.Draft
-        //             };
-        //             _dbContext.Reports.Add(report);
-        //         }
-        //
-        //         report.Title = body.Journey.Title;
-        //         report.Description = body.Journey.Description;
-        //
-        //         var objectTypeCache = _dbContext.MapObjectTypes.ToDictionary(ot => ot.Id, ot => ot);
-        //         foreach (var obj in body.Objects)
-        //         {
-        //             if (obj.Deleted) _logger.LogWarning("DELETED er ikke implementert!");
-        //
-        //             // TODO: Custom object types!
-        //             if (obj.TypeId != null && objectTypeCache.TryGetValue(obj.TypeId.Value, out var objectType))
-        //             {
-        //             }
-        //             else
-        //             {
-        //                 objectType = objectTypeCache.Values.FirstOrDefault();
-        //                 _logger.LogWarning("Unknown object type: {TypeId}", obj.TypeId);
-        //             }
-        //
-        //             var mapObject = report.MapObjects?.FirstOrDefault(mo => mo.Id == obj.Id);
-        //             if (mapObject == null)
-        //             {
-        //                 mapObject = new HindranceObjectTable
-        //                 {
-        //                     Id = obj.Id,
-        //                     HindranceType = objectType!,
-        //                     Title = obj.Title,
-        //                     Description = obj.Description
-        //                 };
-        //                 _dbContext.MapObjects.Add(mapObject);
-        //             }
-        //             else
-        //             {
-        //                 mapObject.Title = obj.Title;
-        //                 mapObject.Description = obj.Description;
-        //             }
-        //
-        //
-        //             mapObject.Report = report;
-        //             mapObject.HindranceType = objectType!;
-        //
-        //             var existingPoints = new HashSet<(double Latitude, double Longitude, int AMSL, DateTime CreatedAt)>(
-        //                 mapObject.MapPoints?.Select(p => (p.Latitude, p.Longitude, AMSL: p.Elevation, p.CreatedAt)) ??
-        //                 []
-        //             );
-        //
-        //             foreach (var point in obj.Points)
-        //             {
-        //                 var pointKey = (point.Lat, point.Lng, point.Elevation, point.CreatedAt);
-        //
-        //                 if (!existingPoints.Contains(pointKey))
-        //                 {
-        //                     var mapPoint = new HindrancePointTable
-        //                     {
-        //                         Id = Guid.NewGuid(),
-        //                         Latitude = point.Lat,
-        //                         Longitude = point.Lng,
-        //                         Elevation = point.Elevation,
-        //                         CreatedAt = point.CreatedAt,
-        //                         HindranceObject = mapObject
-        //                     };
-        //                     _dbContext.MapPoints.Add(mapPoint);
-        //
-        //                     existingPoints.Add(pointKey);
-        //                 }
-        //             }
-        //         }
-        //
-        //         await transaction.CommitAsync();
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         _logger.LogError(ex, "Error finalizing journey");
-        //         transaction.Rollback();
-        //         throw;
-        //     }
-        // });
-
-        return Ok(new { JourneyId = report.Id });
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetObjects([FromQuery] DateTime? since = null)
-    {
-        // TODO: Cache in memory!
-        var query = _dbContext.MapObjects
-            .Include(mo => mo.HindranceType)
-            .Include(mo => mo.MapPoints)
-            .AsQueryable();
-
-        if (since != null) query = query.Where(mo => mo.MapPoints.Any(mp => mp.CreatedAt >= since));
-
-        var mapObjects = await query.ToListAsync();
-
-        var result = mapObjects.Select(mo => new MapObjectsDataModel
-        {
-            Id = mo.Id,
-            TypeId = mo.HindranceType?.Id,
-            Title = mo.Title,
-            Points = mo.MapPoints.Select(mp => new MapPointDataModel
-            {
-                Lat = mp.Latitude,
-                Lng = mp.Longitude,
-                Elevation = mp.Elevation,
-                CreatedAt = mp.CreatedAt
-            }).OrderBy(p => p.CreatedAt).ToList()
-        }).ToList();
-
-        return Ok(result);
-    }
+    public async Task<IActionResult> GetObjects([FromQuery] DateTime? since = null) =>
+        Ok(new List<MapObjectsDataModel>());
+    // TODO: Cache in memory!
+    // var query = _dbContext.MapObjects
+    //     .Include(mo => mo.HindranceType)
+    //     .Include(mo => mo.MapPoints)
+    //     .AsQueryable();
+    //
+    // if (since != null) query = query.Where(mo => mo.MapPoints.Any(mp => mp.CreatedAt >= since));
+    //
+    // var mapObjects = await query.ToListAsync();
+    //
+    // var result = mapObjects.Select(mo => new MapObjectsDataModel
+    // {
+    //     Id = mo.Id,
+    //     TypeId = mo.HindranceType?.Id,
+    //     Title = mo.Title,
+    //     Points = mo.MapPoints.Select(mp => new MapPointDataModel
+    //     {
+    //         Lat = mp.Latitude,
+    //         Lng = mp.Longitude,
+    //         Elevation = mp.Elevation,
+    //         CreatedAt = mp.CreatedAt
+    //     }).OrderBy(p => p.CreatedAt).ToList()
+    // }).ToList();
+    //
+    // return Ok(result);
 }
 
 public class MapObjectsDataModel

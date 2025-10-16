@@ -18,6 +18,8 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
     public DbSet<HindranceTypeTable> HindranceTypes { get; set; }
     public DbSet<HindrancePointTable> HindrancePoints { get; set; }
 
+    public DbContext Context => this;
+
     public DatabaseContext()
     {
     }
@@ -86,6 +88,7 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
         return base.SaveChanges();
     }
 
+
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         UpdateTimestamps();
@@ -141,6 +144,47 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
             await _transaction.DisposeAsync();
             _transaction = null;
         }
+    }
+
+    public Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> operation, CancellationToken cancellationToken = default)
+    {
+        var strategy = Database.CreateExecutionStrategy();
+
+        return strategy.ExecuteAsync(async () =>
+        {
+            await BeginTransactionAsync(cancellationToken);
+            try
+            {
+                var result = await operation();
+                await CommitTransactionAsync(cancellationToken);
+                return result;
+            }
+            catch
+            {
+                await RollbackTransactionAsync(cancellationToken);
+                throw;
+            }
+        });
+    }
+
+    public Task ExecuteInTransactionAsync(Func<Task> operation, CancellationToken cancellationToken = default)
+    {
+        var strategy = Database.CreateExecutionStrategy();
+
+        return strategy.ExecuteAsync(async () =>
+        {
+            await BeginTransactionAsync(cancellationToken);
+            try
+            {
+                await operation();
+                await CommitTransactionAsync(cancellationToken);
+            }
+            catch
+            {
+                await RollbackTransactionAsync(cancellationToken);
+                throw;
+            }
+        });
     }
 
     private void UpdateTimestamps()
