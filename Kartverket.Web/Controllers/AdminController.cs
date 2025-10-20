@@ -19,38 +19,56 @@ public class AdminController: Controller
         _dbContext = ctx;
     }
 
-
     [HttpGet("/Admin/ReportInDepth/{id:guid}")]
-    public IActionResult ReportInDepth(Guid id)
+    public IActionResult ReportInDepth(Guid id, [FromQuery] Guid? objectID)
     {
         var report = _dbContext.Reports
             .Include(r => r.User)
-            .Include(r => r.MapPoints)
+            .Include(r => r.MapObjects)
+            .ThenInclude(mo => mo.MapPoints)
             .FirstOrDefault(r => r.Id == id);
         if (report == null)
         {
             return NotFound();
         }
+
+        var selectedObject = report.MapObjects
+            .Where(x => x.Id == objectID)
+            .SingleOrDefault();
+
         var Model = new InDepthReportModel
         {
             Id = report.Id,
             Title = report.Title,
             Description = report.Description,
-            CreatedAt = report.CreatedAt
+            CreatedAt = report.CreatedAt,
         };
 
-        var objectData = new InDepthReportModel.ObjectDataModel();
-
-        foreach (var point in report.MapPoints)
+        foreach (var objects in report.MapObjects)
         {
-            objectData.Points.Add(new InDepthReportModel.ObjectDataModel.Point
+            var objectData = new InDepthReportModel.ObjectDataModel()
             {
-                Lat = point.Latitude,
-                Lng = point.Longitude,
-                Elevation = point.AMSL
-            });
+                Id = objects.Id,
+                Title = objects.Title,
+                Description = objects.Description
+            };
+            foreach (var point in objects.MapPoints)
+            {
+                objectData.Points.Add(new InDepthReportModel.ObjectDataModel.Point
+                {
+                    Lat = point.Latitude,
+                    Lng = point.Longitude,
+                    Elevation = point.AMSL
+                });
+            }
+            Model.Objects.Add(objectData);
+
+            if (selectedObject != null && objects.Id == selectedObject.Id)
+            {
+                Model.SelectedObject = objectData;
+            }
         }
-        Model.Objects.Add(objectData);
+
         return View(Model);
     }
 
@@ -77,6 +95,7 @@ public class AdminController: Controller
         var reports = reportQuery
             .Skip((page - 1) * ReportPerPage)
             .Take(ReportPerPage)
+            .Include(r => r.MapObjects)
             .ToList();
 
         var Model = new GetAllReportsModel()
@@ -92,7 +111,8 @@ public class AdminController: Controller
             {
                 Id = report.Id,
                 Title = report.Title,
-                CreatedAt = report.CreatedAt
+                CreatedAt = report.CreatedAt,
+                TotalObjects = report.MapObjects.Count
             });
         }
 

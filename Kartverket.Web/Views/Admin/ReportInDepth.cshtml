@@ -38,25 +38,41 @@ på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgt
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach(var obj in Model.Objects)
+                        @foreach (var obj in Model.Objects)
                         {
-                            var i = 1;
                             <tr>
-                                <td>Object @i</td>
-                                <td>@(obj.Points.Count)</td>
-                                <td><button id="showIn">Click</button></td>
+                                <td>@obj.Title</td>
+                                <td>@obj.Points.Count</td>
+                                <td>
+                                    <a id="showIn"
+                                       asp-controller="Admin"
+                                       asp-action="ReportInDepth"
+                                       asp-route-id="@Model.Id"
+                                       asp-route-objectId="@obj.Id">Details</a>
+                                </td>
                             </tr>
                         }
-                </tbody>
-            </table>
-        </div>
-    </div>
 
-<!--2. kolonne-->
-<div class="column-flex">
-    <div class="box" style="flex: 1">
-        <h3 class="title is-4">Object title</h3>
-                <p>Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc.</p>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!--2. kolonne-->
+        <div class="column-flex">
+            <div class="box" style="flex: 1">
+                
+                @if(Model.SelectedObject is { } selObj)
+                    {
+                        <h3 class="title is-4">@selObj.Title</h3>
+                        <p>@selObj.Description</p>
+                    }
+                else
+                {
+                    <p>Objekt informasjon vises her.</p>
+                }
+
     </div>
 </div>
 <!--3. kolonne-->
@@ -112,7 +128,7 @@ på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgt
     <script src ="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
 
-        const map = L.map('map').setView([58.16358810163733, 8.00377215125247], 15);
+        const map = L.map('map' ).setView([58.16358810163733, 8.00377215125247], 15);
 
         L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
             attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
@@ -126,7 +142,7 @@ på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgt
                     {
                 if (point.Lat && point.Lng)
                 {
-                    L.marker([point.Lat, point.Lng]).addTo(map).bindPopup("test");
+                    L.marker([point.Lat, point.Lng]).addTo(map).bindPopup(obj.Description);
                 }
             });
             }

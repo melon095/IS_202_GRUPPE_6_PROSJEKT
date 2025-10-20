@@ -221,6 +221,7 @@ public class MapController : Controller
                     }
                 }
 
+                await _dbContext.SaveChangesAsync();
                 await transaction.CommitAsync();
             }
             catch (Exception ex)

@@ -1,4 +1,6 @@
-﻿namespace Kartverket.Web.Models.Admin
+﻿using Kartverket.Web.Controllers;
+
+namespace Kartverket.Web.Models.Admin
 {
     public class GetAllReportsModel
     {
@@ -13,6 +15,8 @@
             public string User { get; set; }
             public string Title { get; set; }
             public DateTime CreatedAt { get; set; }
+
+            public int TotalObjects { get; set; }
 
         }
     }
