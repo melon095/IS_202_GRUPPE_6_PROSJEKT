@@ -51,11 +51,7 @@
                     <a class="navbar-item" href="@Url.Action("Index", "Map")">
                         Kart
                     </a>
-                    <a class="navbar-item" href="@Url.Action("Index", "Admin")">
-                        Admin
-                    </a>
-                    
-                    @if (User.IsInRole("Admin"))
+                    @if (User.IsInRole("Kartverket"))
                     {
                         <a class="navbar-item" href="@Url.Action("Index", "Admin")">
                             Administrator

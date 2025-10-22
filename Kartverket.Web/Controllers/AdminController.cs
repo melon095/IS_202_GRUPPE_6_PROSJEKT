@@ -29,7 +29,7 @@ public class AdminController : Controller
             .FirstOrDefault(r => r.Id == id);
         if (report == null)
         {
-            return NotFound();
+            return  View("NoObjectsErr");
         }
 
         var selectedObject = report.MapObjects
@@ -62,7 +62,7 @@ public class AdminController : Controller
                 });
             }
 
-            if (objectData.Points.Any())
+            if (objectData.Points.Count > 0)
             {
                 var GetCentroid = new InDepthReportModel.ObjectDataModel.Point
                 {

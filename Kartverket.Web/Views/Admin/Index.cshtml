@@ -3,12 +3,6 @@
 }
 @model Kartverket.Web.Models.Admin.GetAllReportsModel
 
-@* 
-    TODO:
-
-    Filterere brukere, dato og typer.
-    Paginering. Fullført! Sånn sirka
-*@
 <div class="box">
     <h2 class="is-size-3">Rapporter</h2>
 </div>
@@ -73,8 +67,8 @@
     </table>
 </div>
 <div class="columns is-centered">
-    <div class="Pagnation">
-        <nav class="pagnation is-centered" role="navigation">
+    <div class="Pagination">
+        <nav class="pagination is-centered" role="navigation">
             @if (Model.CurrentPage > 1)
             {
                 <a class="pagination-previous"
