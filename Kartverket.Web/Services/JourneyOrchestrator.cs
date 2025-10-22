@@ -175,7 +175,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         var obj = report.HindranceObjects.FirstOrDefault(o => o.Id == objDtoId);
         if (obj is { } o)
         {
-            _hindranceService.DeleteObject(o.Id, cancellationToken);
+            _hindranceService.DeleteObject(o.Id);
             report.HindranceObjects.Remove(o);
         }
 

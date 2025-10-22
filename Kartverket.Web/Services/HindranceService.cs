@@ -28,7 +28,7 @@ public interface IHindranceService
         List<PlacedPointDataModel> points,
         CancellationToken cancellationToken = default);
 
-    void DeleteObject(Guid hindranceObjectId, CancellationToken cancellationToken = default);
+    void DeleteObject(Guid hindranceObjectId);
 
     Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null,
         CancellationToken cancellationToken = default);
@@ -105,7 +105,7 @@ public class HindranceService : IHindranceService
         await _dbContext.HindrancePoints.AddRangeAsync(pointEntities, cancellationToken);
     }
 
-    public void DeleteObject(Guid hindranceObjectId, CancellationToken cancellationToken = default)
+    public void DeleteObject(Guid hindranceObjectId)
     {
         var obj = new HindranceObjectTable { Id = hindranceObjectId };
         _dbContext.HindranceObjects.Attach(obj);

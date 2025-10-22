@@ -13,7 +13,7 @@ public interface IReportService
     Task<List<ReportTable>> GetReportsByReviewStatus(ReviewStatus status,
         CancellationToken cancellationToken = default);
 
-    Task<List<ReportTable>> GetRepotsByFeedbackType(FeedbackType type,
+    Task<List<ReportTable>> GetReportsByFeedbackType(FeedbackType type,
         CancellationToken cancellationToken = default);
 }
 
@@ -83,7 +83,7 @@ public class ReportService : IReportService
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<List<ReportTable>> GetRepotsByFeedbackType(FeedbackType type,
+    public async Task<List<ReportTable>> GetReportsByFeedbackType(FeedbackType type,
         CancellationToken cancellationToken = default)
     {
         if (_logger.IsEnabled(LogLevel.Debug))
