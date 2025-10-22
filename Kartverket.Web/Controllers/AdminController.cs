@@ -1,11 +1,11 @@
 using Kartverket.Web.AuthPolicy;
 using Kartverket.Web.Database;
-using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.Admin;
 using Kartverket.Web.Models.Admin.Request;
 using Kartverket.Web.Models.Report.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Controllers;
 
@@ -44,11 +44,11 @@ public class AdminController : Controller
             _ => reportQuery.OrderByDescending(r => r.CreatedAt)
         };
 
-        var reports = Enumerable
-            .ToList<ReportTable>(reportQuery
-                .Skip((page - 1) * ReportPerPage)
-                .Take(ReportPerPage)
-                .Include(r => r.MapObjects));
+        var reports = reportQuery
+            .Skip((page - 1) * ReportPerPage)
+            .Take(ReportPerPage)
+            .Include(r => r.HindranceObjects)
+            .ToList();
 
         var Model = new GetAllReportsModel
         {
@@ -64,7 +64,7 @@ public class AdminController : Controller
                 Id = report.Id,
                 Title = report.Title,
                 CreatedAt = report.CreatedAt,
-                TotalObjects = report.MapObjects.Count
+                TotalObjects = report.HindranceObjects.Count
             });
 
 
@@ -79,15 +79,14 @@ public class AdminController : Controller
     public IActionResult ReportInDepth(Guid id, [FromQuery] Guid? objectID)
     {
         var report = _dbContext.Reports
-            .Include(r => r.User)
-            .Include(r => r.MapObjects)
-            .ThenInclude(mo => mo.MapPoints)
+            .Include(r => r.ReportedBy)
+            .Include(r => r.HindranceObjects)
+            .ThenInclude(mo => mo.HindrancePoints)
             .FirstOrDefault(r => r.Id == id);
         if (report == null) return View("NoObjectsErr");
 
-        var selectedObject = report.MapObjects
-            .Where(x => x.Id == objectID)
-            .SingleOrDefault();
+        var selectedObject = report.HindranceObjects
+            .SingleOrDefault(x => x.Id == objectID);
 
         var Model = new InDepthReportModel
         {
@@ -97,7 +96,7 @@ public class AdminController : Controller
             CreatedAt = report.CreatedAt
         };
 
-        foreach (var objects in report.MapObjects)
+        foreach (var objects in report.HindranceObjects)
         {
             var objectData = new InDepthReportModel.ObjectDataModel
             {
@@ -105,12 +104,12 @@ public class AdminController : Controller
                 Title = objects.Title,
                 Description = objects.Description
             };
-            foreach (var point in objects.MapPoints)
+            foreach (var point in objects.HindrancePoints)
                 objectData.Points.Add(new InDepthReportModel.ObjectDataModel.Point
                 {
                     Lat = point.Latitude,
                     Lng = point.Longitude,
-                    Elevation = point.AMSL
+                    Elevation = point.Elevation
                 });
 
             if (objectData.Points.Count > 0)
