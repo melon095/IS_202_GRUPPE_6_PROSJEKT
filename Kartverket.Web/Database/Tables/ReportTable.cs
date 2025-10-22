@@ -4,20 +4,12 @@ using System.Text.Json.Serialization;
 
 namespace Kartverket.Web.Database.Tables;
 
-public enum FeedbackStatus
-{
-    Draft,
-    Submitted,
-    Resolved,
-    Closed
-}
-
 public class ReportTable : BaseModel
 {
     public Guid Id { get; set; }
     public required string Title { get; set; }
     public required string Description { get; set; }
-    public required FeedbackStatus Status { get; set; }
+    public required ReviewStatus ReviewStatus { get; set; }
 
     [NotMapped] public bool ReporterIsPilot => ReportedBy.Role?.Name == RoleValue.Pilot;
     public Guid ReportedById { get; set; }

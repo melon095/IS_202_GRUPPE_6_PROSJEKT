@@ -33,6 +33,7 @@ public class HindranceService
         {
             Title = title,
             Description = description,
+            ReviewStatus = ReviewStatus.Draft,
             ReportId = reportId,
             HindranceTypeId = hindranceTypeId
         };
@@ -80,5 +81,21 @@ public class HindranceService
         var obj = new HindranceObjectTable { Id = hindranceObjectId };
         _dbContext.HindranceObjects.Attach(obj);
         _dbContext.HindranceObjects.Remove(obj);
+    }
+
+    public Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _dbContext.HindranceObjects
+            .AsNoTracking()
+            .AsQueryable();
+
+        if (since != null) query = query.Where(t => t.CreatedAt >= since || t.UpdatedAt >= since);
+
+        return query
+            .Include(o => o.HindranceType)
+            .Include(o => o.HindrancePoints)
+            .OrderBy(o => o.CreatedAt)
+            .ToListAsync(cancellationToken);
     }
 }

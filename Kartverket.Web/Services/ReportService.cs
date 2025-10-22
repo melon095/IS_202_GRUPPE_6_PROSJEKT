@@ -25,7 +25,7 @@ public class ReportService
             Id = Guid.NewGuid(),
             Title = $"Utkast Rapport - {DateTime.UtcNow:yyyy-MM-dd HH:mm}",
             Description = "",
-            Status = FeedbackStatus.Draft,
+            ReviewStatus = ReviewStatus.Draft,
             ReportedById = reportedById
         };
 
@@ -45,7 +45,7 @@ public class ReportService
             .ThenInclude(ho => ho.HindrancePoints)
             .Include(r => r.HindranceObjects)
             .ThenInclude(ho => ho.HindranceType)
-            .FirstOrDefaultAsync(r => r.Id == reportId && r.Status == FeedbackStatus.Draft, cancellationToken);
+            .FirstOrDefaultAsync(r => r.Id == reportId && r.ReviewStatus == ReviewStatus.Draft, cancellationToken);
     }
 
     public void FinaliseReport(ReportTable report, string title, string description)
@@ -55,6 +55,30 @@ public class ReportService
 
         report.Title = title;
         report.Description = description;
-        report.Status = FeedbackStatus.Submitted;
+        report.ReviewStatus = ReviewStatus.Submitted;
+    }
+
+    public async Task<List<ReportTable>> GetReportsByReviewStatus(ReviewStatus status,
+        CancellationToken cancellationToken = default)
+    {
+        if (_logger.IsEnabled(LogLevel.Debug))
+            _logger.LogDebug("Fetching reports with feedback status {Status}", status);
+
+        return await _dbContext.Reports
+            .Include(r => r.ReportedBy)
+            .Where(r => r.ReviewStatus == status)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<ReportTable>> GetRepotsByFeedbackType(FeedbackType type,
+        CancellationToken cancellationToken = default)
+    {
+        if (_logger.IsEnabled(LogLevel.Debug))
+            _logger.LogDebug("Fetching reports with feedback type {Type}", type);
+
+        return await _dbContext.Reports
+            .Include(r => r.ReportedBy)
+            .Where(r => r.Feedbacks.Any(f => f.FeedbackType == type))
+            .ToListAsync(cancellationToken);
     }
 }

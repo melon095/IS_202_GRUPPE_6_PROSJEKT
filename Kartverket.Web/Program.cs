@@ -37,6 +37,13 @@ builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<
     .AddScoped<HindranceService>()
     .AddScoped<JourneyOrchestrator>();
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped(typeof(CancellationToken), s =>
+{
+    var httpContextAccessor = s.GetRequiredService<IHttpContextAccessor>();
+    return httpContextAccessor.HttpContext?.RequestAborted ?? CancellationToken.None;
+});
+
 #region Authentication
 
 // https://source.dot.net/#Microsoft.AspNetCore.Identity/IdentityServiceCollectionExtensions.cs,b869775e5fa5aa5c
@@ -74,8 +81,6 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.SlidingExpiration = true;
     o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
 });
-
-builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSession(options =>
 {

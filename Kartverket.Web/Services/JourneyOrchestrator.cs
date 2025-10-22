@@ -157,7 +157,7 @@ public class JourneyOrchestrator
     }
 
 
-    private async Task DeleteObject(ReportTable report, Guid objDtoId, CancellationToken cancellationToken)
+    private Task DeleteObject(ReportTable report, Guid objDtoId, CancellationToken cancellationToken)
     {
         var obj = report.HindranceObjects.FirstOrDefault(o => o.Id == objDtoId);
         if (obj is { } o)
@@ -165,6 +165,8 @@ public class JourneyOrchestrator
             _hindranceService.DeleteObject(o.Id, cancellationToken);
             report.HindranceObjects.Remove(o);
         }
+
+        return Task.CompletedTask;
     }
 
     private async Task<Dictionary<Guid, HindranceTypeTable>> BuildTypeCache(CancellationToken cancellationToken)

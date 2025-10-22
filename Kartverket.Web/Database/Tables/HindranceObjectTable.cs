@@ -18,6 +18,8 @@ public class HindranceObjectTable : BaseModel
     public double? MaxLatitude { get; set; }
     public double? MaxLongitude { get; set; }
 
+    public ReviewStatus ReviewStatus { get; set; }
+
     [NotMapped] public bool IsVerified => VerifiedAt.HasValue;
     public DateTime? VerifiedAt { get; set; }
 

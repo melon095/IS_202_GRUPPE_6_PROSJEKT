@@ -1,6 +1,7 @@
 ﻿using Kartverket.Web.AuthPolicy;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
+using Kartverket.Web.Models.Map;
 using Kartverket.Web.Models.Map.Request;
 using Kartverket.Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -13,19 +14,21 @@ namespace Kartverket.Web.Controllers;
 public class MapController : Controller
 {
     private readonly ILogger<MapController> _logger;
-    private readonly ReportService _reportService;
     private readonly HindranceService _hindranceService;
     private readonly JourneyOrchestrator _journeyOrchestrator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<UserTable> _userManager;
 
-    public MapController(ILogger<MapController> logger, ReportService reportService, HindranceService hindranceService,
+    public MapController(
+        ILogger<MapController> logger,
+        HindranceService hindranceService,
+        JourneyOrchestrator journeyOrchestrator,
         IUnitOfWork unitOfWork,
         UserManager<UserTable> userManager)
     {
         _logger = logger;
-        _reportService = reportService;
         _hindranceService = hindranceService;
+        _journeyOrchestrator = journeyOrchestrator;
         _unitOfWork = unitOfWork;
         _userManager = userManager;
     }
@@ -92,47 +95,23 @@ public class MapController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetObjects([FromQuery] DateTime? since = null) =>
-        Ok(new List<MapObjectsDataModel>());
-    // TODO: Cache in memory!
-    // var query = _dbContext.MapObjects
-    //     .Include(mo => mo.HindranceType)
-    //     .Include(mo => mo.MapPoints)
-    //     .AsQueryable();
-    //
-    // if (since != null) query = query.Where(mo => mo.MapPoints.Any(mp => mp.CreatedAt >= since));
-    //
-    // var mapObjects = await query.ToListAsync();
-    //
-    // var result = mapObjects.Select(mo => new MapObjectsDataModel
-    // {
-    //     Id = mo.Id,
-    //     TypeId = mo.HindranceType?.Id,
-    //     Title = mo.Title,
-    //     Points = mo.MapPoints.Select(mp => new MapPointDataModel
-    //     {
-    //         Lat = mp.Latitude,
-    //         Lng = mp.Longitude,
-    //         Elevation = mp.Elevation,
-    //         CreatedAt = mp.CreatedAt
-    //     }).OrderBy(p => p.CreatedAt).ToList()
-    // }).ToList();
-    //
-    // return Ok(result);
-}
+    public async Task<MapObjectsDataModel[]> GetObjects([FromQuery] DateTime? since = null,
+        [FromServices] CancellationToken cancellationToken = default)
+    {
+        var mapObjects = await _hindranceService.GetAllObjectsSince(since, cancellationToken);
 
-public class MapObjectsDataModel
-{
-    public Guid Id { get; set; }
-    public Guid? TypeId { get; set; }
-    public string? Title { get; set; }
-    public List<MapPointDataModel> Points { get; set; } = [];
-}
-
-public class MapPointDataModel
-{
-    public double Lat { get; set; }
-    public double Lng { get; set; }
-    public double Elevation { get; set; }
-    public DateTime CreatedAt { get; set; }
+        return mapObjects.Select(mo => new MapObjectsDataModel
+        {
+            Id = mo.Id,
+            TypeId = mo.HindranceTypeId,
+            Title = mo.Title,
+            Points = mo.HindrancePoints.Select(mp => new MapPointDataModel
+            {
+                Lat = mp.Latitude,
+                Lng = mp.Longitude,
+                Elevation = mp.Elevation,
+                CreatedAt = mp.CreatedAt
+            }).OrderBy(p => p.CreatedAt).ToList()
+        }).ToArray();
+    }
 }
