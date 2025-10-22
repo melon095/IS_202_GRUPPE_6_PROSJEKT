@@ -3,14 +3,28 @@ using Kartverket.Web.Models.Map.Request;
 
 namespace Kartverket.Web.Services;
 
-public class JourneyOrchestrator
+public interface IJourneyOrchestrator
+{
+    Task<(Guid JourneyId, Guid ObjectId)> SyncObject(
+        Guid userId,
+        Guid? journeyId,
+        PlacedObjectDataModel body,
+        CancellationToken cancellationToken = default);
+
+    Task<Guid> Finalise(
+        Guid journeyId,
+        FinalizeJourneyRequest request,
+        CancellationToken cancellationToken = default);
+}
+
+public class JourneyOrchestrator : IJourneyOrchestrator
 {
     private readonly ILogger<JourneyOrchestrator> _logger;
-    private readonly ReportService _reportService;
-    private readonly HindranceService _hindranceService;
+    private readonly IReportService _reportService;
+    private readonly IHindranceService _hindranceService;
 
-    public JourneyOrchestrator(ILogger<JourneyOrchestrator> logger, ReportService reportService,
-        HindranceService hindranceService)
+    public JourneyOrchestrator(ILogger<JourneyOrchestrator> logger, IReportService reportService,
+        IHindranceService hindranceService)
     {
         _logger = logger;
         _reportService = reportService;
@@ -136,13 +150,12 @@ public class JourneyOrchestrator
                 cancellationToken);
         }
 
-        var existingPoints = obj.HindrancePoints?
-            .Select(p => (p.Latitude, p.Longitude, p.Elevation, p.CreatedAt))
-            .ToHashSet() ?? new HashSet<(double, double, int, DateTime)>();
+        var existingPoints = obj.HindrancePoints
+            .Select(p => (p.Latitude, p.Longitude))
+            .ToHashSet();
 
         var newPoints = objDto.Points
-            .Select(p => (p.Lat, p.Lng, p.Elevation, p.CreatedAt))
-            .Where(p => !existingPoints.Contains(p))
+            .Where(p => !existingPoints.Contains((p.Lat, p.Lng)))
             .Select(p => new PlacedPointDataModel
             {
                 Lat = p.Lat,

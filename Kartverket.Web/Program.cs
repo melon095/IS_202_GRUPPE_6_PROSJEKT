@@ -33,9 +33,9 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 });
 
 builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DatabaseContext>())
-    .AddScoped<ReportService>()
-    .AddScoped<HindranceService>()
-    .AddScoped<JourneyOrchestrator>();
+    .AddScoped<IReportService, ReportService>()
+    .AddScoped<IHindranceService, HindranceService>()
+    .AddScoped<IJourneyOrchestrator, JourneyOrchestrator>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped(typeof(CancellationToken), s =>

@@ -4,7 +4,20 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Services;
 
-public class ReportService
+public interface IReportService
+{
+    Task<ReportTable> CreateDraft(Guid reportedById, CancellationToken cancellationToken = default);
+    Task<ReportTable?> GetDraft(Guid reportId, CancellationToken cancellationToken = default);
+    void FinaliseReport(ReportTable report, string title, string description);
+
+    Task<List<ReportTable>> GetReportsByReviewStatus(ReviewStatus status,
+        CancellationToken cancellationToken = default);
+
+    Task<List<ReportTable>> GetRepotsByFeedbackType(FeedbackType type,
+        CancellationToken cancellationToken = default);
+}
+
+public class ReportService : IReportService
 {
     private readonly ILogger<ReportService> _logger;
     private readonly DatabaseContext _dbContext;

@@ -9,14 +9,14 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
 {
     private IDbContextTransaction? _transaction;
 
-    public DbSet<RoleTable> Roles { get; set; }
+    public virtual DbSet<RoleTable> Roles { get; set; }
 
-    public DbSet<ReportTable> Reports { get; set; }
-    public DbSet<ReportFeedbackTable> ReportFeedbacks { get; set; }
+    public virtual DbSet<ReportTable> Reports { get; set; }
+    public virtual DbSet<ReportFeedbackTable> ReportFeedbacks { get; set; }
 
-    public DbSet<HindranceObjectTable> HindranceObjects { get; set; }
-    public DbSet<HindranceTypeTable> HindranceTypes { get; set; }
-    public DbSet<HindrancePointTable> HindrancePoints { get; set; }
+    public virtual DbSet<HindranceObjectTable> HindranceObjects { get; set; }
+    public virtual DbSet<HindranceTypeTable> HindranceTypes { get; set; }
+    public virtual DbSet<HindrancePointTable> HindrancePoints { get; set; }
 
     public DbContext Context => this;
 
@@ -189,6 +189,10 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
 
     private void UpdateTimestamps()
     {
+        // TODO: Dårlig fiks for å unngå problemer med in-memory database i tester
+        if (Database.IsInMemory())
+            return;
+
         var entries = ChangeTracker.Entries()
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 

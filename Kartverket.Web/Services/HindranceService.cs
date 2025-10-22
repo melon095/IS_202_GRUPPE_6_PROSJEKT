@@ -5,7 +5,36 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Services;
 
-public class HindranceService
+public interface IHindranceService
+{
+    Task<List<HindranceTypeTable>> GetAllTypes(CancellationToken cancellationToken = default);
+
+    Task<HindranceObjectTable> CreateObject(
+        Guid reportId,
+        Guid hindranceTypeId,
+        string title,
+        string description,
+        CancellationToken cancellationToken = default);
+
+    void UpdateObject(
+        HindranceObjectTable obj,
+        Guid hindranceTypeId,
+        string title,
+        string description,
+        CancellationToken cancellationToken = default);
+
+    Task AddPoints(
+        Guid hindranceObjectId,
+        List<PlacedPointDataModel> points,
+        CancellationToken cancellationToken = default);
+
+    void DeleteObject(Guid hindranceObjectId, CancellationToken cancellationToken = default);
+
+    Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null,
+        CancellationToken cancellationToken = default);
+}
+
+public class HindranceService : IHindranceService
 {
     private readonly ILogger<HindranceService> _logger;
     private readonly DatabaseContext _dbContext;
@@ -88,13 +117,14 @@ public class HindranceService
     {
         var query = _dbContext.HindranceObjects
             .AsNoTracking()
-            .AsQueryable();
-
-        if (since != null) query = query.Where(t => t.CreatedAt >= since || t.UpdatedAt >= since);
-
-        return query
             .Include(o => o.HindranceType)
             .Include(o => o.HindrancePoints)
+            .AsQueryable();
+
+        if (since != null)
+            query = query.Where(o => o.CreatedAt >= since || o.UpdatedAt >= since);
+
+        return query
             .OrderBy(o => o.CreatedAt)
             .ToListAsync(cancellationToken);
     }
