@@ -1,0 +1,167 @@
+﻿@{
+    ViewBag.Title = "In-Depth Report";
+}
+@model Kartverket.Web.Models.Report.Response.InDepthReportModel
+
+<div id="model-title">
+    <h2 class="is-size-2">
+        Rapport: @Model.Title
+    </h2>
+</div>
+<body>
+    <!-- 1. Kolonne-->
+    <div class="main-container">
+
+        <div class="column-flex">
+            <div class="box row-flex">
+                <h2>Report Description:</h2>
+                <br />
+                <p>@Model.Description</p>
+                <br />
+                <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+            </div>
+
+            <div class="box row-flex" id="ObjTable">
+                <h2>Objects</h2>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Object Num</th>
+                            <th>Markers</th>
+                            <th>View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var obj in Model.Objects)
+                        {
+                            <tr>
+                                <td>@obj.Title</td>
+                                <td>@obj.Points.Count</td>
+                                <td>
+                                    <a id="showIn"
+                                       asp-controller="Admin"
+                                       asp-action="ReportInDepth"
+                                       asp-route-id="@Model.Id"
+                                       asp-route-objectId="@obj.Id">Details</a>
+                                </td>
+                            </tr>
+                        }
+
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!--2. kolonne-->
+        <div class="column-flex">
+            <div class="box" style="flex: 1">
+                
+                @if(Model.SelectedObject is { } selObj)
+                    {
+                        <h3 class="title is-4">@selObj.Title</h3>
+                        <p>@selObj.Description</p>
+                    }
+                else
+                {
+                    <p>Objekt informasjon vises her.</p>
+                }
+
+    </div>
+</div>
+<!--3. kolonne-->
+<div class="column-flex">
+    <div>
+        <div id="map" class="column-flex box"></div>
+    </div>
+</div>
+</div>
+
+</body>
+
+@section styles
+{
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .main-container {
+            display: flex;
+            height: 100vh;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .column-flex {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 1rem;
+        }
+
+        .row-flex {
+            flex: 1;
+        }
+
+        #ObjTable {
+            overflow-y: auto;
+        }
+
+        #map {
+            height: 100vh;
+            width: auto;
+        }
+    </style>
+}
+@section Scripts{
+    <script src ="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const centerOfNorway = [63.99164652261938, 12.306951660170679];
+        const { Objects: objects, SelectedObject: selectedObject } = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        let mapCenter = [58.16358810163733, 8.00377215125247];
+        let zoomLevel = 10;
+        let bounds = null;
+        
+        if (selectedObject && selectedObject.CentroidPoint)
+        {
+            let centroid = selectedObject.CentroidPoint;
+            var points = selectedObject.Points;
+            mapCenter = [selectedObject.CentroidPoint.Lat, selectedObject.CentroidPoint.Lng];
+
+            let latLngPoints = points.map((p) => L.latLng(p.Lat, p.Lng));
+            bounds = L.latLngBounds(latLngPoints);
+            bounds.extend([centroid.Lat, centroid.Lng]);
+        } else {
+            let latLngPoints = objects.flatMap(o => o.Points.map(p => L.latLng(p.Lat, p.Lng)));
+            bounds = L.latLngBounds(latLngPoints);
+            bounds.extend(centerOfNorway);
+        }
+
+        const map = L.map('map').setView(mapCenter, zoomLevel);
+        map.fitBounds(bounds, {
+            padding: [50, 50]
+        });
+
+        L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
+            attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
+        }).addTo(map);
+
+        objects.forEach(obj => {
+            if (obj.Points && obj.Points.length > 0) 
+            {
+                obj.Points.forEach(point => 
+                    {
+                if (point.Lat && point.Lng)
+                {
+                    L.marker([point.Lat, point.Lng]).addTo(map).bindPopup(obj.Description);
+                }
+            });
+            }
+        });
+    </script>
+}
