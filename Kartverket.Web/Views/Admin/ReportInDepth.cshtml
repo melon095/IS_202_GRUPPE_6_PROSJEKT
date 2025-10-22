@@ -127,14 +127,36 @@ på kartet blir kartet oppdatert og viser bare punkter til det objektet du valgt
 @section Scripts{
     <script src ="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        const centerOfNorway = [63.99164652261938, 12.306951660170679];
+        const { Objects: objects, SelectedObject: selectedObject } = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        let mapCenter = [58.16358810163733, 8.00377215125247];
+        let zoomLevel = 10;
+        let bounds = null;
+        
+        if (selectedObject && selectedObject.CentroidPoint)
+        {
+            let centroid = selectedObject.CentroidPoint;
+            var points = selectedObject.Points;
+            mapCenter = [selectedObject.CentroidPoint.Lat, selectedObject.CentroidPoint.Lng];
 
-        const map = L.map('map' ).setView([58.16358810163733, 8.00377215125247], 15);
+            let latLngPoints = points.map((p) => L.latLng(p.Lat, p.Lng));
+            bounds = L.latLngBounds(latLngPoints);
+            bounds.extend([centroid.Lat, centroid.Lng]);
+        } else {
+            let latLngPoints = objects.flatMap(o => o.Points.map(p => L.latLng(p.Lat, p.Lng)));
+            bounds = L.latLngBounds(latLngPoints);
+            bounds.extend(centerOfNorway);
+        }
+
+        const map = L.map('map').setView(mapCenter, zoomLevel);
+        map.fitBounds(bounds, {
+            padding: [50, 50]
+        });
 
         L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
             attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
         }).addTo(map);
 
-        const objects = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Objects));
         objects.forEach(obj => {
             if (obj.Points && obj.Points.length > 0) 
             {

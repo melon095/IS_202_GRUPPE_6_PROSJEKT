@@ -14,6 +14,7 @@
         public class ObjectDataModel
         {
             public Guid Id { get; set; }
+            public Point CentroidPoint { get; set; }
             public string Title { get; set; }
             public string Description { get; set; }
             public List<Point> Points { get; set; } = [];

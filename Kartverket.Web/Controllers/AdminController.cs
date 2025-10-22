@@ -7,12 +7,12 @@ using Microsoft.EntityFrameworkCore;
 namespace Kartverket.Web.Controllers;
 
 [Controller]
-public class AdminController: Controller
+public class AdminController : Controller
 {
     private readonly ILogger<AdminController> _logger;
     private readonly DatabaseContext _dbContext;
     private const int ReportPerPage = 10;
-    
+
     public AdminController(ILogger<AdminController> logger, DatabaseContext ctx)
     {
         _logger = logger;
@@ -61,19 +61,33 @@ public class AdminController: Controller
                     Elevation = point.AMSL
                 });
             }
-            Model.Objects.Add(objectData);
 
-            if (selectedObject != null && objects.Id == selectedObject.Id)
+            if (objectData.Points.Any())
             {
-                Model.SelectedObject = objectData;
+                var GetCentroid = new InDepthReportModel.ObjectDataModel.Point
+                {
+                    Lat = objectData.Points.Average(p => p.Lat),
+                    Lng = objectData.Points.Average(p => p.Lng),
+                    Elevation = 0
+                };
+
+                objectData.CentroidPoint = GetCentroid;
+
+                Model.Objects.Add(objectData);
+
+                if (selectedObject != null && objects.Id == selectedObject.Id)
+                {
+                    Model.SelectedObject = objectData;
+                }
             }
+
         }
 
         return View(Model);
     }
 
     [HttpGet]
-    public IActionResult Index([FromQuery]int page = 1, [FromQuery]DateOnly? sortDate = null, [FromQuery] string sortOrder = "desc")
+    public IActionResult Index([FromQuery] int page = 1, [FromQuery] DateOnly? sortDate = null, [FromQuery] string sortOrder = "desc")
     {
         sortDate ??= DateOnly.FromDateTime(DateTime.Now);
         // Pagnering når det er for mange rapporter
@@ -105,6 +119,7 @@ public class AdminController: Controller
             SortDate = sortDate.Value
         };
 
+
         foreach (var report in reports)
         {
             Model.Reports.Add(new GetAllReportsModel.MakeReportList
@@ -115,6 +130,8 @@ public class AdminController: Controller
                 TotalObjects = report.MapObjects.Count
             });
         }
+
+
 
         ViewBag.SortOrder = sortOrder.ToLower();
 
