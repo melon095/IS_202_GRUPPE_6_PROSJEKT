@@ -14,15 +14,15 @@ namespace Kartverket.Web.Controllers;
 public class MapController : Controller
 {
     private readonly ILogger<MapController> _logger;
-    private readonly HindranceService _hindranceService;
-    private readonly JourneyOrchestrator _journeyOrchestrator;
+    private readonly IHindranceService _hindranceService;
+    private readonly IJourneyOrchestrator _journeyOrchestrator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<UserTable> _userManager;
 
     public MapController(
         ILogger<MapController> logger,
-        HindranceService hindranceService,
-        JourneyOrchestrator journeyOrchestrator,
+        IHindranceService hindranceService,
+        IJourneyOrchestrator journeyOrchestrator,
         IUnitOfWork unitOfWork,
         UserManager<UserTable> userManager)
     {
