@@ -5,13 +5,13 @@ namespace Kartverket.Web.Database.Tables;
 public class UserTable : IdentityUser<Guid>
 {
     public required bool IsActive { get; set; }
-    
+
     public Guid? RoleId { get; set; }
     public RoleTable? Role { get; set; }
-    
-    public List<ReportFeedbackAssignmentTable> ReportFeedbackAssignments { get; set; }
+
+    public List<ReportFeedbackTable> ReportFeedbacks { get; set; }
     public List<ReportTable> Reports { get; set; }
-    
+
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
 }

@@ -1,21 +1,23 @@
 ﻿namespace Kartverket.Web.Database.Tables;
 
-public enum FeedbackStatus
+public enum FeedbackType
 {
-    New,
-    InProgress,
-    Resolved,
-    Closed
+    RequestForChange,
+    Approval,
+    Rejection,
+    Note
 }
 
 public class ReportFeedbackTable : BaseModel
 {
     public Guid Id { get; set; }
-    public required FeedbackStatus Status { get; set; }
-    public required string Feedback { get; set; }
-    
+    public string Feedback { get; set; }
+
+    public FeedbackType FeedbackType { get; set; }
+
+    public Guid FeedbackById { get; set; }
+    public UserTable FeedbackBy { get; set; }
+
     public Guid ReportId { get; set; }
     public ReportTable Report { get; set; }
-    
-    public List<ReportFeedbackAssignmentTable> ReportFeedbackAssignments { get; set; }
 }

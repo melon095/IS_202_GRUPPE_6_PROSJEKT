@@ -1,11 +1,12 @@
 using Kartverket.Web.AuthPolicy;
-using System.Diagnostics;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
+using Kartverket.Web.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 using Vite.AspNetCore;
 
 #region Builder
@@ -19,16 +20,28 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
     Debug.Assert(connectionString != null,
         $"Du glemte DefaultConnection i din appsettings.{builder.Environment.EnvironmentName}.json fil!");
-    
+
     var version = ServerVersion.AutoDetect(connectionString);
-    
+
     options.UseMySql(connectionString, version, mySqlOptions =>
     {
         mySqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorNumbersToAdd: null);
+            5,
+            TimeSpan.FromSeconds(10),
+            null);
     });
+});
+
+builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DatabaseContext>())
+    .AddScoped<IReportService, ReportService>()
+    .AddScoped<IHindranceService, HindranceService>()
+    .AddScoped<IJourneyOrchestrator, JourneyOrchestrator>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped(typeof(CancellationToken), s =>
+{
+    var httpContextAccessor = s.GetRequiredService<IHttpContextAccessor>();
+    return httpContextAccessor.HttpContext?.RequestAborted ?? CancellationToken.None;
 });
 
 #region Authentication
@@ -39,13 +52,14 @@ builder.Services.AddAuthorization(o =>
 {
     o.AddPolicy(RoleValue.AtLeastUser, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.User)); });
     o.AddPolicy(RoleValue.AtLeastPilot, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Pilot)); });
-    o.AddPolicy(RoleValue.AtLeastKartverket, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Kartverket)); });
+    o.AddPolicy(RoleValue.AtLeastKartverket,
+        p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Kartverket)); });
 });
 builder.Services.AddSingleton<IAuthorizationHandler, MinimumRoleHandler>();
 
 builder.Services.AddAuthentication();
 
-builder.Services.AddIdentity<UserTable, RoleTable>((o) =>
+builder.Services.AddIdentity<UserTable, RoleTable>(o =>
     {
         o.Password.RequiredLength = 8;
         o.Password.RequireDigit = true;
@@ -67,8 +81,6 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.SlidingExpiration = true;
     o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
 });
-
-builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSession(options =>
 {
@@ -119,15 +131,15 @@ if (!app.Environment.IsDevelopment())
 {
     var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
     db.Database.Migrate();
-    
+
     // TODO: Mildertidlig punkt
-    if (db.MapObjectTypes.Any(m => m.Name == "Midlertidlig type!")) goto b;
-    
-    db.MapObjectTypes.Add(new MapObjectTypeTable()
+    if (db.HindranceTypes.Any(m => m.Name == "Midlertidlig type!")) goto b;
+
+    db.HindranceTypes.Add(new HindranceTypeTable
     {
         Name = "Midlertidlig type!",
         PrimaryImageUrl = "/images/map-objects/test.svg",
-        MarkerImageUrl = null,
+        MarkerImageUrl = null
     });
     db.SaveChanges();
 }
@@ -159,8 +171,8 @@ app.MapStaticAssets();
 app.UseStaticFiles();
 
 app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+        "default",
+        "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 // Note: Must be the at the end.
