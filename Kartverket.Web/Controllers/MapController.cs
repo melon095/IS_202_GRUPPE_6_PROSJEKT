@@ -103,6 +103,7 @@ public class MapController : Controller
         return mapObjects.Select(mo => new MapObjectsDataModel
         {
             Id = mo.Id,
+            ReportId = mo.ReportId,
             TypeId = mo.HindranceTypeId,
             Title = mo.Title,
             Points = mo.HindrancePoints.Select(mp => new MapPointDataModel

@@ -7,13 +7,13 @@ import { extrapolateErrors } from "../utils/extrapolateErrors";
 const ONE_MINUTE = 60 * 1000;
 const TWO_MINUTES = 2 * ONE_MINUTE;
 
-export const useServerObjectsQuery = () => {
+export const useServerObjectsQuery = (currentReportId?: string) => {
 	const queryClient = useQueryClient();
 	const lastFetchTimeRef = useRef<string | null>(null);
 
 	return useQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
-		queryKey: ["serverSideObjects"],
+		queryKey: ["serverSideObjects", currentReportId],
 		queryFn: async () => {
 			const since = lastFetchTimeRef.current ? `?since=${encodeURIComponent(lastFetchTimeRef.current)}` : "";
 
@@ -33,6 +33,10 @@ export const useServerObjectsQuery = () => {
 					const merged = [...oldData];
 
 					data.forEach((newObj) => {
+						if (currentReportId && newObj.id !== currentReportId) {
+							return;
+						}
+
 						const index = merged.findIndex((obj) => obj.id === newObj.id);
 						if (index !== -1) {
 							merged[index] = newObj;
