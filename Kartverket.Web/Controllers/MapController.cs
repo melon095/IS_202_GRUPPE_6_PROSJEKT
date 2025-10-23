@@ -95,10 +95,12 @@ public class MapController : Controller
     }
 
     [HttpGet]
-    public async Task<MapObjectsDataModel[]> GetObjects([FromQuery] DateTime? since = null,
+    public async Task<MapObjectsDataModel[]> GetObjects(
+        [FromQuery] DateTime? since = null,
+        [FromQuery] Guid? reportId = null,
         [FromServices] CancellationToken cancellationToken = default)
     {
-        var mapObjects = await _hindranceService.GetAllObjectsSince(since, cancellationToken);
+        var mapObjects = await _hindranceService.GetAllObjectsSince(since, reportId, cancellationToken);
 
         return mapObjects.Select(mo => new MapObjectsDataModel
         {

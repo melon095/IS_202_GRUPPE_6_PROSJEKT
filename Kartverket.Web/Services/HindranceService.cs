@@ -30,7 +30,7 @@ public interface IHindranceService
 
     void DeleteObject(Guid hindranceObjectId);
 
-    Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null,
+    Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
         CancellationToken cancellationToken = default);
 }
 
@@ -112,7 +112,7 @@ public class HindranceService : IHindranceService
         _dbContext.HindranceObjects.Remove(obj);
     }
 
-    public Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null,
+    public Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbContext.HindranceObjects
@@ -123,6 +123,9 @@ public class HindranceService : IHindranceService
 
         if (since != null)
             query = query.Where(o => o.CreatedAt >= since || o.UpdatedAt >= since);
+
+        if (ignoreReportId != Guid.Empty)
+            query = query.Where(o => o.ReportId != ignoreReportId);
 
         return query
             .OrderBy(o => o.CreatedAt)

@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { ServerStateResponse } from "../types";
 import { extrapolateErrors } from "../utils/extrapolateErrors";
@@ -11,13 +11,22 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 	const queryClient = useQueryClient();
 	const lastFetchTimeRef = useRef<string | null>(null);
 
-	return useQuery({
-		// eslint-disable-next-line @tanstack/query/exhaustive-deps
-		queryKey: ["serverSideObjects", currentReportId],
-		queryFn: async () => {
-			const since = lastFetchTimeRef.current ? `?since=${encodeURIComponent(lastFetchTimeRef.current)}` : "";
+	useEffect(() => {
+		lastFetchTimeRef.current = null;
+	}, [currentReportId]);
 
-			const res = await fetch(`/Map/GetObjects${since}`, {
+	return useQuery({
+		queryKey: ["serverSideObjects", currentReportId, lastFetchTimeRef],
+		queryFn: async () => {
+			const qp = new URLSearchParams();
+			if (lastFetchTimeRef.current) {
+				qp.append("since", encodeURIComponent(lastFetchTimeRef.current));
+			}
+			if (currentReportId) {
+				qp.append("reportId", currentReportId);
+			}
+
+			const res = await fetch(`/Map/GetObjects?${qp.toString()}`, {
 				method: "GET",
 			});
 			if (!res.ok) throw await extrapolateErrors(res);
@@ -27,16 +36,12 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 			lastFetchTimeRef.current = new Date().toISOString();
 
 			return queryClient.setQueryData<ServerStateResponse>(
-				["serverSideObjects"],
+				["serverSideObjects", currentReportId, lastFetchTimeRef],
 				(oldData: ServerStateResponse | undefined = []) => {
 					if (!oldData) return data;
 					const merged = [...oldData];
 
 					data.forEach((newObj) => {
-						if (currentReportId && newObj.id !== currentReportId) {
-							return;
-						}
-
 						const index = merged.findIndex((obj) => obj.id === newObj.id);
 						if (index !== -1) {
 							merged[index] = newObj;
