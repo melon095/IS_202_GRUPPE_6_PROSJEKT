@@ -85,15 +85,8 @@
 		"error": {
 			"title": "Klarte ikke å laste inn objekttyper"
 		},
-		"customType": {
-			"label": "Egendefinert objekttype",
-			"placeholder": "F.eks. 'Min spesielle type'",
-			"radioLabel": "Egendefinert objekttype",
-			"notImplementedWarning": "(Ikke implementert! Den vil bli ignorert for nå!)"
-		},
 		"actions": {
 			"add": "Legg til",
-			"addCustomType": "Legg til egendefinert type",
 			"addWithoutType": "Legg til objekt uten type",
 			"skip": "Hopp over",
 			"cancel": "Kanseller (Ikke legg til objekt)"

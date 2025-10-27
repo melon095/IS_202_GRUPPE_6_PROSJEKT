@@ -10,7 +10,6 @@ export interface PlacedObject {
 	id?: string;
 	points: Point[];
 	typeId?: string;
-	customType?: string;
 	title?: string;
 	description?: string;
 	deleted: boolean;
@@ -56,7 +55,6 @@ export interface FinalizeJourneyObject {
 	description?: string;
 	points: Point[];
 	typeId?: string;
-	customType?: string;
 }
 
 export interface FinalizeJourneyData {

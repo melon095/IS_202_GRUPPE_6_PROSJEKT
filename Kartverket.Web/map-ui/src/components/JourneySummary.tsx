@@ -232,7 +232,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 															</div>
 														) : (
 															<span className="is-size-6-tablet">
-																{obj.typeId || obj.customType || "-"}
+																{obj.typeId || "-"}
 															</span>
 														)}
 													</td>

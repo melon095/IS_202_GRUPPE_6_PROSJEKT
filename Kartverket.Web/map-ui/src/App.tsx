@@ -44,7 +44,6 @@ const AppContent = () => {
 			deleted: obj.deleted,
 			points: obj.points,
 			typeId: obj.typeId,
-			customType: obj.customType,
 		}));
 
 		finalizeJourneyMutation.mutate(
