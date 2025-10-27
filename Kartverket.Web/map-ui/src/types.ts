@@ -70,6 +70,7 @@ export interface FinalizeJourneyData {
 
 export interface ServerStateObjects {
 	id: string;
+	reportId: string;
 	title: string | null;
 	points: Point[];
 	typeId?: string;

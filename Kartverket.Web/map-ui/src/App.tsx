@@ -1,4 +1,5 @@
 ﻿import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect, useState } from "react";
 
 import { JourneyControls } from "./components/JourneyControls";
@@ -92,6 +93,8 @@ const App = () => {
 	return (
 		<>
 			<QueryClientProvider client={queryClient}>
+				<ReactQueryDevtools initialIsOpen={false} />
+
 				<ObjectTypesProvider>
 					<JourneyProvider>
 						<AppContent />

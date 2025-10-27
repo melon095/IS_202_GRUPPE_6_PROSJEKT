@@ -1,10 +1,12 @@
 import React from "react";
 import { Marker, Polyline, Popup } from "react-leaflet";
 
+import { useJourney } from "../contexts/JourneyContext";
 import { useServerObjectsQuery } from "../hooks/useServerObjectsQuery";
 
 export const ServerMarkers = () => {
-	const { data, isLoading, isError } = useServerObjectsQuery();
+	const { currentJourney } = useJourney();
+	const { data, isLoading, isError } = useServerObjectsQuery(currentJourney?.id);
 
 	if (isLoading || isError || !data) return null;
 
