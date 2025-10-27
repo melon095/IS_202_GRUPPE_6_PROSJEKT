@@ -49,8 +49,8 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		}
 	};
 
-	const handleTypeSelect = (typeId?: string, customType?: string) => {
-		const lastObject = stopPlacingObject(typeId, customType);
+	const handleTypeSelect = (typeId?: string) => {
+		const lastObject = stopPlacingObject(typeId);
 		setShowTypeSelector(false);
 
 		if (!currentJourney || !navigator.onLine || !lastObject) return;
