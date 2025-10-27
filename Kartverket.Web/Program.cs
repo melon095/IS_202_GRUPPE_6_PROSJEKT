@@ -131,19 +131,8 @@ if (!app.Environment.IsDevelopment())
 {
     var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
     db.Database.Migrate();
-
-    // TODO: Mildertidlig punkt
-    if (db.HindranceTypes.Any(m => m.Name == "Midlertidlig type!")) goto b;
-
-    db.HindranceTypes.Add(new HindranceTypeTable
-    {
-        Name = "Midlertidlig type!",
-        PrimaryImageUrl = "/images/map-objects/test.svg",
-        MarkerImageUrl = null
-    });
-    db.SaveChanges();
+    await DatabaseContextSeeding.Seed(db);
 }
-b:
 
 {
     var roleManager = app.Services.CreateScope().ServiceProvider.GetRequiredService<RoleManager<RoleTable>>();
