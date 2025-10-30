@@ -64,7 +64,8 @@ public class HindranceService : IHindranceService
             Description = description,
             ReviewStatus = ReviewStatus.Draft,
             ReportId = reportId,
-            HindranceTypeId = hindranceTypeId
+            HindranceTypeId = hindranceTypeId,
+            HindrancePoints = []
         };
 
         await _dbContext.HindranceObjects.AddAsync(newObject, cancellationToken);
