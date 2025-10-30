@@ -1,0 +1,53 @@
+@model AdminUserViewModel
+@{
+    ViewBag.Title = "Admin - Users";
+}
+
+@foreach (var modelError in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+{
+    <div class="notification is-danger">
+        @modelError.ErrorMessage
+    </div>
+}
+
+<table class="table is-fullwidth is-striped">
+    <thead>
+    <tr>
+        <th>Navn</th>
+        <th>Rolle</th>
+        <th>Handlinger</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var user in Model.Users)
+    {
+        <tr>
+            <td>@user.Username</td>
+            <td>
+                @using (Html.BeginForm("Role", "Admin", FormMethod.Post))
+                {
+                    @Html.HttpMethodOverride(HttpMethod.Patch)
+                    <input type="hidden" name="userId" value="@user.Id"/>
+                    <div class="select">
+                        <select name="roleId" onchange="this.form.submit()">
+                            @foreach (var role in Model.Roles)
+                            {
+                                <!option value="@role.Id" @(user.Role == role ? "selected" : "")>@role.Name</!option>
+                            }
+                        </select>
+                    </div>
+                }
+            </td>
+            <td>
+                @using (Html.BeginForm("Users", "Admin", FormMethod.Post, new { onsubmit = "return confirm('Er du sikker på at du vil slette denne brukeren?');" }))
+                {
+                    @Html.HttpMethodOverride(HttpMethod.Delete)
+                    <input type="hidden" name="userId" value="@user.Id"/>
+                    <button type="submit" class="button is-danger is-small">Slett</button>
+                }
+
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

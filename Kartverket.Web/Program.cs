@@ -1,3 +1,4 @@
+using Kartverket.Web;
 using Kartverket.Web.AuthPolicy;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
@@ -147,6 +148,11 @@ if (!app.Environment.IsDevelopment())
     }
 }
 
+// @see https://khalidabuhakmeh.com/more-http-methods-aspnet-core-html-forms
+app.UseHttpMethodOverride(new HttpMethodOverrideOptions
+{
+    FormFieldName = HtmlHelperExtensions.HttpMethodOverrideField
+});
 
 app.UseHttpsRedirection();
 app.UseRouting();

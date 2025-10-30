@@ -1,9 +1,11 @@
 using Kartverket.Web.AuthPolicy;
 using Kartverket.Web.Database;
+using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.Admin;
 using Kartverket.Web.Models.Admin.Request;
 using Kartverket.Web.Models.Report.Response;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,12 +15,20 @@ namespace Kartverket.Web.Controllers;
 public class AdminController : Controller
 {
     private readonly ILogger<AdminController> _logger;
+    private readonly UserManager<UserTable> _userManager;
+    private readonly RoleManager<RoleTable> _roleManager;
     private readonly DatabaseContext _dbContext;
     private const int ReportPerPage = 10;
 
-    public AdminController(ILogger<AdminController> logger, DatabaseContext ctx)
+    public AdminController(
+        ILogger<AdminController> logger,
+        UserManager<UserTable> userManager,
+        RoleManager<RoleTable> roleManager,
+        DatabaseContext ctx)
     {
         _logger = logger;
+        _userManager = userManager;
+        _roleManager = roleManager;
         _dbContext = ctx;
     }
 
@@ -72,7 +82,6 @@ public class AdminController : Controller
 
         return View(Model);
     }
-
 
     [HttpGet("/Admin/ReportInDepth/{id:guid}")]
     [Authorize(Policy = RoleValue.AtLeastKartverket)]
@@ -130,6 +139,83 @@ public class AdminController : Controller
         }
 
         return View(Model);
+    }
+
+    [HttpGet("/Admin/Users")]
+    [Authorize(Policy = RoleValue.AtLeastKartverket)]
+    [ImportModelState]
+    public IActionResult Users()
+    {
+        var roles = _roleManager.Roles
+            .Select(r => new AdminUserViewModel.RoleDto(r.Id, r.Name))
+            .ToList();
+
+        var users = _userManager.Users
+            .Include(u => u.Role)
+            .Select(u => new AdminUserViewModel.UserDto(
+                u.Id,
+                u.UserName,
+                u.Role == null
+                    ? null
+                    : new AdminUserViewModel.RoleDto(u.Role.Id, u.Role.Name)))
+            .ToList();
+
+        var model = new AdminUserViewModel
+        {
+            Roles = roles,
+            Users = users
+        };
+
+        return View(model);
+    }
+
+    [HttpDelete]
+    [Authorize(Policy = RoleValue.AtLeastKartverket)]
+    [ExportModelState]
+    public async Task<IActionResult> Users(Guid userId)
+    {
+        ModelState.AddModelError("test", "test2");
+
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user is null)
+        {
+            ModelState.AddModelError("UserNotFound", "Brukeren ble ikke funnet.");
+            return RedirectToAction("Users");
+        }
+
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+            ModelState.AddModelError("UserDeleteFailed", "Kunne ikke slette brukeren.");
+
+        return RedirectToAction("Users");
+    }
+
+    [HttpPatch("/Admin/Users/Role")]
+    [Authorize(Policy = RoleValue.AtLeastKartverket)]
+    [ExportModelState]
+    public async Task<IActionResult> Role(AdminUpdateUserRoleRequest request)
+    {
+        ModelState.AddModelError("test", "test2");
+        var user = await _userManager.FindByIdAsync(request.UserId.ToString());
+        if (user is null)
+        {
+            ModelState.AddModelError("UserNotFound", "Brukeren ble ikke funnet.");
+            return RedirectToAction("Users");
+        }
+
+        var role = await _dbContext.Roles.FindAsync(request.RoleId);
+        if (role is null)
+        {
+            ModelState.AddModelError("RoleNotFound", "Rollen ble ikke funnet.");
+            return RedirectToAction("Users");
+        }
+
+        user.RoleId = role.Id;
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
+            ModelState.AddModelError("UserRoleUpdateFailed", "Kunne ikke oppdatere brukerens rolle.");
+
+        return RedirectToAction("Users");
     }
 
     [HttpGet]
