@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, TileLayerProps } from "react-leaflet";
 
 import "../css/MapComponent.css";
 import "../css/zoom-control.css";
+import { GPSMarker } from "./GPSMarker.tsx";
 import { MapClickHandler } from "./MapClickHandler";
 import { ObjectMarkers } from "./ObjectMarkers";
 import { ServerMarkers } from "./ServerMarkers";
@@ -12,7 +13,7 @@ import { ServerMarkers } from "./ServerMarkers";
 const mapCenter = [58.1465456, 7.9911451] satisfies LatLngTuple;
 
 const tileProps = {
-	attribution: `&copy; <a href="http://www.kartverket.no/">Kartverket</a>`,
+	attribution: `&copy; <a href="https://www.kartverket.no/">Kartverket</a>`,
 	url: `https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png`,
 } satisfies TileLayerProps;
 
@@ -27,6 +28,7 @@ export const MapComponent = ({ children }: MapComponentProps) => {
 			<MapClickHandler />
 			<ObjectMarkers />
 			<ServerMarkers />
+			<GPSMarker />
 
 			{children}
 		</MapContainer>

@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
+import { useMap } from "react-leaflet";
 
 import { useJourney } from "../contexts/JourneyContext";
 import { useSyncObjectMutation } from "../hooks/useSyncObjectMutation";
@@ -25,10 +26,14 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		updateJourneyId,
 		updateObjectId,
 	} = useJourney();
+	const map = useMap();
 
 	const syncObjectMutation = useSyncObjectMutation();
 	const [showTypeSelector, setShowTypeSelector] = useState(false);
 	const overlayRef = useRef<HTMLDivElement>(null);
+	const [isFollowing, setIsFollowing] = useState(false);
+	const watchIdRef = useRef<number | null>(null);
+	const programmaticFlyToRef = useRef(false);
 
 	useEffect(() => {
 		if (!overlayRef.current) return;
@@ -36,6 +41,77 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		DomEvent.disableClickPropagation(overlayRef.current);
 		DomEvent.disableScrollPropagation(overlayRef.current);
 	}, [overlayRef]);
+
+	useEffect(() => {
+		const handleMoveStart = () => {
+			if (isFollowing && !programmaticFlyToRef.current) {
+				setIsFollowing(false);
+			}
+		};
+
+		map.on("movestart", handleMoveStart);
+
+		return () => {
+			map.off("movestart", handleMoveStart);
+		};
+	}, [map, isFollowing]);
+
+	useEffect(() => {
+		return () => {
+			if (watchIdRef.current !== null) {
+				navigator.geolocation.clearWatch(watchIdRef.current);
+			}
+		};
+	}, []);
+
+	useEffect(() => {
+		if (isFollowing) {
+			watchIdRef.current = navigator.geolocation.watchPosition(
+				(position) => {
+					programmaticFlyToRef.current = true;
+					const zoom = map.getZoom();
+					const relZoom = zoom < 15 ? 15 : zoom;
+					map.flyTo([position.coords.latitude, position.coords.longitude], relZoom, {
+						animate: true,
+						duration: 1.0,
+					});
+
+					setTimeout(() => {
+						programmaticFlyToRef.current = false;
+					}, 1000);
+				},
+				(error) => {
+					console.error("Error getting position:", error);
+				},
+				{
+					enableHighAccuracy: true,
+					maximumAge: 0,
+					timeout: 5000,
+				}
+			);
+		} else {
+			if (watchIdRef.current !== null) {
+				navigator.geolocation.clearWatch(watchIdRef.current);
+				watchIdRef.current = null;
+			}
+		}
+
+		return () => {
+			if (watchIdRef.current !== null) {
+				navigator.geolocation.clearWatch(watchIdRef.current);
+				watchIdRef.current = null;
+			}
+		};
+	}, [map, isFollowing]);
+
+	const toggleFollowing = () => {
+		if (!isFollowing && !navigator.geolocation) {
+			console.warn("Geolocation not supported.");
+			return;
+		}
+
+		setIsFollowing((prev) => !prev);
+	};
 
 	const handleStartPlacingObject = () => {
 		startPlacingObjects();
@@ -165,6 +241,22 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								</span>
 								<span>{t("controls.buttons.end")}</span>
 							</button>
+						</div>
+
+						<hr className="divider my-3" />
+
+						<div>
+							<div className="content is-small">
+								<button
+									onClick={toggleFollowing}
+									className={`button ${isFollowing ? "is-success" : "is-light"}`}
+								>
+									<span className="icon">
+										<FontAwesomeIcon icon={["fas", "location-arrow"]} />
+									</span>
+									<span>{t("controls.buttons.my_location")}</span>
+								</button>
+							</div>
 						</div>
 
 						<div className="content">{children}</div>

@@ -9,7 +9,8 @@
 			"place": "Plasser objekt",
 			"end": "Avslutt reise",
 			"stop": "Bekreft ({{count}})",
-			"clear": "Tøm reise"
+			"clear": "Tøm reise",
+			"my_location": "Følg min posisjon"
 		}
 	},
 	"journeySummary": {
