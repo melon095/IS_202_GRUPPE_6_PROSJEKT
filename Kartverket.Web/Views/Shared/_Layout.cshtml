@@ -1,116 +1,115 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>@ViewData["Title"] - Kartverket.Web</title>
     <script type="importmap"></script>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
     <link rel="icon" href="~/favicon.ico">
-    
-    @* BULMA START *@
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
-    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
-    @* BULMA END *@
-    
+
+    <link rel="stylesheet" href="~/css/bulma.min.css">
+    <script defer src="~/js/fontawesome.js"></script>
+
     <style>
         img.icon {
             filter: invert(0);
         }
-        
+
         @@media (prefers-color-scheme: dark) {
             img.icon {
                 filter: invert(1);
             }
         }
     </style>
-    
-    @await RenderSectionAsync("Styles", required: false)
+
+    @await RenderSectionAsync("Styles", false)
 </head>
 <body style="margin: 0; padding: 0; box-sizing: border-box;">
-    <header>
-        <nav class="navbar is-info" role="navigation" aria-label="main navigation">
-            <div class="navbar-brand">
+<header>
+    <nav class="navbar is-info" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="@Url.Action("Index", "Home")">
+                <img src="~/svg/kartverket.svg" alt="Kartverket Logo" width="112" height="28">
+            </a>
+
+            <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false"
+               data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-end">
                 <a class="navbar-item" href="@Url.Action("Index", "Home")">
-                    <img src="~/svg/kartverket.svg" alt="Kartverket Logo" width="112" height="28">
+                    Hjemside
                 </a>
 
-                <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
-                    <span aria-hidden="true"></span>
+                <a class="navbar-item" href="@Url.Action("Index", "Map")">
+                    Kart
                 </a>
-            </div>
-
-            <div id="navbarBasicExample" class="navbar-menu">
-                <div class="navbar-end">
-                    <a class="navbar-item" href="@Url.Action("Index", "Home")">
-                        Hjemside
+                @if (User.IsInRole("Kartverket"))
+                {
+                    <a class="navbar-item" href="@Url.Action("Index", "Admin")">
+                        Administrator
                     </a>
+                }
 
-                    <a class="navbar-item" href="@Url.Action("Index", "Map")">
-                        Kart
-                    </a>
-                    @if (User.IsInRole("Kartverket"))
-                    {
-                        <a class="navbar-item" href="@Url.Action("Index", "Admin")">
-                            Administrator
-                        </a>
-                    }
-                    
-                    <div class="navbar-item">
-                        <div class="buttons">
-                            @if (User.Identity is { IsAuthenticated: true })
-                            {
-                                <a class="button is-light" href="@Url.Action("Logout", "User")">
-                                    Logg Ut
-                                </a>
-                            }
-                            else
-                            {
-                                <a class="button is-primary" href="@Url.Action("Login", "User")">
-                                    <strong>Logg Inn</strong>
-                                </a>
-                                
-                                <a class="button is-light" href="@Url.Action("Register", "User")">
-                                    Registrer
-                                </a>
-                            }
-                        </div>
+                <div class="navbar-item">
+                    <div class="buttons">
+                        @if (User.Identity is { IsAuthenticated: true })
+                        {
+                            <a class="button is-light" href="@Url.Action("Logout", "User")">
+                                Logg Ut
+                            </a>
+                        }
+                        else
+                        {
+                            <a class="button is-primary" href="@Url.Action("Login", "User")">
+                                <strong>Logg Inn</strong>
+                            </a>
+
+                            <a class="button is-light" href="@Url.Action("Register", "User")">
+                                Registrer
+                            </a>
+                        }
                     </div>
                 </div>
             </div>
-        </nav>
-    </header>
-
-    <main style="display: flex; flex-direction: column; min-height: 100vh;">
-        @RenderBody()
-    </main>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; @(DateTime.Now.Year) - Kartverket.Web - Gruppe 6
         </div>
-    </footer>
+    </nav>
+</header>
 
-    <script>
+<main style="display: flex; flex-direction: column; min-height: 100vh;">
+    @RenderBody()
+</main>
 
-        (function() {
-            const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+<footer class="border-top footer text-muted">
+    <div class="container">
+        &copy; @(DateTime.Now.Year) - Kartverket.Web - Gruppe 6
+    </div>
+</footer>
 
-            $navbarBurgers.forEach( el => {
-                el.addEventListener('click', () => {
+<script>
 
-                    const target = el.dataset.target;
-                    const $target = document.getElementById(target);
+    (function () {
+        const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
 
-                    el.classList.toggle('is-active');
-                    $target.classList.toggle('is-active');
-                });
+        $navbarBurgers.forEach(el => {
+            el.addEventListener('click', () => {
+
+                const target = el.dataset.target;
+                const $target = document.getElementById(target);
+
+                el.classList.toggle('is-active');
+                $target.classList.toggle('is-active');
             });
-        })();
-        
+        });
+    })();
+
 </script>
-    @await RenderSectionAsync("Scripts", required: false)
+@await RenderSectionAsync("Scripts", false)
 </body>
 </html>
