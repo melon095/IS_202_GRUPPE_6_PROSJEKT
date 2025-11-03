@@ -1,6 +1,8 @@
 ﻿@{
     ViewBag.Title = "ObjectReview";
 }
+@* // TODO:  Bedre navn enn repotrviewmodel *@
+@model Kartverket.Web.Models.Report.Response.ObjectReviewModel
 
 
 <body>
@@ -8,46 +10,70 @@
         <div class="container is-fluid">
             <div class="columns">
 
-                <!-- Left Column: Rapport -->
-                <div class="column is-3">
-                    <div class="box">
-                        <h2 class="title is-5">RAPPORT+</h2>
-                        <hr>
-                        <!-- Example content area -->
-                        <div class="buttons">
-                            <button class="button is-success is-fullwidth">✔️</button>
-                            <button class="button is-danger is-fullwidth">❌</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Middle Column: Objekter + Kommentar -->
-                <div class="column is-5">
+                <div class="column is-7">
                     <div class="box mb-4">
-                        <h2 class="title is-5">OBJEKTER</h2>
-                        <ul>
-                            <li>Objekt 1</li>
-                            <li>Objekt 2</li>
-                            <li>Objekt 3</li>
-                        </ul>
-                        <div class="buttons mt-2">
-                            <button class="button is-small">Rediger</button>
-                            <button class="button is-small">Slett</button>
-                        </div>
+                        <h2>Objects</h2>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Object Num</th>
+                                    <th>Markers</th>
+                                    <th>Edit</th>
+                                    <th>Statement</th>
+                                    <th>Accept/Deny</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var obj in Model.Objects)
+                                {
+                                    <tr>
+                                        <td>@obj.Title</td>
+                                        <td>@obj.Points.Count</td>
+                                        <td>
+                                            <a id="showIn"
+                                               asp-controller="Admin"
+                                               asp-action="ObjectReview"
+                                               asp-route-id="@Model.Id"
+                                               asp-route-objectId="@obj.Id">Details</a>
+                                        </td>
+                                        <td>@obj.ObjectStatus</td>
+                                        <td>
+                                            @obj.Id 
+                                            @using (Html.BeginForm("ObjectReview", "Admin", FormMethod.Post))
+                                            {
+                                                @Html.AntiForgeryToken()
+                                                @Html.Hidden("id", Model.Id)
+                                                @Html.Hidden("objectId", obj.Id)
+                                                <div>
+                                                    <div>
+
+                                                        <div class="control">
+                                                            <button type="submit" name="StatusObject" value="accept" class="button is-success">Aksepter</button>
+                                                            <button type="submit" name="StatusObject" value="deny" class="button is-danger">Avslå</button>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+
+
+                            </tbody>
+                        </table>
                     </div>
 
                     <div class="box">
                         <h2 class="title is-5">KOMMENTAR</h2>
-                        <!-- Placeholder for comments -->
-                        <textarea class="textarea" placeholder="Skriv kommentar..."></textarea>
+
                     </div>
                 </div>
 
-                <!-- Right Column: Kart -->
+
                 <div class="column is-5">
-                    <div class="box has-text-centered" style="height: 100%;">
-                        <h2 class="title is-4">KART</h2>
-                        <!-- Placeholder for map -->
+                    <div class="kart-box box">
+                        <div id="map"></div>
                     </div>
                 </div>
 
@@ -59,8 +85,7 @@
 @section styles
 {
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
-    <link rel="stylesheet"
-          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
           <style>
         html, body {
             height: 100%;
@@ -68,8 +93,73 @@
         }
 
         .box {
+        border: 1px solid #dbdbdb; /* Example border */
+             }
 
-
+        .kart-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 150%;
+            padding: 0; /* Removes double spacing inside box */
         }
+
+        #map {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            border: none; /* Remove any inner box border */
+            border-radius: 0 0 6px 6px; /* Optional: smooth bottom corners */
+        }
+
+
           </style>
+}
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const centerOfNorway = [63.99164652261938, 12.306951660170679];
+        const { Objects: objects, SelectedObject: selectedObject } = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        let mapCenter = [58.16358810163733, 8.00377215125247];
+        let zoomLevel = 10;
+        let bounds = null;
+
+        if (selectedObject && selectedObject.CentroidPoint)
+        {
+            let centroid = selectedObject.CentroidPoint;
+            var points = selectedObject.Points;
+            mapCenter = [selectedObject.CentroidPoint.Lat, selectedObject.CentroidPoint.Lng];
+
+            let latLngPoints = points.map((p) => L.latLng(p.Lat, p.Lng));
+            bounds = L.latLngBounds(latLngPoints);
+            bounds.extend([centroid.Lat, centroid.Lng]);
+        } else {
+            let latLngPoints = objects.flatMap(o => o.Points.map(p => L.latLng(p.Lat, p.Lng)));
+            bounds = L.latLngBounds(latLngPoints);
+            bounds.extend(centerOfNorway);
+        }
+
+        const map = L.map('map').setView(mapCenter, zoomLevel);
+        map.fitBounds(bounds, {
+            padding: [50, 50]
+        });
+
+        L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
+            attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
+        }).addTo(map);
+
+        objects.forEach(obj => {
+            if (obj.Points && obj.Points.length > 0)
+            {
+                obj.Points.forEach(point =>
+                    {
+                if (point.Lat && point.Lng)
+                {
+                    L.marker([point.Lat, point.Lng]).addTo(map).bindPopup(obj.Description);
+                }
+            });
+            }
+        });
+    </script>
 }

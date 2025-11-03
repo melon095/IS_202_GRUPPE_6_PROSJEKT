@@ -1,3 +1,4 @@
+using System.Security.AccessControl;
 using Kartverket.Web.AuthPolicy;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
@@ -137,6 +138,9 @@ public class AdminController : Controller
         return View(Model);
     }
 
+    // Denne skal byttes ut
+
+    /*
     public IActionResult ReportReview(Guid id, string Status, string StatusObject, Guid? objectID)
     {
         var report = _dbContext.Reports
@@ -238,9 +242,86 @@ public class AdminController : Controller
         }
         return View(Model);
     }
-    public IActionResult ObjectReview()
+    */
+
+    // Denne skal nå brukes
+    [ValidateAntiForgeryToken]
+    public IActionResult ObjectReview(Guid id, string StatusObject, Guid? objectID)
     {
-        return View();
+        var report = _dbContext.Reports
+            .Include(r => r.HindranceObjects)
+            .ThenInclude(o => o.HindrancePoints)
+            .Include(r => r.Feedbacks)
+            .FirstOrDefault(r => r.Id == id);
+
+        if (report == null) return View("NoObjectsErr");
+
+        var selectedObject = report.HindranceObjects
+            .SingleOrDefault(x => x.Id == objectID);
+
+        var Model = new ObjectReviewModel
+        {
+            Id = report.Id,
+            Title = report.Title,
+            Description = report.Description,
+            CreatedAt = report.CreatedAt,
+            ReviewStatus = report.ReviewStatus
+        };
+        foreach (var obj in report.HindranceObjects)
+        {
+            var objectData = new ObjectReviewModel.ObjectDataModel
+            {
+                Id = obj.Id,
+                Title = obj.Title,
+                Description = obj.Description,
+                ObjectStatus = obj.ReviewStatus,
+            };
+            foreach (var points in obj.HindrancePoints)
+                objectData.Points.Add(new Point
+                {
+                    Id = points.Id,
+                    Lat = points.Latitude,
+                    Lng = points.Longitude,
+                    Elevation = points.Elevation
+                });
+            if (objectData.Points.Count > 0)
+            {
+                var GetCentroid = new Point
+                {
+                    Lat = objectData.Points.Average(p => p.Lat),
+                    Lng = objectData.Points.Average(p => p.Lng),
+                    Elevation = 0
+                };
+
+                objectData.CentroidPoint = GetCentroid;
+
+                if (selectedObject is { Id: var selectedId } && selectedId == obj.Id)
+                {
+                    switch (StatusObject)
+                    {
+                        case "accept":
+                            selectedObject.ReviewStatus = ReviewStatus.Resolved;
+                            break;
+                        case "deny":
+                            selectedObject.ReviewStatus = ReviewStatus.Closed;
+                            break;
+
+                        default:
+                            TempData["Error"] = "Feil Oppsto";
+                            break;
+
+                    }
+
+                    objectData.ObjectStatus = selectedObject.ReviewStatus;
+                    _dbContext.SaveChanges();
+                    TempData["Succsess"] = $"Rapport status endret til {report.ReviewStatus}";
+                    Model.SelectedObject = objectData;
+                }
+
+                Model.Objects.Add(objectData);
+            }
+        }
+        return View(Model);
     }
 
     [HttpGet]
