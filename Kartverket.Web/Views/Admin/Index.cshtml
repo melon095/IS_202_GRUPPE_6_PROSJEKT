@@ -29,6 +29,7 @@
             <tr>
                 <th>Obstacle</th>
                 <th>Objects</th>
+                <th>Status</th>
                 <th>View</th>
                 <th>
                     <a class="nav-link text-dark"
@@ -50,6 +51,7 @@
                     <td>
                         @report.TotalObjects
                     </td>
+                    <td>@report.Review.ToString()</td> 
                     <td>
                         <a class="nav-link, text-dark"
                         asp-controller="Admin"

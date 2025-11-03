@@ -1,0 +1,75 @@
+﻿@{
+    ViewBag.Title = "ObjectReview";
+}
+
+
+<body>
+    <section class="section">
+        <div class="container is-fluid">
+            <div class="columns">
+
+                <!-- Left Column: Rapport -->
+                <div class="column is-3">
+                    <div class="box">
+                        <h2 class="title is-5">RAPPORT+</h2>
+                        <hr>
+                        <!-- Example content area -->
+                        <div class="buttons">
+                            <button class="button is-success is-fullwidth">✔️</button>
+                            <button class="button is-danger is-fullwidth">❌</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Middle Column: Objekter + Kommentar -->
+                <div class="column is-5">
+                    <div class="box mb-4">
+                        <h2 class="title is-5">OBJEKTER</h2>
+                        <ul>
+                            <li>Objekt 1</li>
+                            <li>Objekt 2</li>
+                            <li>Objekt 3</li>
+                        </ul>
+                        <div class="buttons mt-2">
+                            <button class="button is-small">Rediger</button>
+                            <button class="button is-small">Slett</button>
+                        </div>
+                    </div>
+
+                    <div class="box">
+                        <h2 class="title is-5">KOMMENTAR</h2>
+                        <!-- Placeholder for comments -->
+                        <textarea class="textarea" placeholder="Skriv kommentar..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Right Column: Kart -->
+                <div class="column is-5">
+                    <div class="box has-text-centered" style="height: 100%;">
+                        <h2 class="title is-4">KART</h2>
+                        <!-- Placeholder for map -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</body>
+
+@section styles
+{
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.0/css/bulma.min.css">
+    <link rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+          <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .box {
+
+
+        }
+          </style>
+}

@@ -1,10 +1,12 @@
 using Kartverket.Web.AuthPolicy;
 using Kartverket.Web.Database;
+using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.Admin;
 using Kartverket.Web.Models.Admin.Request;
 using Kartverket.Web.Models.Report.Response;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Controllers;
@@ -64,7 +66,8 @@ public class AdminController : Controller
                 Id = report.Id,
                 Title = report.Title,
                 CreatedAt = report.CreatedAt,
-                TotalObjects = report.HindranceObjects.Count
+                TotalObjects = report.HindranceObjects.Count,
+                Review = report.ReviewStatus
             });
 
 
@@ -102,11 +105,13 @@ public class AdminController : Controller
             {
                 Id = objects.Id,
                 Title = objects.Title,
-                Description = objects.Description
+                Description = objects.Description,
+                ObjectStatus = objects.ReviewStatus
             };
             foreach (var point in objects.HindrancePoints)
-                objectData.Points.Add(new InDepthReportModel.ObjectDataModel.Point
+                objectData.Points.Add(new Point
                 {
+                    Id = point.Id,
                     Lat = point.Latitude,
                     Lng = point.Longitude,
                     Elevation = point.Elevation
@@ -114,7 +119,7 @@ public class AdminController : Controller
 
             if (objectData.Points.Count > 0)
             {
-                var GetCentroid = new InDepthReportModel.ObjectDataModel.Point
+                var GetCentroid = new Point
                 {
                     Lat = objectData.Points.Average(p => p.Lat),
                     Lng = objectData.Points.Average(p => p.Lng),
@@ -130,6 +135,112 @@ public class AdminController : Controller
         }
 
         return View(Model);
+    }
+
+    public IActionResult ReportReview(Guid id, string Status, string StatusObject, Guid? objectID)
+    {
+        var report = _dbContext.Reports
+            .Include(r => r.HindranceObjects)
+            .ThenInclude(o => o.HindrancePoints)
+            .Include(r => r.Feedbacks)
+            .FirstOrDefault(r => r.Id == id);
+
+        switch (Status)
+        {
+            case "accept":
+                report.ReviewStatus = ReviewStatus.Resolved;
+                break;
+            case "deny":
+                report.ReviewStatus = ReviewStatus.Closed;
+                break;
+
+
+            default:
+                TempData["Error"] = "Feil opsto";
+                break;
+        }
+
+        _dbContext.SaveChanges();
+        TempData["Success"] = $"Rapport status endret til {report.ReviewStatus}";
+
+
+        if (report == null) return View("NoObjectsErr");
+
+        var selectedObject = report.HindranceObjects
+            .SingleOrDefault(x => x.Id == objectID);
+
+        var Model = new ReportReviewModel
+        {
+            Id = report.Id,
+            Title = report.Title,
+            Description = report.Description,
+            CreatedAt = report.CreatedAt,
+            ReviewStatus = report.ReviewStatus
+        };
+
+        foreach(var objects in report.HindranceObjects)
+        {
+            var objectData = new ReportReviewModel.ObjectDataModel
+            {
+                Id = objects.Id,
+                Title = objects.Title,
+                Description = objects.Description,
+                ObjectStatus = objects.ReviewStatus
+            };
+            foreach (var points in objects.HindrancePoints)
+                objectData.Points.Add(new Point
+                {
+                    Id = points.Id,
+                    Lat = points.Latitude,
+                    Lng = points.Longitude,
+                    Elevation = points.Elevation
+                });
+            if (objectData.Points.Count > 0)
+            {
+                var GetCentroid = new Point
+                {
+                    Lat = objectData.Points.Average(p => p.Lat),
+                    Lng = objectData.Points.Average(p => p.Lng),
+                    Elevation = 0
+                };
+
+                objectData.CentroidPoint = GetCentroid;
+
+
+
+
+                if (selectedObject != null && objects.Id == selectedObject.Id)
+                {
+                    switch (StatusObject)
+                    {
+                        case "accept":
+                            selectedObject.ReviewStatus = ReviewStatus.Resolved;
+                            break;
+                        case "deny":
+                            selectedObject.ReviewStatus = ReviewStatus.Closed;
+                            break;
+
+                        default:
+                            TempData["Error"] = "Feil Oppsto";
+                            break;
+
+                    }
+                    _dbContext.SaveChanges();
+                    TempData["Succsess"] = $"Rapport status endret til {report.ReviewStatus}";
+                    Model.SelectedObject = objectData;
+                }
+
+                Model.Objects.Add(objectData);
+
+
+            }
+
+        }
+        return View(Model);
+    }
+    public IActionResult ObjectReview()
+    {
+        return View();
     }
 
     [HttpGet]

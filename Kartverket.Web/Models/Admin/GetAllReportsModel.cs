@@ -1,7 +1,9 @@
 ﻿using Kartverket.Web.Controllers;
+using Kartverket.Web.Database;
 
 namespace Kartverket.Web.Models.Admin
 {
+    // Må adde status for om rapporten er ferdigbehandlet eller ikke
     public class GetAllReportsModel
     {
         public int CurrentPage { get; set; }
@@ -15,6 +17,7 @@ namespace Kartverket.Web.Models.Admin
             public string User { get; set; }
             public string Title { get; set; }
             public DateTime CreatedAt { get; set; }
+            public ReviewStatus Review { get; set; }
 
             public int TotalObjects { get; set; }
 

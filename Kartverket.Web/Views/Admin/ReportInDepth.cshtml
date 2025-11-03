@@ -7,6 +7,9 @@
     <h2 class="is-size-2">
         Rapport: @Model.Title
     </h2>
+    <a asp-controller="Admin"
+       asp-action="ReportReview"
+       asp-route-id="@Model.Id">Vurder rapport</a>
 </div>
 <body>
     <!-- 1. Kolonne-->
@@ -61,6 +64,7 @@
                     {
                         <h3 class="title is-4">@selObj.Title</h3>
                         <p>@selObj.Description</p>
+                        <p>Status: @selObj.ObjectStatus</p>
                     }
                 else
                 {
