@@ -3,9 +3,14 @@ import { Marker, Polygon, Polyline } from "react-leaflet";
 
 import { useJourney } from "../contexts/JourneyContext";
 import { useServerObjectsQuery } from "../hooks/useServerObjectsQuery";
-import { PlacedObject, PlaceMode } from "../types";
+import { Colour, PlacedObject, PlaceMode } from "../types";
 
-const ObjectGeometry = React.memo(({ obj, colour }: { obj: PlacedObject; colour: string }) => {
+interface ObjectGeometryProps {
+	obj: PlacedObject;
+	colour: Colour;
+}
+
+const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 	if (!obj?.points?.length) return null;
 
 	switch (obj.geometryType) {
@@ -32,8 +37,11 @@ const ObjectGeometry = React.memo(({ obj, colour }: { obj: PlacedObject; colour:
 		}
 
 		case PlaceMode.Area: {
+			const firstPoint = obj.points[0];
+			const lastPoint = obj.points[obj.points.length - 1];
+
 			const polygonPoints =
-				obj.points[0] === obj.points[obj.points.length - 1]
+				firstPoint === lastPoint
 					? obj.points
 					: [...obj.points, obj.points[0]].map((p) => ({ lat: p.lat, lng: p.lng }));
 

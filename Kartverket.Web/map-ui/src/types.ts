@@ -69,3 +69,7 @@ export interface FinalizeJourneyData {
 export type ServerStateResponse = PlacedObject[];
 
 export type ResponseError = Record<string, string[]>;
+
+export type HexColour = `#${string}`;
+
+export type Colour = HexColour | string;

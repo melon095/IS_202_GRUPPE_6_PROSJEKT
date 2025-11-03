@@ -1,4 +1,3 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 import { useGeolocated } from "react-geolocated";
@@ -8,6 +7,7 @@ import { useJourney } from "../contexts/JourneyContext";
 import { useSyncObjectMutation } from "../hooks/useSyncObjectMutation";
 import { useTranslation } from "../i18n";
 import { PlaceMode } from "../types";
+import { IconFlex } from "./IconFlex";
 import { ObjectTypeSelector } from "./ObjectTypeSelector";
 
 interface JourneyControlsProps {
@@ -142,12 +142,15 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 					<div className="box">
 						<div className="field">
 							<div className="control">
-								<button onClick={startJourney} className="button is-success is-large">
-									<span className="icon">
-										<FontAwesomeIcon icon={["fas", "play"]} />
-									</span>
-									<span>{t("controls.buttons.start")}</span>
-								</button>
+								<IconFlex
+									as="button"
+									onClick={startJourney}
+									icon={["fas", "play"]}
+									className="is-success is-large"
+									fullWidth
+								>
+									{t("controls.buttons.start")}
+								</IconFlex>
 							</div>
 						</div>
 
@@ -162,21 +165,16 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 				<div className="journey-controls-overlay">
 					<div className="box">
 						<div className="content">
-							<h4 className="title is-5 mb-3">
-								<span className="icon-text">
-									<span className="icon has-text-success">
-										<FontAwesomeIcon icon={["fas", "route"]} />
-									</span>
-									<span>{t("controls.header")}</span>
-								</span>
-							</h4>
+							<IconFlex as="h4" icon={["fas", "route"]} className="title is-5 mb-3">
+								{t("controls.header")}
+							</IconFlex>
 
 							<div className="tags has-addons mb-3">
 								<span className="tag is-dark">{t("controls.objects_count")}</span>
 								<span className="tag is-info">{currentJourney.objects.length}</span>
 							</div>
 
-							{currentObjectPoints.length > 0 && (
+							{placeMode !== PlaceMode.None && (
 								<div className="tags has-addons mb-3">
 									<span className="tag is-dark">{t("controls.point_count")}</span>
 									<span className="tag is-warning">{currentObjectPoints.length}</span>
@@ -184,14 +182,9 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 							)}
 
 							{syncObjectMutation.isPending && (
-								<div className="notification is-info is-light is-small py-2">
-									<span className="icon-text">
-										<span className="icon">
-											<FontAwesomeIcon icon={["fas", "sync"]} spin />
-										</span>
-										<span>{t("controls.syncing")}</span>
-									</span>
-								</div>
+								<IconFlex as="div" icon={["fas", "sync"]} className="mb-3" fullWidth>
+									{t("controls.syncing")}
+								</IconFlex>
 							)}
 						</div>
 						<div className="buttons">
@@ -199,79 +192,95 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								{placeMode === PlaceMode.None ? (
 									<>
 										<p className="control is-expanded mb-2">
-											<button
+											<IconFlex
+												as="button"
 												onClick={() => setPlaceMode(PlaceMode.Point)}
-												className="button is-info is-fullwidth"
+												icon={["fas", "crosshairs"]}
+												fullWidth
+												style={{ justifyContent: "space-between" }}
+												className="is-info"
 											>
-												<span className="icon">
-													<FontAwesomeIcon icon={["fas", "location-dot"]} />
-												</span>
-												<span>Place Point</span>
-											</button>
+												{t("controls.buttons.place_point")}
+											</IconFlex>
 										</p>
 										<p className="control is-expanded mb-2">
-											<button
+											<IconFlex
+												as="button"
 												onClick={() => setPlaceMode(PlaceMode.Line)}
-												className="button is-info is-fullwidth"
+												icon={["fas", "route"]}
+												fullWidth
+												style={{ justifyContent: "space-between" }}
+												className="is-info"
 											>
-												<span className="icon">
-													<FontAwesomeIcon icon={["fas", "route"]} />
-												</span>
-												<span>Place Line</span>
-											</button>
+												{t("controls.buttons.place_line")}
+											</IconFlex>
 										</p>
 										<p className="control is-expanded mb-2">
-											<button
+											<IconFlex
+												as="button"
 												onClick={() => setPlaceMode(PlaceMode.Area)}
-												className="button is-info is-fullwidth"
+												icon={["fas", "draw-polygon"]}
+												fullWidth
+												style={{ justifyContent: "space-between" }}
+												className="is-info"
 											>
-												<span className="icon">
-													<FontAwesomeIcon icon={["fas", "draw-polygon"]} />
-												</span>
-												<span>Place Area</span>
-											</button>
+												{t("controls.buttons.place_area")}
+											</IconFlex>
 										</p>
 									</>
 								) : (
 									<div className="buttons mb-3">
-										<button onClick={handleFinishPlace} className="button is-success">
-											<span className="icon">
-												<FontAwesomeIcon icon={["fas", "check"]} />
-											</span>
-											<span>Finish</span>
-										</button>
-										<button onClick={handleCancelPlace} className="button is-light">
-											<span className="icon">
-												<FontAwesomeIcon icon={["fas", "trash-alt"]} />
-											</span>
-											<span>{t("controls.buttons.cancel")}</span>
-										</button>
+										<IconFlex
+											as="button"
+											onClick={handleFinishPlace}
+											icon={["fas", "check"]}
+											className="is-success"
+											fullWidth
+										>
+											{t("controls.buttons.stop", { count: currentObjectPoints.length })}
+										</IconFlex>
+
+										<IconFlex
+											as="button"
+											onClick={handleCancelPlace}
+											icon={["fas", "trash-alt"]}
+											className="is-light"
+											fullWidth
+										>
+											{t("controls.buttons.cancel")}
+										</IconFlex>
 									</div>
 								)}
 							</div>
-							<div>
-								<button onClick={endJourney} className="button is-danger">
-									<span className="icon">
-										<FontAwesomeIcon icon={["fas", "stop-circle"]} />
-									</span>
-									<span>{t("controls.buttons.end")}</span>
-								</button>
-							</div>
+						</div>
+
+						<hr className="divider my-3" />
+
+						<div className="buttons">
+							<IconFlex
+								as="button"
+								onClick={endJourney}
+								icon={["fas", "stop-circle"]}
+								className="is-danger"
+								fullWidth
+							>
+								{t("controls.buttons.end")}
+							</IconFlex>
 						</div>
 
 						<hr className="divider my-3" />
 
 						<div>
 							<div className="content is-small">
-								<button
+								<IconFlex
+									as="button"
 									onClick={toggleFollowing}
-									className={`button ${isFollowing ? "is-success" : "is-light"}`}
+									icon={["fas", "location-arrow"]}
+									className={isFollowing ? "is-success" : "is-light"}
+									fullWidth
 								>
-									<span className="icon">
-										<FontAwesomeIcon icon={["fas", "location-arrow"]} />
-									</span>
-									<span>{t("controls.buttons.my_location")}</span>
-								</button>
+									{t("controls.buttons.my_location")}
+								</IconFlex>
 							</div>
 						</div>
 

@@ -1,96 +1,99 @@
 {
-    "controls": {
-        "header": "Reisemodus",
-        "objects_count": "Objekter plassert",
-        "point_count": "Punkter plassert",
-        "syncing": "Synkroniserer",
-        "buttons": {
-            "start": "Start reise",
-            "place": "Plasser objekt",
-            "end": "Avslutt reise",
-            "stop": "Bekreft ({{count}})",
-            "cancel": "Kanseller",
-            "my_location": "Følg min posisjon"
-        }
-    },
-    "journeySummary": {
-        "title": "Reisesammendrag",
-        "meta": {
-            "started": "Startet: {{time}}",
-            "ended": "Avsluttet: {{time}}",
-            "objectsPlaced": "Objekter plassert: {{count}}"
-        },
-        "form": {
-            "journeyTitle": {
-                "label": "Reisetittel",
-                "placeholder": "Skriv inn reisetittel"
-            },
-            "journeyDescription": {
-                "label": "Reisebeskrivelse",
-                "placeholder": "Skriv inn reisebeskrivelse"
-            }
-        },
-        "objects": {
-            "title": "Plasserte objekter",
-            "emptyState": "Ingen objekter ble plassert under denne reisen.",
-            "table": {
-                "headers": {
-                    "type": "Type",
-                    "title": "Tittel",
-                    "description": "Beskrivelse",
-                    "points": "Pkt",
-                    "created": "Opprettet",
-                    "deleted": "Slettet"
-                },
-                "values": {
-                    "emptyField": "…",
-                    "yes": "Ja",
-                    "no": "Nei",
-                    "noData": "-"
-                }
-            }
-        },
-        "actions": {
-            "edit": "Rediger",
-            "restore": "Gjenopprett",
-            "delete": "Slett",
-            "deleteConfirm": "Bekreft?",
-            "submit": "Send inn og lukk",
-            "submitting": "Sender inn",
-            "close": "Lukk"
-        },
-        "errors": {
-            "title": "Noe gikk galt under innsending av reisesammendrag. Vennligst prøv igjen."
-        }
-    },
-    "objectEditForm": {
-        "form": {
-            "title": {
-                "label": "Tittel",
-                "placeholder": "Tittel"
-            },
-            "description": {
-                "label": "Beskrivelse",
-                "placeholder": "Beskrivelse"
-            }
-        },
-        "actions": {
-            "close": "Lukk"
-        }
-    },
-    "objectTypeSelector": {
-        "title": "Hvilken type er dette objektet?",
-        "loading": {
-            "message": "Laster inn objekttyper..."
-        },
-        "error": {
-            "title": "Klarte ikke å laste inn objekttyper"
-        },
-        "actions": {
-            "add": "Legg til",
-            "addWithoutType": "Legg til objekt uten type",
-            "skip": "Hopp over",
-            "cancel": "Kanseller (Ikke legg til objekt)"
-        }
-    }
+	"controls": {
+		"header": "Reisemodus",
+		"objects_count": "Objekter plassert",
+		"point_count": "Punkter plassert",
+		"syncing": "Synkroniserer",
+		"buttons": {
+			"start": "Start reise",
+			"place": "Plasser objekt",
+			"end": "Avslutt reise",
+			"stop": "Bekreft ({{count}})",
+			"cancel": "Kanseller",
+			"my_location": "Følg min posisjon",
+			"place_point": "Plasser Punkt",
+			"place_line": "Plasser Linje",
+			"place_area": "Plasser Område"
+		}
+	},
+	"journeySummary": {
+		"title": "Reisesammendrag",
+		"meta": {
+			"started": "Startet: {{time}}",
+			"ended": "Avsluttet: {{time}}",
+			"objectsPlaced": "Objekter plassert: {{count}}"
+		},
+		"form": {
+			"journeyTitle": {
+				"label": "Reisetittel",
+				"placeholder": "Skriv inn reisetittel"
+			},
+			"journeyDescription": {
+				"label": "Reisebeskrivelse",
+				"placeholder": "Skriv inn reisebeskrivelse"
+			}
+		},
+		"objects": {
+			"title": "Plasserte objekter",
+			"emptyState": "Ingen objekter ble plassert under denne reisen.",
+			"table": {
+				"headers": {
+					"type": "Type",
+					"title": "Tittel",
+					"description": "Beskrivelse",
+					"points": "Pkt",
+					"created": "Opprettet",
+					"deleted": "Slettet"
+				},
+				"values": {
+					"emptyField": "…",
+					"yes": "Ja",
+					"no": "Nei",
+					"noData": "-"
+				}
+			}
+		},
+		"actions": {
+			"edit": "Rediger",
+			"restore": "Gjenopprett",
+			"delete": "Slett",
+			"deleteConfirm": "Bekreft?",
+			"submit": "Send inn og lukk",
+			"submitting": "Sender inn",
+			"close": "Lukk"
+		},
+		"errors": {
+			"title": "Noe gikk galt under innsending av reisesammendrag. Vennligst prøv igjen."
+		}
+	},
+	"objectEditForm": {
+		"form": {
+			"title": {
+				"label": "Tittel",
+				"placeholder": "Tittel"
+			},
+			"description": {
+				"label": "Beskrivelse",
+				"placeholder": "Beskrivelse"
+			}
+		},
+		"actions": {
+			"close": "Lukk"
+		}
+	},
+	"objectTypeSelector": {
+		"title": "Hvilken type er dette objektet?",
+		"loading": {
+			"message": "Laster inn objekttyper..."
+		},
+		"error": {
+			"message": "Klarte ikke å laste inn objekttyper"
+		},
+		"actions": {
+			"add": "Legg til",
+			"addWithoutType": "Legg til objekt uten type",
+			"skip": "Hopp over",
+			"cancel": "Kanseller (Ikke legg til objekt)"
+		}
+	}
 }
