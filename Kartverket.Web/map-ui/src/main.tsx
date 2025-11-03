@@ -1,9 +1,15 @@
 ﻿import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { scan } from "react-scan";
 import "vite/modulepreload-polyfill";
 
 import App from "./App.js";
-import "//unpkg.com/react-scan/dist/auto.global.js";
+
+if (process.env.NODE_ENV === "development") {
+	scan({
+		enabled: true,
+	});
+}
 
 document.querySelector("header")!.style.display = "none";
 document.querySelector("footer")!.style.display = "none";
