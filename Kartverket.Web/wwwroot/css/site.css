@@ -1,4 +1,4 @@
-@import url('/fonts/inter.woff2');
+@import url('/css/inter-font.css');
 
 * {
     --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
