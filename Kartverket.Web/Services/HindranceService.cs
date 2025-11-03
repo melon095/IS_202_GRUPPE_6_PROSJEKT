@@ -14,6 +14,7 @@ public interface IHindranceService
         Guid hindranceTypeId,
         string title,
         string description,
+        GeometryType geometryType,
         CancellationToken cancellationToken = default);
 
     void UpdateObject(
@@ -21,6 +22,7 @@ public interface IHindranceService
         Guid hindranceTypeId,
         string title,
         string description,
+        GeometryType geometryType,
         CancellationToken cancellationToken = default);
 
     Task AddPoints(
@@ -56,6 +58,7 @@ public class HindranceService : IHindranceService
         Guid hindranceTypeId,
         string title,
         string description,
+        GeometryType geometryType,
         CancellationToken cancellationToken = default)
     {
         var newObject = new HindranceObjectTable
@@ -65,7 +68,8 @@ public class HindranceService : IHindranceService
             ReviewStatus = ReviewStatus.Draft,
             ReportId = reportId,
             HindranceTypeId = hindranceTypeId,
-            HindrancePoints = []
+            HindrancePoints = [],
+            GeometryType = geometryType
         };
 
         await _dbContext.HindranceObjects.AddAsync(newObject, cancellationToken);
@@ -78,11 +82,13 @@ public class HindranceService : IHindranceService
         Guid hindranceTypeId,
         string title,
         string description,
+        GeometryType geometryType,
         CancellationToken cancellationToken = default)
     {
         obj.Title = title;
         obj.Description = description;
         obj.HindranceTypeId = hindranceTypeId;
+        obj.GeometryType = geometryType;
     }
 
     public async Task AddPoints(

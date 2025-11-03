@@ -10,6 +10,7 @@ export interface PlacedObject {
 	id?: string;
 	points: Point[];
 	typeId?: string;
+	geometryType: Omit<PlaceMode, PlaceMode.None>;
 	title?: string;
 	description?: string;
 	deleted: boolean;
@@ -25,10 +26,17 @@ export interface Journey {
 	objects: PlacedObject[];
 }
 
+export enum PlaceMode {
+	None,
+	Point,
+	Line,
+	Area,
+}
+
 export interface JourneyState {
 	currentJourney: Journey | null;
 	finishedJourney: Journey | null;
-	isPlacingObject: boolean;
+	placeMode: PlaceMode;
 	currentObjectPoints: Point[];
 }
 
@@ -49,31 +57,15 @@ export interface ServerSyncResponse {
 	objectId: string;
 }
 
-export interface FinalizeJourneyObject {
-	id: string;
-	title?: string;
-	description?: string;
-	points: Point[];
-	typeId?: string;
-}
-
 export interface FinalizeJourneyData {
 	journey: {
 		id: string;
 		title?: string;
 		description?: string;
 	};
-	objects: FinalizeJourneyObject[];
+	objects: PlacedObject[];
 }
 
-export interface ServerStateObjects {
-	id: string;
-	reportId: string;
-	title: string | null;
-	points: Point[];
-	typeId?: string;
-}
-
-export type ServerStateResponse = ServerStateObjects[];
+export type ServerStateResponse = PlacedObject[];
 
 export type ResponseError = Record<string, string[]>;

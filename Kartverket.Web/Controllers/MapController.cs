@@ -107,14 +107,15 @@ public class MapController : Controller
             Id = mo.Id,
             ReportId = mo.ReportId,
             TypeId = mo.HindranceTypeId,
+            GeometryType = mo.GeometryType,
             Title = mo.Title,
-            Points = mo.HindrancePoints.Select(mp => new MapPointDataModel
+            Points = mo.HindrancePoints.OrderBy(o => o.Order).Select(mp => new MapPointDataModel
             {
                 Lat = mp.Latitude,
                 Lng = mp.Longitude,
                 Elevation = mp.Elevation,
                 CreatedAt = mp.CreatedAt
-            }).OrderBy(p => p.CreatedAt).ToList()
+            }).ToList()
         }).ToArray();
     }
 }

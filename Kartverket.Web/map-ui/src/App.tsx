@@ -37,15 +37,6 @@ const AppContent = () => {
 		const { id, title, description } = finishedJourney;
 		if (!id) return;
 
-		const objs = finishedJourney.objects.map((obj) => ({
-			id: obj.id!,
-			title: obj.title,
-			description: obj.description,
-			deleted: obj.deleted,
-			points: obj.points,
-			typeId: obj.typeId,
-		}));
-
 		finalizeJourneyMutation.mutate(
 			{
 				journey: {
@@ -53,7 +44,7 @@ const AppContent = () => {
 					title,
 					description,
 				},
-				objects: objs,
+				objects: finishedJourney.objects,
 			},
 			{
 				onSuccess: () => {

@@ -1,32 +1,86 @@
 import React from "react";
-import { Marker, Polyline } from "react-leaflet";
+import { Marker, Polygon, Polyline } from "react-leaflet";
 
 import { useJourney } from "../contexts/JourneyContext";
+import { useServerObjectsQuery } from "../hooks/useServerObjectsQuery";
+import { PlacedObject, PlaceMode } from "../types";
+
+const ObjectGeometry = React.memo(({ obj, colour }: { obj: PlacedObject; colour: string }) => {
+	if (!obj?.points?.length) return null;
+
+	switch (obj.geometryType) {
+		case PlaceMode.Point: {
+			const point = obj.points[0];
+			return <Marker position={[point.lat, point.lng]} />;
+		}
+
+		case PlaceMode.Line: {
+			return (
+				<>
+					{obj.points.map((point, index) => (
+						<>
+							<Marker key={index} position={[point.lat, point.lng]} />
+							<Polyline
+								positions={obj.points.map((p) => [p.lat, p.lng])}
+								pathOptions={{ color: colour }}
+							/>
+							;
+						</>
+					))}
+				</>
+			);
+		}
+
+		case PlaceMode.Area: {
+			const polygonPoints =
+				obj.points[0] === obj.points[obj.points.length - 1]
+					? obj.points
+					: [...obj.points, obj.points[0]].map((p) => ({ lat: p.lat, lng: p.lng }));
+
+			return (
+				<>
+					{obj.points.map((point, index) => (
+						<Marker key={index} position={[point.lat, point.lng]} />
+					))}
+					<Polygon positions={polygonPoints} pathOptions={{ color: colour }} />
+				</>
+			);
+		}
+
+		default:
+			return null;
+	}
+});
 
 export const ObjectMarkers = React.memo(() => {
-	const { currentJourney, currentObjectPoints } = useJourney();
+	const { currentJourney, currentObjectPoints, placeMode } = useJourney();
+	const { data: serverObjects, isLoading, isError } = useServerObjectsQuery(currentJourney?.id);
+
+	const renderObjects = (objects: PlacedObject[], colour: string) =>
+		objects.map((obj) => <ObjectGeometry key={obj.id || Math.random()} obj={obj} colour={colour} />);
 
 	return (
-		<React.Fragment>
-			{currentJourney?.objects.map((obj) => (
-				<React.Fragment key={obj.id}>
-					{obj?.points.map((point, index) => (
-						<Marker key={`${obj.id}-point-${index}`} position={[point.lat, point.lng]} />
-					))}
+		<>
+			{currentJourney && (
+				<>
+					{renderObjects(currentJourney.objects, "blue")}
 
-					{obj.points.length > 1 && (
-						<Polyline positions={obj.points.map((point) => [point.lat, point.lng])} color="blue" />
+					{currentObjectPoints?.length > 0 && (
+						<ObjectGeometry
+							obj={{
+								id: "current-object",
+								points: currentObjectPoints,
+								geometryType: placeMode,
+								deleted: false,
+								createdAt: new Date().toISOString(),
+							}}
+							colour="red"
+						/>
 					)}
-				</React.Fragment>
-			))}
-
-			{currentObjectPoints.map((point, idx) => (
-				<Marker key={`current-point-${idx}`} position={[point.lat, point.lng]} />
-			))}
-
-			{currentObjectPoints.length > 1 && (
-				<Polyline positions={currentObjectPoints.map((point) => [point.lat, point.lng])} color="red" />
+				</>
 			)}
-		</React.Fragment>
+
+			{!isLoading && !isError && renderObjects(serverObjects || [], "green")}
+		</>
 	);
 });

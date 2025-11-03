@@ -8,7 +8,6 @@ import "../css/zoom-control.css";
 import { GPSMarker } from "./GPSMarker.tsx";
 import { MapClickHandler } from "./MapClickHandler";
 import { ObjectMarkers } from "./ObjectMarkers";
-import { ServerMarkers } from "./ServerMarkers";
 
 const mapCenter = [58.1465456, 7.9911451] satisfies LatLngTuple;
 
@@ -27,7 +26,6 @@ export const MapComponent = ({ children }: MapComponentProps) => {
 			<TileLayer {...tileProps} />
 			<MapClickHandler />
 			<ObjectMarkers />
-			<ServerMarkers />
 			<GPSMarker />
 
 			{children}

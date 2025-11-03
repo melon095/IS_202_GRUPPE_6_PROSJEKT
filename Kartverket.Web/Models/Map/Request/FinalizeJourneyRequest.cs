@@ -1,3 +1,5 @@
+using Kartverket.Web.Database.Tables;
+
 namespace Kartverket.Web.Models.Map.Request;
 
 // TODO: Validation
@@ -9,7 +11,7 @@ public class FinalizeJourneyObject
     public bool Deleted { get; set; } = false;
     public List<FinalizeJourneyPointDataModel> Points { get; set; }
     public Guid? TypeId { get; set; } = null;
-    public string? CustomType { get; set; } = null;
+    public GeometryType GeometryType { get; set; }
 }
 
 public class FinalizeJourneyDataModel

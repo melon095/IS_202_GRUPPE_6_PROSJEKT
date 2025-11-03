@@ -1,11 +1,13 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
+import { useGeolocated } from "react-geolocated";
 import { useMap } from "react-leaflet";
 
 import { useJourney } from "../contexts/JourneyContext";
 import { useSyncObjectMutation } from "../hooks/useSyncObjectMutation";
 import { useTranslation } from "../i18n";
+import { PlaceMode } from "../types";
 import { ObjectTypeSelector } from "./ObjectTypeSelector";
 
 interface JourneyControlsProps {
@@ -16,15 +18,15 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	const { t } = useTranslation();
 	const {
 		currentJourney,
-		isPlacingObject,
+		placeMode,
 		currentObjectPoints,
 		clearCurrentObjectPoints,
 		endJourney,
 		startJourney,
-		startPlacingObjects,
 		stopPlacingObject,
 		updateJourneyId,
 		updateObjectId,
+		setPlaceMode,
 	} = useJourney();
 	const map = useMap();
 
@@ -32,6 +34,11 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	const [showTypeSelector, setShowTypeSelector] = useState(false);
 	const overlayRef = useRef<HTMLDivElement>(null);
 	const [isFollowing, setIsFollowing] = useState(false);
+	const { coords } = useGeolocated({
+		positionOptions: {
+			enableHighAccuracy: true,
+		},
+	});
 	const watchIdRef = useRef<number | null>(null);
 	const programmaticFlyToRef = useRef(false);
 
@@ -57,72 +64,50 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	}, [map, isFollowing]);
 
 	useEffect(() => {
+		const ref = watchIdRef;
+
 		return () => {
-			if (watchIdRef.current !== null) {
-				navigator.geolocation.clearWatch(watchIdRef.current);
+			if (ref.current !== null) {
+				navigator.geolocation.clearWatch(ref.current);
 			}
 		};
 	}, []);
 
 	useEffect(() => {
-		if (isFollowing) {
-			watchIdRef.current = navigator.geolocation.watchPosition(
-				(position) => {
-					programmaticFlyToRef.current = true;
-					const zoom = map.getZoom();
-					const relZoom = zoom < 15 ? 15 : zoom;
-					map.flyTo([position.coords.latitude, position.coords.longitude], relZoom, {
-						animate: true,
-						duration: 1.0,
-					});
+		if (!isFollowing || !coords) return;
 
-					setTimeout(() => {
-						programmaticFlyToRef.current = false;
-					}, 1000);
-				},
-				(error) => {
-					console.error("Error getting position:", error);
-				},
-				{
-					enableHighAccuracy: true,
-					maximumAge: 0,
-					timeout: 5000,
-				}
-			);
-		} else {
-			if (watchIdRef.current !== null) {
-				navigator.geolocation.clearWatch(watchIdRef.current);
-				watchIdRef.current = null;
-			}
-		}
+		programmaticFlyToRef.current = true;
+		const zoom = map.getZoom();
+		const relZoom = zoom < 15 ? 15 : zoom;
+		map.flyTo([coords.latitude, coords.longitude], relZoom, {
+			animate: true,
+			duration: 1.0,
+		});
 
-		return () => {
-			if (watchIdRef.current !== null) {
-				navigator.geolocation.clearWatch(watchIdRef.current);
-				watchIdRef.current = null;
-			}
-		};
-	}, [map, isFollowing]);
+		setTimeout(() => {
+			programmaticFlyToRef.current = false;
+		}, 1000);
+	}, [map, coords, isFollowing]);
 
 	const toggleFollowing = () => {
 		if (!isFollowing && !navigator.geolocation) {
-			console.warn("Geolocation not supported.");
 			return;
 		}
 
 		setIsFollowing((prev) => !prev);
 	};
 
-	const handleStartPlacingObject = () => {
-		startPlacingObjects();
-	};
-
-	const handleStopPlacingObject = () => {
+	const handleFinishPlace = () => {
 		if (currentObjectPoints.length > 0) {
 			setShowTypeSelector(true);
 		} else {
 			stopPlacingObject();
 		}
+	};
+
+	const handleCancelPlace = () => {
+		clearCurrentObjectPoints();
+		stopPlacingObject();
 	};
 
 	const handleTypeSelect = (typeId?: string) => {
@@ -210,37 +195,68 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 							)}
 						</div>
 						<div className="buttons">
-							{!isPlacingObject ? (
-								<button onClick={handleStartPlacingObject} className="button is-primary">
+							<div>
+								{placeMode === PlaceMode.None ? (
+									<>
+										<p className="control is-expanded mb-2">
+											<button
+												onClick={() => setPlaceMode(PlaceMode.Point)}
+												className="button is-info is-fullwidth"
+											>
+												<span className="icon">
+													<FontAwesomeIcon icon={["fas", "location-dot"]} />
+												</span>
+												<span>Place Point</span>
+											</button>
+										</p>
+										<p className="control is-expanded mb-2">
+											<button
+												onClick={() => setPlaceMode(PlaceMode.Line)}
+												className="button is-info is-fullwidth"
+											>
+												<span className="icon">
+													<FontAwesomeIcon icon={["fas", "route"]} />
+												</span>
+												<span>Place Line</span>
+											</button>
+										</p>
+										<p className="control is-expanded mb-2">
+											<button
+												onClick={() => setPlaceMode(PlaceMode.Area)}
+												className="button is-info is-fullwidth"
+											>
+												<span className="icon">
+													<FontAwesomeIcon icon={["fas", "draw-polygon"]} />
+												</span>
+												<span>Place Area</span>
+											</button>
+										</p>
+									</>
+								) : (
+									<div className="buttons mb-3">
+										<button onClick={handleFinishPlace} className="button is-success">
+											<span className="icon">
+												<FontAwesomeIcon icon={["fas", "check"]} />
+											</span>
+											<span>Finish</span>
+										</button>
+										<button onClick={handleCancelPlace} className="button is-light">
+											<span className="icon">
+												<FontAwesomeIcon icon={["fas", "trash-alt"]} />
+											</span>
+											<span>{t("controls.buttons.cancel")}</span>
+										</button>
+									</div>
+								)}
+							</div>
+							<div>
+								<button onClick={endJourney} className="button is-danger">
 									<span className="icon">
-										<FontAwesomeIcon icon={["fas", "map-marker-alt"]} />
+										<FontAwesomeIcon icon={["fas", "stop-circle"]} />
 									</span>
-									<span>{t("controls.buttons.place")}</span>
+									<span>{t("controls.buttons.end")}</span>
 								</button>
-							) : (
-								<>
-									<button onClick={handleStopPlacingObject} className="button is-warning">
-										<span className="icon">
-											<FontAwesomeIcon icon={["fas", "stop"]} />
-										</span>
-										<span>{t("controls.buttons.stop", { count: currentObjectPoints.length })}</span>
-									</button>
-
-									<button onClick={clearCurrentObjectPoints} className="button is-light">
-										<span className="icon">
-											<FontAwesomeIcon icon={["fas", "trash-alt"]} />
-										</span>
-										<span>{t("controls.buttons.clear")}</span>
-									</button>
-								</>
-							)}
-
-							<button onClick={endJourney} className="button is-danger">
-								<span className="icon">
-									<FontAwesomeIcon icon={["fas", "stop-circle"]} />
-								</span>
-								<span>{t("controls.buttons.end")}</span>
-							</button>
+							</div>
 						</div>
 
 						<hr className="divider my-3" />
