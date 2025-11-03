@@ -20,7 +20,7 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 		queryFn: async () => {
 			const qp = new URLSearchParams();
 			if (lastFetchTimeRef.current) {
-				qp.append("since", encodeURIComponent(lastFetchTimeRef.current));
+				qp.append("since", lastFetchTimeRef.current);
 			}
 			if (currentReportId) {
 				qp.append("reportId", currentReportId);
