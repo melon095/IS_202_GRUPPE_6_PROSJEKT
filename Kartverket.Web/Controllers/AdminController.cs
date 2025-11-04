@@ -245,8 +245,8 @@ public class AdminController : Controller
     */
 
     // Denne skal nå brukes
-    [ValidateAntiForgeryToken]
-    public IActionResult ObjectReview(Guid id, string StatusObject, Guid? objectID)
+    [HttpGet]
+    public IActionResult ObjectReview(Guid id, Guid? objectID)
     {
         var report = _dbContext.Reports
             .Include(r => r.HindranceObjects)
@@ -255,9 +255,6 @@ public class AdminController : Controller
             .FirstOrDefault(r => r.Id == id);
 
         if (report == null) return View("NoObjectsErr");
-
-        var selectedObject = report.HindranceObjects
-            .SingleOrDefault(x => x.Id == objectID);
 
         var Model = new ObjectReviewModel
         {
@@ -295,34 +292,59 @@ public class AdminController : Controller
 
                 objectData.CentroidPoint = GetCentroid;
 
-                if (selectedObject is { Id: var selectedId } && selectedId == obj.Id)
-                {
-                    switch (StatusObject)
-                    {
-                        case "accept":
-                            selectedObject.ReviewStatus = ReviewStatus.Resolved;
-                            break;
-                        case "deny":
-                            selectedObject.ReviewStatus = ReviewStatus.Closed;
-                            break;
-
-                        default:
-                            TempData["Error"] = "Feil Oppsto";
-                            break;
-
-                    }
-
-                    objectData.ObjectStatus = selectedObject.ReviewStatus;
-                    _dbContext.SaveChanges();
-                    TempData["Succsess"] = $"Rapport status endret til {report.ReviewStatus}";
-                    Model.SelectedObject = objectData;
-                }
-
                 Model.Objects.Add(objectData);
             }
+            if (objectID.HasValue)
+                Model.SelectedObject = Model.Objects.SingleOrDefault(x => x.Id == objectID.Value);
         }
         return View(Model);
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public IActionResult ObjectReview(Guid id, Guid objectChangeID, string statusObject)
+    {
+        var report = _dbContext.Reports
+            .Include(r => r.HindranceObjects)
+            .ThenInclude(o => o.HindrancePoints)
+            .Include(r => r.Feedbacks)
+            .FirstOrDefault(r => r.Id == id);
+
+        if (report == null)
+            return View("NoObjectsErr");
+
+        var selectedObject = report.HindranceObjects.SingleOrDefault(x => x.Id == objectChangeID);
+        if (selectedObject == null)
+        {
+            TempData["Error"] = "Objekt ikke funnet";
+        }
+
+        switch (statusObject)
+        {
+            case "accept":
+                selectedObject.ReviewStatus = ReviewStatus.Resolved;
+                break;
+            case "deny":
+                selectedObject.ReviewStatus = ReviewStatus.Closed;
+                break;
+
+            default:
+                TempData["Error"] = "Ugyldig status";
+                return RedirectToAction("ObjectReview", new { id, objectChangeID });
+        }
+
+        _dbContext.SaveChanges();
+
+        TempData["Success"] = $"Objekt status endret til {selectedObject.ReviewStatus}";
+        return RedirectToAction("ObjectReview", new {id, objectChangeID});    
+    }
+/*
+    [HttpPost]
+    public IActionResult Comment(Guid id, Guid objectID, )
+    {
+        return View();
+    }
+*/
 
     [HttpGet]
     public IActionResult ObjectTypes()

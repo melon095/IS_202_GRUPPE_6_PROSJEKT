@@ -38,12 +38,11 @@
                                         </td>
                                         <td>@obj.ObjectStatus</td>
                                         <td>
-                                            @obj.Id 
                                             @using (Html.BeginForm("ObjectReview", "Admin", FormMethod.Post))
                                             {
                                                 @Html.AntiForgeryToken()
                                                 @Html.Hidden("id", Model.Id)
-                                                @Html.Hidden("objectId", obj.Id)
+                                                @Html.Hidden("objectChangeId", obj.Id)
                                                 <div>
                                                     <div>
 
@@ -100,7 +99,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            height: 150%;
+            height: 100%;
             padding: 0; /* Removes double spacing inside box */
         }
 
