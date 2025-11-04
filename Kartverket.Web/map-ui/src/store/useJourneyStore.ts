@@ -117,7 +117,16 @@ export const useJourneyStore = create<JourneyStore>()(
 			},
 
 			addPointToCurrentObject: (point) => {
+				const { placeMode, currentJourney } = get();
+				if (placeMode === PlaceMode.None || !currentJourney) return;
+
 				point.createdAt = new Date().toISOString();
+
+				if (placeMode == PlaceMode.Point) {
+					return set(() => ({
+						currentObjectPoints: [point],
+					}));
+				}
 
 				set((state) => ({
 					currentObjectPoints: [...state.currentObjectPoints, point],

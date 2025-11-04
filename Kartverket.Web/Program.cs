@@ -174,8 +174,3 @@ if (app.Environment.IsDevelopment())
 app.Run();
 
 #endregion // App
-
-// Level 1 cache on localStorage
-// Level 2 cache on server
-
-// Mismatching cache!

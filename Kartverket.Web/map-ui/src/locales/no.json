@@ -4,6 +4,9 @@
 		"objects_count": "Objekter plassert",
 		"point_count": "Punkter plassert",
 		"syncing": "Synkroniserer",
+		"placing_point": "Plasseringsmodus - Punkt",
+		"placing_line": "Plasseringsmodus - Linje",
+		"placing_area": "Plasseringsmodus - Område",
 		"buttons": {
 			"start": "Start reise",
 			"place": "Plasser objekt",

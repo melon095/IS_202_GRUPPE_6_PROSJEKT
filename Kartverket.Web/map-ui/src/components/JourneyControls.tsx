@@ -187,6 +187,27 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								</IconFlex>
 							)}
 						</div>
+
+						<hr className="divider my-3" />
+
+						<div className="content mb-3">
+							{placeMode === PlaceMode.Point && (
+								<IconFlex as="div" icon={["fas", "crosshairs"]} className="message is-info" fullWidth>
+									{t("controls.placing_point")}
+								</IconFlex>
+							)}
+							{placeMode === PlaceMode.Line && (
+								<IconFlex as="div" icon={["fas", "route"]} className="is-info" fullWidth>
+									{t("controls.placing_line")}
+								</IconFlex>
+							)}
+							{placeMode === PlaceMode.Area && (
+								<IconFlex as="div" icon={["fas", "draw-polygon"]} className="is-info" fullWidth>
+									{t("controls.placing_area")}
+								</IconFlex>
+							)}
+						</div>
+
 						<div className="buttons">
 							<div>
 								{placeMode === PlaceMode.None ? (
@@ -253,9 +274,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								)}
 							</div>
 						</div>
-
 						<hr className="divider my-3" />
-
 						<div className="buttons">
 							<IconFlex
 								as="button"
@@ -267,9 +286,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								{t("controls.buttons.end")}
 							</IconFlex>
 						</div>
-
 						<hr className="divider my-3" />
-
 						<div>
 							<div className="content is-small">
 								<IconFlex
@@ -283,7 +300,6 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								</IconFlex>
 							</div>
 						</div>
-
 						<div className="content">{children}</div>
 					</div>
 				</div>
