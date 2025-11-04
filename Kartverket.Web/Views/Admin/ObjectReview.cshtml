@@ -64,8 +64,19 @@
                     </div>
 
                     <div class="box">
-                        <h2 class="title is-5">KOMMENTAR</h2>
+                        <h2 class="title is-5">Tilbakemeldinger</h2>
+                        @if(Model.SelectedObject != null)
+                        {
+                            @foreach (var com in Model.SelectedObject.Feedbacks)
+                            {
 
+                                <p>@com.Feedback</p>
+                            }
+                        }
+                        else
+                        {
+                            <p>Her skal det komme kommentarer</p>
+                        }
                     </div>
                 </div>
 

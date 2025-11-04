@@ -25,6 +25,7 @@ public class ObjectReviewModel
         public string Description { get; set; }
         public ReviewStatus ObjectStatus { get; set; }
         public List<Point> Points { get; set; } = [];
+        public List<ReportFeedbackTable> Feedbacks { get; set; } = [];
 
     }
 
