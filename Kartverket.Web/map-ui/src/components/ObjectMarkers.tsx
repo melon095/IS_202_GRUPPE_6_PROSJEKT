@@ -95,8 +95,18 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 			);
 		}
 
-		default:
-			return null;
+		default: {
+			return (
+				<>
+					{obj.points.map((point, idx) => (
+						<Marker key={idx} position={[point.lat, point.lng]} icon={icon}>
+							{popup}
+						</Marker>
+					))}
+					<Polyline positions={obj.points.map((p) => [p.lat, p.lng])} pathOptions={{ color: colour }} />
+				</>
+			);
+		}
 	}
 });
 
