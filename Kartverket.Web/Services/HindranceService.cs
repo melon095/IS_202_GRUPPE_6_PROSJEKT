@@ -114,8 +114,13 @@ public class HindranceService : IHindranceService
 
     public void DeleteObject(Guid hindranceObjectId)
     {
-        var obj = new HindranceObjectTable { Id = hindranceObjectId };
-        _dbContext.HindranceObjects.Attach(obj);
+        var obj = _dbContext.HindranceObjects
+            .Include(o => o.HindrancePoints)
+            .FirstOrDefault(o => o.Id == hindranceObjectId);
+
+        if (obj == null) return;
+
+        _dbContext.HindrancePoints.RemoveRange(obj.HindrancePoints);
         _dbContext.HindranceObjects.Remove(obj);
     }
 

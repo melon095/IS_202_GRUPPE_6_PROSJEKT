@@ -130,7 +130,7 @@ if (!app.Environment.IsDevelopment())
 
 {
     var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
     await DatabaseContextSeeding.Seed(db);
 }
 
@@ -146,7 +146,6 @@ if (!app.Environment.IsDevelopment())
         }
     }
 }
-
 
 app.UseHttpsRedirection();
 app.UseRouting();

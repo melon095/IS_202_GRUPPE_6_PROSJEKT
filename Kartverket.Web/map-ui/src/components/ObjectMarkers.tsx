@@ -1,3 +1,4 @@
+import { parseISO } from "date-fns";
 import L from "leaflet";
 import React from "react";
 import { Marker, Polygon, Polyline, Popup } from "react-leaflet";
@@ -31,24 +32,26 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 		shadowSize: [41, 41],
 	});
 
+	const firstPoint = obj.points[0];
+
 	const popup = (
 		<Popup>
 			<div>
 				<p>{objectType?.name || "Ukjent objekt"}</p>
-				Type: {PlaceModeToString[obj.geometryType as PlaceMode]}
-				<br />
-				Laget: {new Date(obj.createdAt).toLocaleString()}
-				<br />
-				{/* //TODO: Made by */}
+				<p>Type: {PlaceModeToString[obj.geometryType as PlaceMode]}</p>
+				{firstPoint.createdAt && <>Laget: {parseISO(firstPoint.createdAt).toLocaleString()}</>}
+				<div>
+					{obj.title && <strong>{obj.title}</strong>}
+					{obj.description && <p>{obj.description}</p>}
+				</div>
 			</div>
 		</Popup>
 	);
 
 	switch (obj.geometryType) {
 		case PlaceMode.Point: {
-			const point = obj.points[0];
 			return (
-				<Marker position={[point.lat, point.lng]} icon={icon}>
+				<Marker position={[firstPoint.lat, firstPoint.lng]} icon={icon}>
 					{popup}
 				</Marker>
 			);
@@ -84,14 +87,9 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 					: [...obj.points, obj.points[0]].map((p) => ({ lat: p.lat, lng: p.lng }));
 
 			return (
-				<>
-					{obj.points.map((point, idx) => (
-						<Marker key={idx} position={[point.lat, point.lng]} icon={icon}>
-							{popup}
-						</Marker>
-					))}
-					<Polygon positions={polygonPoints} pathOptions={{ color: colour }} />
-				</>
+				<Polygon positions={polygonPoints} pathOptions={{ color: colour }}>
+					{popup}
+				</Polygon>
 			);
 		}
 
