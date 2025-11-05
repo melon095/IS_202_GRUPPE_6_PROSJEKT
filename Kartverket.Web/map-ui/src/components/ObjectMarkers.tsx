@@ -1,7 +1,7 @@
 import { parseISO } from "date-fns";
 import L from "leaflet";
-import React from "react";
-import { Marker, Polygon, Polyline, Popup } from "react-leaflet";
+import React, { useMemo } from "react";
+import { Marker, Polygon, Polyline, Popup, useMap } from "react-leaflet";
 
 import { useJourney } from "../contexts/JourneyContext";
 import { useObjectTypes } from "../contexts/ObjectTypesContext";
@@ -16,21 +16,62 @@ interface ObjectGeometryProps {
 const DEFAULT_ICON_MARKER = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png";
 const DEFAULT_SHADOW_MARKER = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
 
+const BASE_ZOOM = 13;
+const BASE_ICON_SIZE: [number, number] = [25, 41];
+const BASE_SHADOW_SIZE: [number, number] = [41, 41];
+
+const calculateIconSize = (
+	currentZoom: number
+): { iconSize: [number, number]; shadowSize: [number, number]; iconAnchor: [number, number] } => {
+	const zoomDiff = currentZoom - BASE_ZOOM;
+	const scale = Math.pow(2, zoomDiff * 0.5);
+
+	const clampedScale = Math.max(0.3, Math.min(2, scale));
+
+	const iconWidth = Math.round(BASE_ICON_SIZE[0] * clampedScale);
+	const iconHeight = Math.round(BASE_ICON_SIZE[1] * clampedScale);
+	const shadowWidth = Math.round(BASE_SHADOW_SIZE[0] * clampedScale);
+	const shadowHeight = Math.round(BASE_SHADOW_SIZE[1] * clampedScale);
+
+	return {
+		iconSize: [iconWidth, iconHeight],
+		shadowSize: [shadowWidth, shadowHeight],
+		iconAnchor: [Math.round(iconWidth / 2), iconHeight],
+	};
+};
 const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 	const { getObjectTypeById } = useObjectTypes();
+	const map = useMap();
+	const [zoom, setZoom] = React.useState(map.getZoom());
+
+	React.useEffect(() => {
+		const handleZoom = () => {
+			setZoom(map.getZoom());
+		};
+
+		map.on("zoomend", handleZoom);
+		return () => {
+			map.off("zoomend", handleZoom);
+		};
+	}, [map]);
+
+	const icon = useMemo(() => {
+		const objectType = getObjectTypeById(obj.typeId);
+		const sizes = calculateIconSize(zoom);
+
+		return L.icon({
+			iconUrl: objectType?.markerImageUrl || DEFAULT_ICON_MARKER,
+			shadowUrl: DEFAULT_SHADOW_MARKER,
+			iconSize: sizes.iconSize,
+			iconAnchor: sizes.iconAnchor,
+			popupAnchor: [1, -34],
+			shadowSize: sizes.shadowSize,
+		});
+	}, [obj.typeId, zoom, getObjectTypeById]);
+
 	if (!obj?.points?.length) return null;
 
 	const objectType = getObjectTypeById(obj.typeId);
-
-	const icon = L.icon({
-		iconUrl: objectType?.markerImageUrl || DEFAULT_ICON_MARKER,
-		shadowUrl: DEFAULT_SHADOW_MARKER,
-
-		iconSize: [25, 41],
-		iconAnchor: [12, 41],
-		popupAnchor: [1, -34],
-		shadowSize: [41, 41],
-	});
 
 	const firstPoint = obj.points[0];
 
