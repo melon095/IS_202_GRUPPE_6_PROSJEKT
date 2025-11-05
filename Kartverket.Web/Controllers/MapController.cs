@@ -1,5 +1,4 @@
-﻿using Kartverket.Web.AuthPolicy;
-using Kartverket.Web.Database;
+﻿using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.Map;
 using Kartverket.Web.Models.Map.Request;
@@ -34,11 +33,11 @@ public class MapController : Controller
     }
 
     [HttpGet]
-    [Authorize(Policy = RoleValue.AtLeastPilot)]
+    [Authorize]
     public IActionResult Index() => View();
 
     [HttpPost]
-    [Authorize(Policy = RoleValue.AtLeastPilot)]
+    [Authorize]
     public async Task<IActionResult> SyncObject(
         [FromBody] PlacedObjectDataModel body,
         [FromQuery] Guid? journeyId = null,
@@ -65,7 +64,7 @@ public class MapController : Controller
     }
 
     [HttpPost]
-    [Authorize(Policy = RoleValue.AtLeastPilot)]
+    [Authorize]
     public async Task<IActionResult> FinalizeJourney(
         [FromBody] FinalizeJourneyRequest body,
         [FromQuery] Guid? journeyId = null,
@@ -95,6 +94,7 @@ public class MapController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<MapObjectsDataModel[]> GetObjects(
         [FromQuery] DateTime? since = null,
         [FromQuery] Guid? reportId = null,
@@ -109,13 +109,16 @@ public class MapController : Controller
             TypeId = mo.HindranceTypeId,
             GeometryType = mo.GeometryType,
             Title = mo.Title,
-            Points = mo.HindrancePoints.OrderBy(o => o.Order).Select(mp => new MapPointDataModel
-            {
-                Lat = mp.Latitude,
-                Lng = mp.Longitude,
-                Elevation = mp.Elevation,
-                CreatedAt = mp.CreatedAt
-            }).ToList()
+            Points = mo.HindrancePoints
+                .OrderBy(o => o.Order)
+                .Select(mp => new MapPointDataModel
+                {
+                    Lat = mp.Latitude,
+                    Lng = mp.Longitude,
+                    Elevation = mp.Elevation,
+                    CreatedAt = mp.CreatedAt
+                })
+                .ToArray()
         }).ToArray();
     }
 }

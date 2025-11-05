@@ -33,7 +33,6 @@ export const IconFlex = <T extends ElementType = "button">({
 
 	const iconProps: FontAwesomeIconProps = isFullProps(icon) ? icon : { icon };
 
-	console.log(className);
 	return (
 		<Component
 			className={`is-flex is-align-items-center ${fullWidth ? "is-fullwidth" : ""} ${className}`}

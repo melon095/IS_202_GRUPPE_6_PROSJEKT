@@ -33,6 +33,14 @@ export enum PlaceMode {
 	Area,
 }
 
+export const PlaceModeToString = {
+	// TODO: Localize
+	[PlaceMode.None]: "Ingen",
+	[PlaceMode.Point]: "Punkt",
+	[PlaceMode.Line]: "Linje",
+	[PlaceMode.Area]: "Område",
+};
+
 export interface JourneyState {
 	currentJourney: Journey | null;
 	finishedJourney: Journey | null;

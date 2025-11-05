@@ -9,6 +9,11 @@
         @using (Html.BeginForm("Login", "User", FormMethod.Post))
         {
             @Html.AntiForgeryToken()
+            @if (ViewData["ReturnUrl"] != null)
+            {
+                @Html.Hidden("ReturnUrl", ViewData["ReturnUrl"] as string)
+            }
+
             <div class="field">
                 @Html.LabelFor(m => m.Username, new { @class = "label" })
 

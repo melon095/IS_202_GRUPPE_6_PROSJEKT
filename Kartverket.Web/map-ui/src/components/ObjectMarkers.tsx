@@ -1,11 +1,11 @@
 import L from "leaflet";
 import React from "react";
-import { Marker, Polygon, Polyline } from "react-leaflet";
+import { Marker, Polygon, Polyline, Popup } from "react-leaflet";
 
 import { useJourney } from "../contexts/JourneyContext";
 import { useObjectTypes } from "../contexts/ObjectTypesContext";
 import { useServerObjectsQuery } from "../hooks/useServerObjectsQuery";
-import { Colour, PlacedObject, PlaceMode } from "../types";
+import { Colour, PlacedObject, PlaceMode, PlaceModeToString } from "../types";
 
 interface ObjectGeometryProps {
 	obj: PlacedObject;
@@ -31,24 +31,44 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 		shadowSize: [41, 41],
 	});
 
+	const popup = (
+		<Popup>
+			<div>
+				<p>{objectType?.name || "Ukjent objekt"}</p>
+				Type: {PlaceModeToString[obj.geometryType as PlaceMode]}
+				<br />
+				Laget: {new Date(obj.createdAt).toLocaleString()}
+				<br />
+				{/* //TODO: Made by */}
+			</div>
+		</Popup>
+	);
+
 	switch (obj.geometryType) {
 		case PlaceMode.Point: {
 			const point = obj.points[0];
-			return <Marker position={[point.lat, point.lng]} icon={icon} />;
+			return (
+				<Marker position={[point.lat, point.lng]} icon={icon}>
+					{popup}
+				</Marker>
+			);
 		}
 
 		case PlaceMode.Line: {
 			return (
 				<>
-					{obj.points.map((point, index) => (
-						<>
-							<Marker key={index} position={[point.lat, point.lng]} icon={icon} />
+					{obj.points.map((point, idx) => (
+						<React.Fragment key={idx}>
+							<Marker key={idx} position={[point.lat, point.lng]} icon={icon}>
+								{popup}
+							</Marker>
 							<Polyline
+								key={`line-${idx}`}
 								positions={obj.points.map((p) => [p.lat, p.lng])}
 								pathOptions={{ color: colour }}
 							/>
 							;
-						</>
+						</React.Fragment>
 					))}
 				</>
 			);
@@ -65,8 +85,10 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 
 			return (
 				<>
-					{obj.points.map((point, index) => (
-						<Marker key={index} position={[point.lat, point.lng]} icon={icon} />
+					{obj.points.map((point, idx) => (
+						<Marker key={idx} position={[point.lat, point.lng]} icon={icon}>
+							{popup}
+						</Marker>
 					))}
 					<Polygon positions={polygonPoints} pathOptions={{ color: colour }} />
 				</>
@@ -83,7 +105,7 @@ export const ObjectMarkers = React.memo(() => {
 	const { data: serverObjects, isLoading, isError } = useServerObjectsQuery(currentJourney?.id);
 
 	const renderObjects = (objects: PlacedObject[], colour: string) =>
-		objects.map((obj) => <ObjectGeometry key={obj.id || Math.random()} obj={obj} colour={colour} />);
+		objects.map((obj, idx) => <ObjectGeometry key={obj.id || idx} obj={obj} colour={colour} />);
 
 	return (
 		<>

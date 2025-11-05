@@ -15,10 +15,12 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 		lastFetchTimeRef.current = null;
 	}, [currentReportId]);
 
-	return useQuery({
-		queryKey: ["serverSideObjects", currentReportId, lastFetchTimeRef],
+	return useQuery<ServerStateResponse>({
+		// eslint-disable-next-line @tanstack/query/exhaustive-deps
+		queryKey: ["serverSideObjects", currentReportId],
 		queryFn: async () => {
 			const qp = new URLSearchParams();
+
 			if (lastFetchTimeRef.current) {
 				qp.append("since", lastFetchTimeRef.current);
 			}
@@ -29,30 +31,31 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 			const res = await fetch(`/Map/GetObjects?${qp.toString()}`, {
 				method: "GET",
 			});
+
 			if (!res.ok) throw await extrapolateErrors(res);
 
-			const data = (await res.json()) as ServerStateResponse;
+			const newData = (await res.json()) as ServerStateResponse;
 
 			lastFetchTimeRef.current = new Date().toISOString();
 
-			return queryClient.setQueryData<ServerStateResponse>(
-				["serverSideObjects", currentReportId, lastFetchTimeRef],
-				(oldData: ServerStateResponse | undefined = []) => {
-					if (!oldData) return data;
-					const merged = [...oldData];
+			const oldData = queryClient.getQueryData<ServerStateResponse>(["serverSideObjects", currentReportId]);
 
-					data.forEach((newObj) => {
-						const index = merged.findIndex((obj) => obj.id === newObj.id);
-						if (index !== -1) {
-							merged[index] = newObj;
-						} else {
-							merged.push(newObj);
-						}
-					});
+			if (!oldData) return newData;
 
-					return merged;
+			const merged = [...oldData];
+
+			newData.forEach((newObj) => {
+				const index = merged.findIndex((obj) => obj.id === newObj.id);
+				if (index !== -1) {
+					merged[index] = newObj;
+				} else {
+					merged.push(newObj);
 				}
-			);
+			});
+
+			queryClient.setQueryData(["serverSideObjects", currentReportId], merged);
+
+			return merged;
 		},
 		refetchInterval: ONE_MINUTE,
 		refetchOnWindowFocus: false,

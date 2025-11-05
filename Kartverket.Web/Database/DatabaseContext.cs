@@ -88,7 +88,6 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
         return base.SaveChanges();
     }
 
-
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         UpdateTimestamps();

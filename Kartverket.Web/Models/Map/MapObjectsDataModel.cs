@@ -9,5 +9,5 @@ public class MapObjectsDataModel
     public Guid? TypeId { get; set; }
     public GeometryType GeometryType { get; set; }
     public string? Title { get; set; }
-    public List<MapPointDataModel> Points { get; set; } = [];
+    public MapPointDataModel[] Points { get; set; } = [];
 }

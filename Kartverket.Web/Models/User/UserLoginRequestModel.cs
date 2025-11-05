@@ -13,7 +13,4 @@ public class UserLoginRequestModel
     [MaxLength(100, ErrorMessage = "Passord kan ikke være lengre enn 100 tegn")]
     [DataType(DataType.Password)]
     public string Password { get; set; }
-
-
-    public string? ReturnUrl { get; set; } = "/";
 }
