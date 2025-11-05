@@ -63,11 +63,12 @@ public class UserController : Controller
 
     [HttpPost]
     [AllowAnonymous]
-    public async Task<IActionResult> Login(UserLoginRequestModel body,
-        [FromQuery(Name = "ReturnUrl")] string? returnUrl = "/")
+    public async Task<IActionResult> Login(UserLoginRequestModel body, string? returnUrl = null)
     {
         if (!ModelState.IsValid)
             return View(body);
+
+        returnUrl ??= Url.Content("~/");
 
         var user = await _userManager.FindByNameAsync(body.Username);
         if (user == null)
