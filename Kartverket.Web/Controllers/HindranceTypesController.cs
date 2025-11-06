@@ -1,23 +1,23 @@
 ﻿using Kartverket.Web.Database;
-using Kartverket.Web.Models.ObjectTypes.Response;
+using Kartverket.Web.Models.HindranceTypes.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Controllers;
 
-public class ObjectTypesController : Controller
+public class HindranceTypesController : Controller
 {
     private readonly DatabaseContext _dbContext;
 
-    public ObjectTypesController(DatabaseContext dbContext)
+    public HindranceTypesController(DatabaseContext dbContext)
     {
         _dbContext = dbContext;
     }
 
-    public async Task<ObjectTypesResponse> List()
+    public async Task<HindranceTypesResponse> List()
     {
-        var objectTypes = await _dbContext.HindranceTypes
-            .Select(ot => new ObjectTypesResponse.ObjectType
+        var hindranceTypes = await _dbContext.HindranceTypes
+            .Select(ot => new HindranceTypesResponse.HindranceType
             {
                 Id = ot.Id,
                 Name = ot.Name,
@@ -26,6 +26,6 @@ public class ObjectTypesController : Controller
             })
             .ToListAsync();
 
-        return new ObjectTypesResponse(objectTypes);
+        return new HindranceTypesResponse(hindranceTypes);
     }
 }

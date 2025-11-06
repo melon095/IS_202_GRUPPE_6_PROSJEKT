@@ -2,7 +2,7 @@
 
 namespace Kartverket.Web.Models.Map;
 
-public class MapObjectsDataModel
+public class MapHindrancesDataModel
 {
     public Guid Id { get; set; }
     public Guid ReportId { get; set; }

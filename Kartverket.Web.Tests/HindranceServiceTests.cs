@@ -20,17 +20,17 @@ public class HindranceServiceTests
     }
 
     [Fact]
-    public async Task CreateObject_ShouldCreateHindranceObject()
+    public async Task CreateHindrance_ShouldCreateHindrance()
     {
         // Arrange
         var reportId = Guid.NewGuid();
         var hindranceTypeId = Guid.NewGuid();
-        var title = "Test Object";
-        var description = "This is a test hindrance object.";
+        var title = "Test Hindrance";
+        var description = "This is a test hindrance.";
 
         // Act
         var result =
-            await _hindranceService.CreateObject(reportId, hindranceTypeId, title, description, GeometryType.Point);
+            await _hindranceService.CreateHindrance(reportId, hindranceTypeId, title, description, GeometryType.Point);
 
         // Assert
         Assert.NotNull(result);
@@ -42,7 +42,7 @@ public class HindranceServiceTests
     }
 
     [Fact]
-    public void UpdateObject_ShouldUpdateHindranceObject()
+    public void UpdateHindrance_ShouldUpdateHindrance()
     {
         // Arrange
         var obj = new HindranceObjectTable
@@ -58,7 +58,7 @@ public class HindranceServiceTests
         var newGeometryType = GeometryType.Area;
 
         // Act
-        _hindranceService.UpdateObject(obj, newHindranceTypeId, newTitle, newDescription, newGeometryType);
+        _hindranceService.UpdateHindrance(obj, newHindranceTypeId, newTitle, newDescription, newGeometryType);
 
         // Assert
         Assert.Equal(newTitle, obj.Title);
@@ -86,7 +86,7 @@ public class HindranceServiceTests
     }
 
     [Fact]
-    public void DeleteObject_ShouldDeleteHindranceObject()
+    public void DeleteHindrance_ShouldDeleteHindrance()
     {
         // Arrange
         var hindranceObjectId = Guid.NewGuid();
@@ -102,7 +102,7 @@ public class HindranceServiceTests
     }
 
     [Fact]
-    public async Task GetAllObjectsSince_ShouldReturnObjects()
+    public async Task GetAllHindrancesSince_ShouldReturnHindrance()
     {
         // Arrange
         var since = DateTime.UtcNow;
@@ -142,8 +142,8 @@ public class HindranceServiceTests
         _dbContext.ChangeTracker.Clear();
 
         // Act
-        var result1 = await _hindranceService.GetAllObjectsSince();
-        var result2 = await _hindranceService.GetAllObjectsSince(since);
+        var result1 = await _hindranceService.GetAllHindrancesSince();
+        var result2 = await _hindranceService.GetAllHindrancesSince(since);
 
         // Assert
         Assert.Equal(3, result1.Count);

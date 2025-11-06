@@ -9,7 +9,7 @@ public interface IHindranceService
 {
     Task<List<HindranceTypeTable>> GetAllTypes(CancellationToken cancellationToken = default);
 
-    Task<HindranceObjectTable> CreateObject(
+    Task<HindranceObjectTable> CreateHindrance(
         Guid reportId,
         Guid hindranceTypeId,
         string title,
@@ -17,8 +17,8 @@ public interface IHindranceService
         GeometryType geometryType,
         CancellationToken cancellationToken = default);
 
-    void UpdateObject(
-        HindranceObjectTable obj,
+    void UpdateHindrance(
+        HindranceObjectTable hindrance,
         Guid hindranceTypeId,
         string title,
         string description,
@@ -32,7 +32,7 @@ public interface IHindranceService
 
     void DeleteObject(Guid hindranceObjectId);
 
-    Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
+    Task<List<HindranceObjectTable>> GetAllHindrancesSince(DateTime? since = null, Guid? ignoreReportId = null,
         CancellationToken cancellationToken = default);
 }
 
@@ -53,7 +53,7 @@ public class HindranceService : IHindranceService
             .OrderBy(t => t.Name)
             .ToListAsync(cancellationToken);
 
-    public async Task<HindranceObjectTable> CreateObject(
+    public async Task<HindranceObjectTable> CreateHindrance(
         Guid reportId,
         Guid hindranceTypeId,
         string title,
@@ -77,18 +77,18 @@ public class HindranceService : IHindranceService
         return newObject;
     }
 
-    public void UpdateObject(
-        HindranceObjectTable obj,
+    public void UpdateHindrance(
+        HindranceObjectTable hindrance,
         Guid hindranceTypeId,
         string title,
         string description,
         GeometryType geometryType,
         CancellationToken cancellationToken = default)
     {
-        obj.Title = title;
-        obj.Description = description;
-        obj.HindranceTypeId = hindranceTypeId;
-        obj.GeometryType = geometryType;
+        hindrance.Title = title;
+        hindrance.Description = description;
+        hindrance.HindranceTypeId = hindranceTypeId;
+        hindrance.GeometryType = geometryType;
     }
 
     public async Task AddPoints(
@@ -124,7 +124,7 @@ public class HindranceService : IHindranceService
         _dbContext.HindranceObjects.Remove(obj);
     }
 
-    public Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
+    public Task<List<HindranceObjectTable>> GetAllHindrancesSince(DateTime? since = null, Guid? ignoreReportId = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbContext.HindranceObjects

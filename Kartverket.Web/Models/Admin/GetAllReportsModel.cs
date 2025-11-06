@@ -1,23 +1,22 @@
-﻿using Kartverket.Web.Controllers;
+﻿namespace Kartverket.Web.Models.Admin;
 
-namespace Kartverket.Web.Models.Admin
+public class GetAllReportsModel
 {
-    public class GetAllReportsModel
+    public int CurrentPage { get; set; }
+    public int TotalPages { get; set; }
+
+    public DateOnly SortDate { get; set; }
+
+    // List of reports
+    public List<MakeReportList> Reports { get; set; } = [];
+
+    public class MakeReportList
     {
-        public int CurrentPage { get; set; }
-        public int TotalPages { get; set; }
-        public DateOnly SortDate { get; set; }
-        // List of reports
-        public List<MakeReportList> Reports { get; set; } = [];
-        public class MakeReportList
-        {
-            public Guid Id { get; set; }
-            public string User { get; set; }
-            public string Title { get; set; }
-            public DateTime CreatedAt { get; set; }
+        public Guid Id { get; set; }
+        public string User { get; set; }
+        public string Title { get; set; }
+        public DateTime CreatedAt { get; set; }
 
-            public int TotalObjects { get; set; }
-
-        }
+        public int TotalHindrances { get; set; }
     }
 }

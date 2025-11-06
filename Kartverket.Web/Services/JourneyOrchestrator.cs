@@ -5,10 +5,10 @@ namespace Kartverket.Web.Services;
 
 public interface IJourneyOrchestrator
 {
-    Task<(Guid JourneyId, Guid ObjectId)> SyncObject(
+    Task<(Guid JourneyId, Guid HindranceId)> SyncHindrance(
         Guid userId,
         Guid? journeyId,
-        PlacedObjectDataModel body,
+        PlacedHindranceDataModel body,
         CancellationToken cancellationToken = default);
 
     Task<Guid> Finalise(
@@ -31,12 +31,12 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         _hindranceService = hindranceService;
     }
 
-    #region SyncObject
+    #region SyncHindrance
 
-    public async Task<(Guid JourneyId, Guid ObjectId)> SyncObject(
+    public async Task<(Guid JourneyId, Guid HindranceId)> SyncHindrance(
         Guid userId,
         Guid? journeyId,
-        PlacedObjectDataModel body,
+        PlacedHindranceDataModel body,
         CancellationToken cancellationToken = default)
     {
         var report = await GetOrCreateDraft(userId, journeyId, cancellationToken);
@@ -49,7 +49,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
             ? body.TypeId.Value
             : defaultTypeId;
 
-        var obj = await _hindranceService.CreateObject(
+        var obj = await _hindranceService.CreateHindrance(
             report.Id,
             hindranceType,
             $"Object - {DateTime.UtcNow:yyyy-MM-dd HH:mm}",
@@ -86,7 +86,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         return await _reportService.CreateDraft(userId, cancellationToken);
     }
 
-    #endregion
+    #endregion // SyncHindrance
 
     #region Finalise
 
@@ -108,17 +108,17 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         {
             if (objDto.Deleted)
             {
-                await DeleteObject(report, objDto.Id, cancellationToken);
+                await Delete(report, objDto.Id, cancellationToken);
                 continue;
             }
 
-            await ProcessObject(report, objDto, typeCache, defaultTypeId, cancellationToken);
+            await Process(report, objDto, typeCache, defaultTypeId, cancellationToken);
         }
 
         return report.Id;
     }
 
-    private async Task ProcessObject(
+    private async Task Process(
         ReportTable report,
         FinalizeJourneyObject objDto,
         Dictionary<Guid, HindranceTypeTable> typeCache,
@@ -132,7 +132,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         var obj = report.HindranceObjects.FirstOrDefault(o => o.Id == objDto.Id);
         if (obj is null)
         {
-            obj = await _hindranceService.CreateObject(
+            obj = await _hindranceService.CreateHindrance(
                 report.Id,
                 typeId,
                 objDto.Title,
@@ -144,7 +144,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         }
         else
         {
-            _hindranceService.UpdateObject(
+            _hindranceService.UpdateHindrance(
                 obj,
                 typeId,
                 objDto.Title,
@@ -173,7 +173,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
     }
 
 
-    private Task DeleteObject(ReportTable report, Guid objDtoId, CancellationToken cancellationToken)
+    private Task Delete(ReportTable report, Guid objDtoId, CancellationToken cancellationToken)
     {
         var obj = report.HindranceObjects.FirstOrDefault(o => o.Id == objDtoId);
         if (obj is { } o)

@@ -2,7 +2,7 @@ using Kartverket.Web.Database.Tables;
 
 namespace Kartverket.Web.Models.Map.Request;
 
-public class PlacedObjectDataModel
+public class PlacedHindranceDataModel
 {
     public List<PlacedPointDataModel> Points { get; set; } = [];
     public Guid? TypeId { get; set; } = null;

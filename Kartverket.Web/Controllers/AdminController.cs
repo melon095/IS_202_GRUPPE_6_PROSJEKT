@@ -64,7 +64,7 @@ public class AdminController : Controller
                 Id = report.Id,
                 Title = report.Title,
                 CreatedAt = report.CreatedAt,
-                TotalObjects = report.HindranceObjects.Count
+                TotalHindrances = report.HindranceObjects.Count
             });
 
 

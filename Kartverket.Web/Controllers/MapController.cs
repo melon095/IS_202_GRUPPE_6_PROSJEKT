@@ -38,8 +38,8 @@ public class MapController : Controller
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> SyncObject(
-        [FromBody] PlacedObjectDataModel body,
+    public async Task<IActionResult> SyncHindrance(
+        [FromBody] PlacedHindranceDataModel body,
         [FromQuery] Guid? journeyId = null,
         [FromServices] CancellationToken cancellationToken = default)
     {
@@ -50,15 +50,15 @@ public class MapController : Controller
 
         try
         {
-            var (resultJourneyId, resultObjectId) = await _unitOfWork.ExecuteInTransactionAsync(
-                () => _journeyOrchestrator.SyncObject(user.Id, journeyId, body, cancellationToken),
+            var (resultJourneyId, resultHindranceId) = await _unitOfWork.ExecuteInTransactionAsync(
+                () => _journeyOrchestrator.SyncHindrance(user.Id, journeyId, body, cancellationToken),
                 cancellationToken);
 
-            return Ok(new { JourneyId = resultJourneyId, ObjectId = resultObjectId });
+            return Ok(new { JourneyId = resultJourneyId, HindranceId = resultHindranceId });
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error syncing object for user {UserId}", user.Id);
+            _logger.LogError(ex, "Error syncing hindrance for user {UserId}", user.Id);
             return StatusCode(500, ex.Message);
         }
     }
@@ -95,14 +95,14 @@ public class MapController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<MapObjectsDataModel[]> GetObjects(
+    public async Task<MapHindrancesDataModel[]> GetHindrances(
         [FromQuery] DateTime? since = null,
         [FromQuery] Guid? reportId = null,
         [FromServices] CancellationToken cancellationToken = default)
     {
-        var mapObjects = await _hindranceService.GetAllObjectsSince(since, reportId, cancellationToken);
+        var mapHindrances = await _hindranceService.GetAllHindrancesSince(since, reportId, cancellationToken);
 
-        return mapObjects.Select(mo => new MapObjectsDataModel
+        return mapHindrances.Select(mo => new MapHindrancesDataModel
         {
             Id = mo.Id,
             ReportId = mo.ReportId,
