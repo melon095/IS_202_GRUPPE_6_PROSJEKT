@@ -11,9 +11,9 @@ import { ObjectMarkers } from "./ObjectMarkers";
 
 const mapCenter = [58.1465456, 7.9911451] satisfies LatLngTuple;
 
-const SHARED_TILE_PROPS = {
+const SHARED_TILE_PROPS: Partial<TileLayerProps> = {
 	attribution: `&copy; <a href="https://www.kartverket.no/">Kartverket</a>`,
-} satisfies TileLayerProps;
+};
 
 interface MapComponentProps {
 	children?: React.ReactNode;
@@ -23,6 +23,10 @@ export const MapComponent = ({ children }: MapComponentProps) => {
 	return (
 		<MapContainer center={mapCenter} zoom={13} style={{ height: "100vh", width: "100vw" }} zoomControl={false}>
 			<ZoomControl position="bottomleft" />
+			<MapClickHandler />
+			<GPSMarker />
+			{children}
+
 			<LayersControl>
 				<LayersControl.BaseLayer checked name="Topografisk">
 					<TileLayer
@@ -37,17 +41,12 @@ export const MapComponent = ({ children }: MapComponentProps) => {
 						url="https://cache.kartverket.no/v1/wmts/1.0.0/topograatone/default/webmercator/{z}/{y}/{x}.png"
 					/>
 				</LayersControl.BaseLayer>
-				<MapClickHandler />
 				<LayersControl.Overlay name="Objekter" checked>
 					<FeatureGroup>
 						<ObjectMarkers />
 					</FeatureGroup>
 				</LayersControl.Overlay>
 			</LayersControl>
-
-			<GPSMarker />
-
-			{children}
 		</MapContainer>
 	);
 };
