@@ -1,7 +1,15 @@
 import { LatLngTuple } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import React from "react";
-import { FeatureGroup, LayersControl, MapContainer, TileLayer, TileLayerProps, ZoomControl } from "react-leaflet";
+import {
+	FeatureGroup,
+	LayerGroup,
+	LayersControl,
+	MapContainer,
+	TileLayer,
+	TileLayerProps,
+	ZoomControl,
+} from "react-leaflet";
 
 import "../css/MapComponent.css";
 import "../css/zoom-control.css";
@@ -24,7 +32,6 @@ export const MapComponent = ({ children }: MapComponentProps) => {
 		<MapContainer center={mapCenter} zoom={13} style={{ height: "100vh", width: "100vw" }} zoomControl={false}>
 			<ZoomControl position="bottomleft" />
 			<MapClickHandler />
-			<GPSMarker />
 			{children}
 
 			<LayersControl>
@@ -45,6 +52,9 @@ export const MapComponent = ({ children }: MapComponentProps) => {
 					<FeatureGroup>
 						<ObjectMarkers />
 					</FeatureGroup>
+				</LayersControl.Overlay>
+				<LayersControl.Overlay name="GPS Markør" checked>
+					<GPSMarker />
 				</LayersControl.Overlay>
 			</LayersControl>
 		</MapContainer>
