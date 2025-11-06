@@ -1,15 +1,7 @@
 import { LatLngTuple } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import React from "react";
-import {
-	FeatureGroup,
-	LayerGroup,
-	LayersControl,
-	MapContainer,
-	TileLayer,
-	TileLayerProps,
-	ZoomControl,
-} from "react-leaflet";
+import { FeatureGroup, LayersControl, MapContainer, TileLayer, TileLayerProps, ZoomControl } from "react-leaflet";
 
 import "../css/MapComponent.css";
 import "../css/zoom-control.css";
