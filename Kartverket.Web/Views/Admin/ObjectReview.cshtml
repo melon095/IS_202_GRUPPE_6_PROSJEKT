@@ -12,59 +12,90 @@
 
                 <div class="column is-7">
                     <div class="box mb-4">
-                        <h2>Objects</h2>
-                        <table class="table table-bordered">
-                            <thead>
-                                <tr>
-                                    <th>Object Num</th>
-                                    <th>Markers</th>
-                                    <th>Edit</th>
-                                    <th>Statement</th>
-                                    <th>Accept/Deny</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var obj in Model.Objects)
-                                {
+                        @if(Model.SelectedObject != null)
+                        {
+                            <p class="is-size-3">Objekt: @Model.SelectedObject.Title</p>
+                            <br />
+                            <p>@Model.SelectedObject.Description</p>
+                            <br />
+                            <p>Status: Denne rapporten er @Model.SelectedObject.ObjectStatus</p>
+                            @using (Html.BeginForm("ObjectReview", "Admin", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", Model.Id)
+                                @Html.Hidden("objectId", Model.SelectedObject.Id)
+                                <div>
+                                    <div>
+
+                                        <div class="control">
+                                            <button type="submit" name="StatusObject" value="accept" class="button is-success">Aksepter</button>
+                                            <button type="submit" name="StatusObject" value="deny" class="button is-danger">Avslå</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p>Det er ingen objekter markert, velg en for å verifisere</p>
+                            <table class="table table-bordered">
+                                <thead>
                                     <tr>
-                                        <td>@obj.Title</td>
-                                        <td>@obj.Points.Count</td>
-                                        <td>
-                                            <a id="showIn"
-                                               asp-controller="Admin"
-                                               asp-action="ObjectReview"
-                                               asp-route-id="@Model.Id"
-                                               asp-route-objectId="@obj.Id">Details</a>
-                                        </td>
-                                        <td>@obj.ObjectStatus</td>
-                                        <td>
-                                            @using (Html.BeginForm("ObjectReview", "Admin", FormMethod.Post))
-                                            {
-                                                @Html.AntiForgeryToken()
-                                                @Html.Hidden("id", Model.Id)
-                                                @Html.Hidden("objectChangeId", obj.Id)
-                                                <div>
-                                                    <div>
-
-                                                        <div class="control">
-                                                            <button type="submit" name="StatusObject" value="accept" class="button is-success">Aksepter</button>
-                                                            <button type="submit" name="StatusObject" value="deny" class="button is-danger">Avslå</button>
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            }
-                                        </td>
+                                        <th>Objekt</th>
+                                        <th>Åpne</th>
+                                        <th>Status</th>
                                     </tr>
-                                }
+                                </thead>
+                                <tbody>
+                                    @foreach (var obj in Model.Objects)
+                                    {
+                                        <tr>
+                                            <td>@obj.Title</td>
+                                            <td>
+                                                <a id="showIn"
+                                                asp-controller="Admin"
+                                                asp-action="ObjectReview"
+                                                asp-route-id="@Model.Id"
+                                                asp-route-objectId="@obj.Id">Details</a>
+                                            </td>
+                                            <td>@obj.ObjectStatus</td>
+                                        </tr>
+                                    }
 
 
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        }
+
                     </div>
-
+                    
                     <div class="box">
                         <h2 class="title is-5">Tilbakemeldinger</h2>
+                        @*
+                        @using (Html.BeginForm("Comment", "Admin", FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <div>
+                                <div class="control">
+
+                                </div>
+                            </div>
+                        }
+                        *@
+                        <form asp-controller="Admin" asp-action="Comment" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="Id" value="@Model.Id" />
+                            <input type="hidden" name="objectId" value="@Model.SelectedObject.Id" />
+
+                            <div class="field">
+                                <label class="label">Tilbakemelding</label>
+                                <div class="control">
+                                    <textarea name="feedbackText" class="textarea" placeholder="Skriv tilbakemelding her" required></textarea>
+                                </div>
+                            </div>
+
+                        </form>
                         @if(Model.SelectedObject != null)
                         {
                             @foreach (var com in Model.SelectedObject.Feedbacks)
@@ -89,6 +120,43 @@
 
             </div>
         </div>
+        @if (Model.Objects.Count > 1 && Model.SelectedObject != null)
+        {
+            var objIndex = Model.Objects.FindIndex(o => o.Id == Model.SelectedObject.Id);
+            var objPrev = objIndex > 0 ? Model.Objects[objIndex - 1].Id : (Guid?)null;
+            var objNext = objIndex < Model.Objects.Count - 1 ? Model.Objects[objIndex + 1].Id : (Guid?)null;
+
+            <div class="buttons mt-4">
+                @if (objPrev.HasValue)
+                {
+                    <a class="button is-light"
+                    asp-controller="Admin"
+                    asp-action="ObjectReview"
+                    asp-route-id="@Model.Id"
+                    asp-route-objectId="@objPrev">
+                        Forrige objekt
+                    </a>
+                }
+                else
+                {
+                    <a class="button is-light" disable>Forrige objekt</a>
+                }
+                @if (objNext.HasValue)
+                {
+                    <a class="button is-light"
+                    asp-controller="Admin"
+                    asp-action="ObjectReview"
+                    asp-route-id="@Model.Id"
+                    asp-route-objectId="@objNext">
+                        Neste objekt
+                    </a>
+                }
+                else
+                {
+                    <a class="button is-light" disable> Neste objekt</a>
+                }
+            </div>
+        }
     </section>
 </body>
 
@@ -173,3 +241,4 @@
         });
     </script>
 }
+

@@ -139,7 +139,7 @@ public class AdminController : Controller
 
     
     [HttpGet]
-    public IActionResult ObjectReview(Guid id, Guid? objectID)
+    public IActionResult ObjectReview(Guid id, [FromQuery] Guid? objectID)
     {
         var report = _dbContext.Reports
             .Include(r => r.HindranceObjects)
@@ -195,7 +195,7 @@ public class AdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult ObjectReview(Guid id, Guid objectChangeID, string statusObject)
+    public IActionResult ObjectReview(Guid id, Guid objectId, string statusObject)
     {
         var report = _dbContext.Reports
             .Include(r => r.HindranceObjects)
@@ -206,7 +206,7 @@ public class AdminController : Controller
         if (report == null)
             return View("NoObjectsErr");
 
-        var selectedObject = report.HindranceObjects.SingleOrDefault(x => x.Id == objectChangeID);
+        var selectedObject = report.HindranceObjects.SingleOrDefault(x => x.Id == objectId);
         if (selectedObject == null)
         {
             TempData["Error"] = "Objekt ikke funnet";
@@ -223,10 +223,18 @@ public class AdminController : Controller
 
             default:
                 TempData["Error"] = "Ugyldig status";
-                return RedirectToAction("ObjectReview", new { id, objectChangeID });
+                return RedirectToAction("ObjectReview", new { id, objectId });
         }
 
         var reportVerify = report.HindranceObjects;
+
+        /*
+            Hvis alle objekter er "draft" skal rapporten ikke være godjkent eller closed
+
+            Dersom alle objekter er resolved eller closed kan rapporten bli godkjent
+        Dersom alle objekter er resolved kan rapporten bli godkjent
+        dersom alle objekter er closed/rejected skal rapporten bli rejected
+         */
 
         if(reportVerify.All(o => o.ReviewStatus == ReviewStatus.Resolved))
         {
@@ -244,7 +252,7 @@ public class AdminController : Controller
         _dbContext.SaveChanges();
 
         TempData["Success"] = $"Objekt status endret til {selectedObject.ReviewStatus}";
-        return RedirectToAction("ObjectReview", new {id, objectChangeID});    
+        return RedirectToAction("ObjectReview", new {id, objectId});    
     }
 
     [HttpPost]
