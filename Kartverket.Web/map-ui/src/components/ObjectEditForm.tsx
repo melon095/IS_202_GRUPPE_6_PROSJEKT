@@ -47,7 +47,6 @@ export const ObjectEditForm = ({ object, onSave, onCancel }: ObjectEditFormProps
 						placeholder={t("objectEditForm.form.description.placeholder")}
 						maxLength={100}
 						autoComplete="off"
-						rows={3}
 					/>
 				</div>
 			</div>

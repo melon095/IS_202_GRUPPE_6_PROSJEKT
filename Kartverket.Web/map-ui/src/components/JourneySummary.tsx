@@ -1,4 +1,3 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 
@@ -8,6 +7,7 @@ import "../css/JourneySummary.css";
 import { useTranslation } from "../i18n";
 import { Journey, PlacedObject, ResponseError } from "../types";
 import { Icon } from "./Icon";
+import { IconFlex } from "./IconFlex";
 import { ObjectEditForm } from "./ObjectEditForm";
 
 const DELETE_TIMEOUT = 2000;
@@ -89,20 +89,24 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 			<div
 				className="modal-background"
 				style={{
-					backgroundColor: "rgba(0, 0, 0, 0.5)",
+					backgroundColor: "rgba(20, 20, 20, 0.75)",
 				}}
 			></div>
 			<div
-				className="modal-content"
+				className="modal-content box"
 				style={{
-					maxHeight: "90vh",
-					overflowY: "auto",
+					height: "100vh",
 					width: "100vw",
+					maxHeight: "100vh",
+					maxWidth: "100vw",
+					overflowY: "auto",
 					marginTop: "env(safe-area-inset-top)",
+					display: "flex",
+					flexDirection: "column",
+					padding: "1.5rem",
 				}}
 			>
-				{/* Main container */}
-				<div className="box is-tablet">
+				<div style={{ flexShrink: 0, marginBottom: "1rem" }}>
 					{isError && errors && (
 						<div className="notification is-danger">
 							<h4 className="title is-size-5">{t("journeySummary.errors.title")}</h4>
@@ -160,201 +164,186 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 										placeholder={t("journeySummary.form.journeyDescription.placeholder")}
 										value={journeyDescription}
 										onChange={(e) => setJourneyDescription(e.target.value)}
-										rows={2}
+										autoComplete="off"
 									/>
 								</div>
 							</div>
 						</div>
 					</div>
+				</div>
 
-					<div>
-						<h3 className="subtitle is-size-5-tablet">{t("journeySummary.objects.title")}</h3>
-						{journey.objects.length === 0 ? (
-							<p>{t("journeySummary.objects.emptyState")}</p>
-						) : (
-							<div className="table-container">
-								<table className="table is-fullwidth is-striped is-hoverable is-narrow">
-									<thead>
-										<tr>
-											<th className="is-size-6-tablet">
-												{t("journeySummary.objects.table.headers.type")}
-											</th>
-											<th className="is-size-6-tablet">
-												{t("journeySummary.objects.table.headers.title")}
-											</th>
-											<th className="is-size-6-tablet">
-												{t("journeySummary.objects.table.headers.description")}
-											</th>
-											<th className="is-size-6-tablet">
-												{t("journeySummary.objects.table.headers.points")}
-											</th>
-											<th className="is-size-6-tablet">
-												{t("journeySummary.objects.table.headers.created")}
-											</th>
-											<th className="is-size-6-tablet">
-												{t("journeySummary.objects.table.headers.deleted")}
-											</th>
-											<th className="is-size-6-tablet"></th>
-										</tr>
-									</thead>
-									<tbody>
-										{journey.objects.map((obj) => {
-											const objectType = obj.typeId ? getObjectTypeById(obj.typeId) : null;
-											const isEditing = editingObjectId === obj.id;
+				<div style={{ flex: 1, overflowY: "auto", marginBottom: "1rem" }}>
+					<h3 className="subtitle is-size-5-tablet">{t("journeySummary.objects.title")}</h3>
+					{journey.objects.length === 0 ? (
+						<p>{t("journeySummary.objects.emptyState")}</p>
+					) : (
+						<div className="table-container">
+							<table className="table is-fullwidth is-striped is-hoverable is-narrow">
+								<thead>
+									<tr>
+										<th className="is-size-6-tablet">
+											{t("journeySummary.objects.table.headers.type")}
+										</th>
+										<th className="is-size-6-tablet">
+											{t("journeySummary.objects.table.headers.title")}
+										</th>
+										<th className="is-size-6-tablet">
+											{t("journeySummary.objects.table.headers.description")}
+										</th>
+										<th className="is-size-6-tablet">
+											{t("journeySummary.objects.table.headers.points")}
+										</th>
+										<th className="is-size-6-tablet">
+											{t("journeySummary.objects.table.headers.created")}
+										</th>
+										<th className="is-size-6-tablet">
+											{t("journeySummary.objects.table.headers.deleted")}
+										</th>
+										<th className="is-size-6-tablet"></th>
+									</tr>
+								</thead>
+								<tbody>
+									{journey.objects.map((obj) => {
+										const objectType = obj.typeId ? getObjectTypeById(obj.typeId) : null;
+										const isEditing = editingObjectId === obj.id;
 
-											if (isEditing) {
-												return (
-													<tr key={obj.id}>
-														<td colSpan={7}>
-															<ObjectEditForm
-																key={obj.id}
-																object={obj}
-																onSave={(updates) => handleSaveObject(obj.id!, updates)}
-																onCancel={() => setEditingObjectId(null)}
-															/>
-														</td>
-													</tr>
-												);
-											}
-
+										if (isEditing) {
 											return (
 												<tr key={obj.id}>
-													<td>
-														{objectType ? (
-															<div className="is-flex is-align-items-center">
-																<Icon
-																	src={objectType.primaryImageUrl}
-																	alt={objectType.name}
-																/>
-																<span className="is-size-6-tablet">
-																	{objectType.name}
-																</span>
-															</div>
-														) : (
-															<span className="is-size-6-tablet">
-																{obj.typeId || "-"}
-															</span>
-														)}
-													</td>
-													<td className="is-size-6-tablet">
-														<span>
-															{obj.title || (
-																<span className="has-text-grey-light">…</span>
-															)}
-														</span>
-													</td>
-													<td className="is-size-6-tablet">
-														<span className="is-ellipsis">
-															{obj.description || (
-																<span className="has-text-grey-light">…</span>
-															)}
-														</span>
-													</td>
-													<td className="is-size-6-tablet">{obj.points.length}</td>
-													<td className="is-size-6-tablet">{formatTime(obj.createdAt)}</td>
-													<td className="is-size-6-tablet">{obj.deleted ? "Yes" : "No"}</td>
-													<td>
-														<button
-															className="button is-link is-medium"
-															onClick={() => handleEditObject(obj.id!)}
-															style={{ marginBottom: "0.5em" }}
-														>
-															<span className="icon is-medium">
-																<FontAwesomeIcon icon={["fas", "edit"]} />
-															</span>
-															<span>{t("journeySummary.actions.edit")}</span>
-														</button>
-
-														{obj.deleted ? (
-															<button
-																className="button is-success is-medium ml-2"
-																onClick={() =>
-																	updateObjectinFinishedJourney(obj.id!, {
-																		deleted: false,
-																	})
-																}
-																style={{ marginBottom: "0.5em" }}
-															>
-																<span className="icon is-medium">
-																	<FontAwesomeIcon icon={["fas", "undo"]} />
-																</span>
-																<span>{t("journeySummary.actions.restore")}</span>
-															</button>
-														) : (
-															<button
-																className={`button is-medium ml-2 ${
-																	deleteConfirmId === obj.id
-																		? "is-danger"
-																		: "is-warning"
-																}`}
-																onClick={() => {
-																	if (deleteConfirmId === obj.id) {
-																		updateObjectinFinishedJourney(obj.id!, {
-																			deleted: true,
-																		});
-																	} else {
-																		setDeleteConfirmId(obj.id!);
-																	}
-																}}
-																style={{ marginBottom: "0.5em" }}
-															>
-																<span className="icon is-medium">
-																	<FontAwesomeIcon icon={["fas", "trash"]} />
-																</span>
-																<span>
-																	{deleteConfirmId === obj.id
-																		? t("journeySummary.actions.deleteConfirm")
-																		: t("journeySummary.actions.delete")}
-																</span>
-															</button>
-														)}
+													<td colSpan={7}>
+														<ObjectEditForm
+															key={obj.id}
+															object={obj}
+															onSave={(updates) => handleSaveObject(obj.id!, updates)}
+															onCancel={() => setEditingObjectId(null)}
+														/>
 													</td>
 												</tr>
 											);
-										})}
-									</tbody>
-								</table>
-							</div>
-						)}
-					</div>
+										}
 
+										return (
+											<tr key={obj.id}>
+												<td>
+													{objectType ? (
+														<div className="is-flex is-align-items-center">
+															<Icon
+																src={objectType.primaryImageUrl}
+																alt={objectType.name}
+															/>
+															<span className="is-size-6-tablet">{objectType.name}</span>
+														</div>
+													) : (
+														<span className="is-size-6-tablet">{obj.typeId || "-"}</span>
+													)}
+												</td>
+												<td className="is-size-6-tablet">
+													<span>
+														{obj.title || <span className="has-text-grey-light">…</span>}
+													</span>
+												</td>
+												<td className="is-size-6-tablet">
+													<span className="is-ellipsis">
+														{obj.description || (
+															<span className="has-text-grey-light">…</span>
+														)}
+													</span>
+												</td>
+												<td className="is-size-6-tablet">{obj.points.length}</td>
+												<td className="is-size-6-tablet">{formatTime(obj.createdAt)}</td>
+												<td className="is-size-6-tablet">{obj.deleted ? "Yes" : "No"}</td>
+												<td>
+													<IconFlex
+														as="button"
+														onClick={() => handleEditObject(obj.id!)}
+														icon={["fas", "edit"]}
+														className="is-link is-medium"
+														style={{ marginBottom: "0.5em" }}
+														fullWidth
+													>
+														{t("journeySummary.actions.edit")}
+													</IconFlex>
+
+													{obj.deleted ? (
+														<IconFlex
+															as="button"
+															onClick={() =>
+																updateObjectinFinishedJourney(obj.id!, {
+																	deleted: false,
+																})
+															}
+															icon={["fas", "undo"]}
+															className="is-success is-medium"
+															style={{ marginBottom: "0.5em" }}
+															fullWidth
+														>
+															{t("journeySummary.actions.restore")}
+														</IconFlex>
+													) : (
+														<IconFlex
+															as="button"
+															onClick={() => {
+																if (deleteConfirmId === obj.id) {
+																	updateObjectinFinishedJourney(obj.id!, {
+																		deleted: true,
+																	});
+																} else {
+																	setDeleteConfirmId(obj.id!);
+																}
+															}}
+															icon={["fas", "trash"]}
+															className={`is-medium ${
+																deleteConfirmId === obj.id ? "is-danger" : "is-warning"
+															}`}
+															style={{ marginBottom: "0.5em" }}
+															fullWidth
+														>
+															{deleteConfirmId === obj.id
+																? t("journeySummary.actions.deleteConfirm")
+																: t("journeySummary.actions.delete")}
+														</IconFlex>
+													)}
+												</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+					)}
+				</div>
+
+				<div style={{ flexShrink: 0 }}>
 					{isSubmitting && <progress className="progress is-small is-primary" max="100" />}
 
 					<div className="mt-4 is-flex is-flex-direction-column-tablet is-justify-content-space-between is-align-items-stretch">
-						<button
+						<IconFlex
+							as="button"
 							onClick={handleFinalize}
 							disabled={
 								isSubmitting || (journey.objects.length > 0 && !navigator.onLine) || !journeyTitle
 							}
-							className="button is-primary is-large is-fullwidth"
+							className="is-primary is-large"
+							fullWidth
+							icon={
+								isSubmitting
+									? { icon: ["fas", "spinner"], spinPulse: true }
+									: { icon: ["fas", "check"] }
+							}
 						>
-							{isSubmitting ? (
-								<>
-									<span className="icon is-large">
-										<FontAwesomeIcon icon={["fas", "spinner"]} spinPulse />
-									</span>
-									<span>{t("journeySummary.actions.submitting")}</span>
-								</>
-							) : (
-								<>
-									<span className="icon is-large">
-										<FontAwesomeIcon icon={["fas", "check"]} />
-									</span>
-									<span>{t("journeySummary.actions.submit")}</span>
-								</>
-							)}
-						</button>
+							{isSubmitting ? t("journeySummary.actions.submitting") : t("journeySummary.actions.submit")}
+						</IconFlex>
 
-						<button
+						<IconFlex
+							as="button"
 							onClick={onClose}
 							disabled={isSubmitting}
-							className="button is-light is-large is-fullwidth"
+							className="is-light is-large"
+							fullWidth
+							icon={["fas", "times"]}
 						>
-							<span className="icon is-large">
-								<FontAwesomeIcon icon={["fas", "times"]} />
-							</span>
-							<span>{t("journeySummary.actions.close")}</span>
-						</button>
+							{t("journeySummary.actions.close")}
+						</IconFlex>
 					</div>
 				</div>
 			</div>

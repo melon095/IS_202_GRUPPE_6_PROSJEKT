@@ -130,7 +130,7 @@ if (!app.Environment.IsDevelopment())
 
 {
     var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
     await DatabaseContextSeeding.Seed(db);
 }
 
@@ -146,7 +146,6 @@ if (!app.Environment.IsDevelopment())
         }
     }
 }
-
 
 app.UseHttpsRedirection();
 app.UseRouting();
@@ -174,8 +173,3 @@ if (app.Environment.IsDevelopment())
 app.Run();
 
 #endregion // App
-
-// Level 1 cache on localStorage
-// Level 2 cache on server
-
-// Mismatching cache!

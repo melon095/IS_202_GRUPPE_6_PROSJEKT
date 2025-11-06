@@ -4,7 +4,7 @@ import { useGeolocated } from "react-geolocated";
 import { Marker } from "react-leaflet";
 
 export const GPSMarker = () => {
-	const { coords, isGeolocationAvailable, isGeolocationEnabled } = useGeolocated({
+	const { coords, isGeolocationEnabled } = useGeolocated({
 		positionOptions: {
 			enableHighAccuracy: true,
 		},
@@ -29,7 +29,7 @@ export const GPSMarker = () => {
 		});
 	}, [coords]);
 
-	if (!isGeolocationAvailable || !isGeolocationEnabled) {
+	if (!isGeolocationEnabled) {
 		return null;
 	}
 

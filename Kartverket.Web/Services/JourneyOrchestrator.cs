@@ -54,6 +54,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
             hindranceType,
             $"Object - {DateTime.UtcNow:yyyy-MM-dd HH:mm}",
             string.Empty,
+            body.GeometryType,
             cancellationToken);
 
         report.HindranceObjects.Add(obj);
@@ -136,6 +137,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
                 typeId,
                 objDto.Title,
                 objDto.Description,
+                objDto.GeometryType,
                 cancellationToken);
 
             report.HindranceObjects.Add(obj);
@@ -147,6 +149,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
                 typeId,
                 objDto.Title,
                 objDto.Description,
+                objDto.GeometryType,
                 cancellationToken);
         }
 

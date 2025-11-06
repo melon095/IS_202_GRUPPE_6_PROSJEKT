@@ -2,9 +2,9 @@
 
 public enum GeometryType
 {
-    Point,
-    Line,
-    Polygon
+    Point = 1,
+    Line = 2,
+    Area = 3
 }
 
 public class HindranceTypeTable : BaseModel

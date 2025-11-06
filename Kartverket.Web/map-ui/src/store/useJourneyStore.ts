@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { Journey, JourneyState, PlacedObject, Point } from "../types";
+import { Journey, JourneyState, PlacedObject, PlaceMode, Point } from "../types";
 
 export interface JourneyFunctions {
 	startJourney: () => void;
@@ -9,7 +9,7 @@ export interface JourneyFunctions {
 	endJourney: () => void;
 	deleteEndJourney: () => void;
 	updateFinishedJourneyMeta: (updates: Partial<Journey>) => void;
-	startPlacingObjects: () => void;
+	setPlaceMode: (mode: PlaceMode) => void;
 	stopPlacingObject: (typeId?: string | undefined) => PlacedObject | undefined;
 	addPointToCurrentObject: (point: Point) => void;
 	updateObjectinFinishedJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
@@ -25,7 +25,7 @@ export const useJourneyStore = create<JourneyStore>()(
 		(set, get) => ({
 			currentJourney: null,
 			finishedJourney: null,
-			isPlacingObject: false,
+			placeMode: PlaceMode.None,
 			currentObjectPoints: [],
 
 			startJourney: () => {
@@ -81,14 +81,14 @@ export const useJourneyStore = create<JourneyStore>()(
 				set({ finishedJourney: updatedJourney });
 			},
 
-			startPlacingObjects: () => {
-				set({ isPlacingObject: true, currentObjectPoints: [] });
+			setPlaceMode: (mode) => {
+				set({ placeMode: mode });
 			},
 
 			stopPlacingObject: (typeId) => {
-				const { currentJourney, currentObjectPoints } = get();
+				const { currentJourney, currentObjectPoints, placeMode } = get();
 				if (!currentJourney || currentObjectPoints.length === 0) {
-					set({ isPlacingObject: false, currentObjectPoints: [] });
+					set({ placeMode: PlaceMode.None, currentObjectPoints: [] });
 
 					return;
 				}
@@ -97,6 +97,7 @@ export const useJourneyStore = create<JourneyStore>()(
 					id: globalThis.crypto.randomUUID(),
 					points: currentObjectPoints,
 					typeId: typeId,
+					geometryType: placeMode,
 					createdAt: new Date().toISOString(),
 					deleted: false,
 				};
@@ -108,7 +109,7 @@ export const useJourneyStore = create<JourneyStore>()(
 
 				set({
 					currentJourney: updatedJourney,
-					isPlacingObject: false,
+					placeMode: PlaceMode.None,
 					currentObjectPoints: [],
 				});
 
@@ -116,7 +117,16 @@ export const useJourneyStore = create<JourneyStore>()(
 			},
 
 			addPointToCurrentObject: (point) => {
+				const { placeMode, currentJourney } = get();
+				if (placeMode === PlaceMode.None || !currentJourney) return;
+
 				point.createdAt = new Date().toISOString();
+
+				if (placeMode == PlaceMode.Point) {
+					return set(() => ({
+						currentObjectPoints: [point],
+					}));
+				}
 
 				set((state) => ({
 					currentObjectPoints: [...state.currentObjectPoints, point],

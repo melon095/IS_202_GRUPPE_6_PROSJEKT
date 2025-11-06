@@ -4,13 +4,19 @@
 		"objects_count": "Objekter plassert",
 		"point_count": "Punkter plassert",
 		"syncing": "Synkroniserer",
+		"placing_point": "Plasseringsmodus - Punkt",
+		"placing_line": "Plasseringsmodus - Linje",
+		"placing_area": "Plasseringsmodus - Område",
 		"buttons": {
 			"start": "Start reise",
 			"place": "Plasser objekt",
 			"end": "Avslutt reise",
 			"stop": "Bekreft ({{count}})",
-			"clear": "Tøm reise",
-			"my_location": "Følg min posisjon"
+			"cancel": "Kanseller",
+			"my_location": "Følg min posisjon",
+			"place_point": "Plasser Punkt",
+			"place_line": "Plasser Linje",
+			"place_area": "Plasser Område"
 		}
 	},
 	"journeySummary": {
@@ -84,7 +90,7 @@
 			"message": "Laster inn objekttyper..."
 		},
 		"error": {
-			"title": "Klarte ikke å laste inn objekttyper"
+			"message": "Klarte ikke å laste inn objekttyper"
 		},
 		"actions": {
 			"add": "Legg til",

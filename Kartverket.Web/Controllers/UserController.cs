@@ -1,14 +1,11 @@
 ﻿using Kartverket.Web.AuthPolicy;
-using System.Security.Claims;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.User;
 using Kartverket.Web.Models.User.Request;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Controllers;
 
@@ -20,7 +17,7 @@ public class UserController : Controller
     private readonly SignInManager<UserTable> _signInManager;
     private readonly RoleManager<RoleTable> _roleManager;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    
+
     public UserController(ILogger<UserController> logger,
         DatabaseContext dbContext,
         UserManager<UserTable> userManager,
@@ -35,25 +32,23 @@ public class UserController : Controller
         _roleManager = roleManager;
         _httpContextAccessor = httpContextAccessor;
     }
-    
-    [HttpGet, AllowAnonymous]
+
+    [HttpGet]
+    [AllowAnonymous]
     public IActionResult Login(string? returnUrl = null)
     {
-        UserLoginRequestModel model = new()
-        {
-            ReturnUrl = returnUrl ?? Url.Content("~/")
-        };
-        
+        UserLoginRequestModel model = new();
+        ViewData["ReturnUrl"] = returnUrl;
+
         return View(model);
     }
-    
-    [HttpGet, AllowAnonymous]
-    public IActionResult AccessDenied()
-    {
-        return View();
-    }
 
-    [HttpGet, Authorize]
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult AccessDenied() => View();
+
+    [HttpGet]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
@@ -61,54 +56,53 @@ public class UserController : Controller
 
         return RedirectToAction("Index", "Home");
     }
-    
-    [HttpGet, AllowAnonymous]
-    public IActionResult Register()
-    {
-        return View();
-    }
 
-    [HttpPost, AllowAnonymous]
-    public async Task<IActionResult> Login(UserLoginRequestModel body)
+    [HttpGet]
+    [AllowAnonymous]
+    public IActionResult Register() => View();
+
+    [HttpPost]
+    [AllowAnonymous]
+    public async Task<IActionResult> Login(UserLoginRequestModel body, string? returnUrl = null)
     {
         if (!ModelState.IsValid)
-        {
             return View(body);
-        }
-        
+
+        returnUrl ??= Url.Content("~/");
+
         var user = await _userManager.FindByNameAsync(body.Username);
         if (user == null)
         {
             ModelState.AddModelError(string.Empty, "Ugyldig brukernavn eller passord.");
             return View(body);
         }
-        
-        var result = await _signInManager.PasswordSignInAsync(body.Username, body.Password, false, lockoutOnFailure: true);
+
+        var result = await _signInManager.PasswordSignInAsync(body.Username, body.Password, false, true);
         if (!result.Succeeded)
         {
             ModelState.AddModelError(string.Empty, "Ugyldig brukernavn eller passord.");
             return View(body);
         }
-        
+
         if (result.IsLockedOut)
         {
             _logger.LogWarning("Bruker {Username} er låst ute.", body.Username);
             return View("Lockout");
         }
-        
+
         _httpContextAccessor.HttpContext.Session.SetString("Username", body.Username);
         _httpContextAccessor.HttpContext.Session.SetString("UserId", user.Id.ToString());
 
         _logger.LogInformation("Bruker {Username} logget inn.", body.Username);
-        if (!string.IsNullOrEmpty(body.ReturnUrl) && Url.IsLocalUrl(body.ReturnUrl))
-        {
-            return LocalRedirect(body.ReturnUrl);
-        }
+        if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            return LocalRedirect(returnUrl);
 
         return RedirectToAction("Index", "Home");
     }
 
-    [HttpPost, AllowAnonymous, ValidateAntiForgeryToken]
+    [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(UserRegisterRequestModel model)
     {
         if (!ModelState.IsValid)
@@ -117,51 +111,43 @@ public class UserController : Controller
         var user = new UserTable
         {
             UserName = model.Username,
-            IsActive = true,
+            IsActive = true
         };
-        
+
         var result = await _userManager.CreateAsync(user, model.Password);
         if (!result.Succeeded)
         {
-            foreach (var error in result.Errors)
-            {
-                ModelState.AddModelError(string.Empty, error.Description);
-            }
-        
+            foreach (var error in result.Errors) ModelState.AddModelError(string.Empty, error.Description);
+
             return View(model);
         }
-        
+
         await _userManager.AddToRoleAsync(user, RoleValue.User);
-        await _signInManager.SignInAsync(user, isPersistent: false);
-        
+        await _signInManager.SignInAsync(user, false);
+
         _logger.LogInformation("Bruker {Username} opprettet en ny konto.", model.Username);
-        
+
         _httpContextAccessor.HttpContext.Session.SetString("Username", model.Username);
         _httpContextAccessor.HttpContext.Session.SetString("UserId", user.Id.ToString());
-        
+
         return RedirectToAction("Index", "Home");
     }
 
-    [HttpGet("User/SetRole/{role}"), Authorize(Policy = RoleValue.AtLeastUser)]
+    [HttpGet("User/SetRole/{role}")]
+    [Authorize(Policy = RoleValue.AtLeastUser)]
     public async Task<IActionResult> SetRole([FromRoute] string role)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user == null)
-        {
-            return NotFound();
-        }
-        
-        if ((await _roleManager.RoleExistsAsync(role)) == false)
-        {
-            return NotFound();
-        }
-        
+        if (user == null) return NotFound();
+
+        if (!await _roleManager.RoleExistsAsync(role)) return NotFound();
+
         var currentRoles = await _userManager.GetRolesAsync(user);
         await _userManager.RemoveFromRolesAsync(user, currentRoles);
         await _userManager.AddToRoleAsync(user, role);
 
-        await _signInManager.SignInAsync(user, isPersistent: false);
-        
+        await _signInManager.SignInAsync(user, false);
+
         return RedirectToAction("Index", "Home");
     }
 }

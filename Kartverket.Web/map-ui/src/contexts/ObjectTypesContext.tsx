@@ -7,7 +7,7 @@ interface ObjectTypesContextType {
 	objectTypes: ObjectType[];
 	isLoading: boolean;
 	error: Error | null;
-	getObjectTypeById: (id: string) => ObjectType | undefined;
+	getObjectTypeById: (id?: string) => ObjectType | undefined;
 	getObjectTypeByName: (name: string) => ObjectType | undefined;
 }
 
@@ -36,11 +36,15 @@ export const ObjectTypesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 		refetchOnMount: false,
 	});
 
-	const getObjectTypeById = (id: string) => {
+	const getObjectTypeById = (id?: string) => {
+		if (!id) return undefined;
+
 		return objectTypes.find((type) => type.id === id);
 	};
 
-	const getObjectTypeByName = (name: string) => {
+	const getObjectTypeByName = (name?: string) => {
+		if (!name) return undefined;
+
 		return objectTypes.find((type) => type.name === name);
 	};
 

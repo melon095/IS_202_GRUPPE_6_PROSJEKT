@@ -1,9 +1,9 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useState } from "react";
 
 import { useObjectTypes } from "../contexts/ObjectTypesContext";
 import { useTranslation } from "../i18n";
 import { Icon } from "./Icon";
+import { IconFlex } from "./IconFlex";
 
 interface ObjectTypeSelectorProps {
 	onSelect: (typeId?: string) => void;
@@ -22,12 +22,9 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 	if (isLoading) {
 		return (
 			<div className="box">
-				<div className="has-text-centered">
-					<span className="icon">
-						<FontAwesomeIcon icon={["fas", "spinner"]} spin />
-					</span>
-					<p>{t("objectTypeSelector.loading.message")}</p>
-				</div>
+				<IconFlex as="div" icon={{ icon: ["fas", "spinner"], spin: true }} className="has-text-centered">
+					<p className="is-size-5">{t("objectTypeSelector.loading.message")}</p>
+				</IconFlex>
 			</div>
 		);
 	}
@@ -35,12 +32,9 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 	if (error) {
 		return (
 			<div className="box">
-				<div className="notification is-danger is-light">
-					<p>
-						<FontAwesomeIcon icon={["fas", "triangle-exclamation"]} />{" "}
-						{t("objectTypeSelector.error.message")}
-					</p>
-				</div>
+				<IconFlex as="div" className="notification is-danger is-light" icon={["fas", "exclamation"]}>
+					<p className="is-size-5">{t("objectTypeSelector.error.message")}</p>
+				</IconFlex>
 
 				<div className="field is-grouped">
 					<div className="control">

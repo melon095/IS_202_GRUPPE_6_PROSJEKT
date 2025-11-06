@@ -29,7 +29,8 @@ public class HindranceServiceTests
         var description = "This is a test hindrance object.";
 
         // Act
-        var result = await _hindranceService.CreateObject(reportId, hindranceTypeId, title, description);
+        var result =
+            await _hindranceService.CreateObject(reportId, hindranceTypeId, title, description, GeometryType.Point);
 
         // Assert
         Assert.NotNull(result);
@@ -48,19 +49,22 @@ public class HindranceServiceTests
         {
             Title = "Old Title",
             Description = "Old Description",
-            HindranceTypeId = Guid.NewGuid()
+            HindranceTypeId = Guid.NewGuid(),
+            GeometryType = GeometryType.Point
         };
         var newHindranceTypeId = Guid.NewGuid();
         var newTitle = "New Title";
         var newDescription = "New Description";
+        var newGeometryType = GeometryType.Area;
 
         // Act
-        _hindranceService.UpdateObject(obj, newHindranceTypeId, newTitle, newDescription);
+        _hindranceService.UpdateObject(obj, newHindranceTypeId, newTitle, newDescription, newGeometryType);
 
         // Assert
         Assert.Equal(newTitle, obj.Title);
         Assert.Equal(newDescription, obj.Description);
         Assert.Equal(newHindranceTypeId, obj.HindranceTypeId);
+        Assert.Equal(newGeometryType, obj.GeometryType);
     }
 
     [Fact]
