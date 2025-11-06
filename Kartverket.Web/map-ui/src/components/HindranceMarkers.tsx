@@ -3,13 +3,13 @@ import L from "leaflet";
 import React, { useMemo } from "react";
 import { Marker, Polygon, Polyline, Popup, useMap } from "react-leaflet";
 
+import { useHindranceTypes } from "../contexts/HindranceTypesContext";
 import { useJourney } from "../contexts/JourneyContext";
-import { useObjectTypes } from "../contexts/ObjectTypesContext";
-import { useServerObjectsQuery } from "../hooks/useServerObjectsQuery";
-import { Colour, PlacedObject, PlaceMode, PlaceModeToString } from "../types";
+import { useServerHindranceQuery } from "../hooks/useServerHindrancesQuery";
+import { Colour, PlacedHindrance, PlaceMode, PlaceModeToString } from "../types";
 
-interface ObjectGeometryProps {
-	obj: PlacedObject;
+interface HindranceGeometryProps {
+	hindrance: PlacedHindrance;
 	colour: Colour;
 }
 
@@ -39,8 +39,8 @@ const calculateIconSize = (
 		iconAnchor: [Math.round(iconWidth / 2), iconHeight],
 	};
 };
-const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
-	const { getObjectTypeById } = useObjectTypes();
+const HindranceGeometry = React.memo(({ hindrance, colour }: HindranceGeometryProps) => {
+	const { getHindranceTypeById } = useHindranceTypes();
 	const map = useMap();
 	const [zoom, setZoom] = React.useState(map.getZoom());
 
@@ -56,40 +56,40 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 	}, [map]);
 
 	const icon = useMemo(() => {
-		const objectType = getObjectTypeById(obj.typeId);
+		const hindranceType = getHindranceTypeById(hindrance.typeId);
 		const sizes = calculateIconSize(zoom);
 
 		return L.icon({
-			iconUrl: objectType?.markerImageUrl || DEFAULT_ICON_MARKER,
+			iconUrl: hindranceType?.markerImageUrl || DEFAULT_ICON_MARKER,
 			shadowUrl: DEFAULT_SHADOW_MARKER,
 			iconSize: sizes.iconSize,
 			iconAnchor: sizes.iconAnchor,
 			popupAnchor: [1, -34],
 			shadowSize: sizes.shadowSize,
 		});
-	}, [obj.typeId, zoom, getObjectTypeById]);
+	}, [hindrance.typeId, zoom, getHindranceTypeById]);
 
-	if (!obj?.points?.length) return null;
+	if (!hindrance?.points?.length) return null;
 
-	const objectType = getObjectTypeById(obj.typeId);
+	const hindranceType = getHindranceTypeById(hindrance.typeId);
 
-	const firstPoint = obj.points[0];
+	const firstPoint = hindrance.points[0];
 
 	const popup = (
 		<Popup>
 			<div>
-				<p>{objectType?.name || "Ukjent objekt"}</p>
-				<p>Type: {PlaceModeToString[obj.geometryType as PlaceMode]}</p>
+				<p>{hindranceType?.name || "Ukjent objekt"}</p>
+				<p>Type: {PlaceModeToString[hindrance.geometryType as PlaceMode]}</p>
 				{firstPoint.createdAt && <>Laget: {parseISO(firstPoint.createdAt).toLocaleString()}</>}
 				<div>
-					{obj.title && <strong>{obj.title}</strong>}
-					{obj.description && <p>{obj.description}</p>}
+					{hindrance.title && <strong>{hindrance.title}</strong>}
+					{hindrance.description && <p>{hindrance.description}</p>}
 				</div>
 			</div>
 		</Popup>
 	);
 
-	switch (obj.geometryType) {
+	switch (hindrance.geometryType) {
 		case PlaceMode.Point: {
 			return (
 				<Marker position={[firstPoint.lat, firstPoint.lng]} icon={icon}>
@@ -101,14 +101,14 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 		case PlaceMode.Line: {
 			return (
 				<>
-					{obj.points.map((point, idx) => (
+					{hindrance.points.map((point, idx) => (
 						<React.Fragment key={idx}>
 							<Marker key={idx} position={[point.lat, point.lng]} icon={icon}>
 								{popup}
 							</Marker>
 							<Polyline
 								key={`line-${idx}`}
-								positions={obj.points.map((p) => [p.lat, p.lng])}
+								positions={hindrance.points.map((p) => [p.lat, p.lng])}
 								pathOptions={{ color: colour }}
 							/>
 							;
@@ -119,13 +119,13 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 		}
 
 		case PlaceMode.Area: {
-			const firstPoint = obj.points[0];
-			const lastPoint = obj.points[obj.points.length - 1];
+			const firstPoint = hindrance.points[0];
+			const lastPoint = hindrance.points[hindrance.points.length - 1];
 
 			const polygonPoints =
 				firstPoint === lastPoint
-					? obj.points
-					: [...obj.points, obj.points[0]].map((p) => ({ lat: p.lat, lng: p.lng }));
+					? hindrance.points
+					: [...hindrance.points, hindrance.points[0]].map((p) => ({ lat: p.lat, lng: p.lng }));
 
 			return (
 				<Polygon positions={polygonPoints} pathOptions={{ color: colour }}>
@@ -137,36 +137,36 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 		default: {
 			return (
 				<>
-					{obj.points.map((point, idx) => (
+					{hindrance.points.map((point, idx) => (
 						<Marker key={idx} position={[point.lat, point.lng]} icon={icon}>
 							{popup}
 						</Marker>
 					))}
-					<Polyline positions={obj.points.map((p) => [p.lat, p.lng])} pathOptions={{ color: colour }} />
+					<Polyline positions={hindrance.points.map((p) => [p.lat, p.lng])} pathOptions={{ color: colour }} />
 				</>
 			);
 		}
 	}
 });
 
-export const ObjectMarkers = React.memo(() => {
-	const { currentJourney, currentObjectPoints, placeMode } = useJourney();
-	const { data: serverObjects, isLoading, isError } = useServerObjectsQuery(currentJourney?.id);
+export const HindranceMarkers = React.memo(() => {
+	const { currentJourney, currentHindrancePoints, placeMode } = useJourney();
+	const { data: serverHindrances, isLoading, isError } = useServerHindranceQuery(currentJourney?.id);
 
-	const renderObjects = (objects: PlacedObject[], colour: string) =>
-		objects.map((obj, idx) => <ObjectGeometry key={obj.id || idx} obj={obj} colour={colour} />);
+	const renderHindrances = (hindrances: PlacedHindrance[], colour: string) =>
+		hindrances.map((h, idx) => <HindranceGeometry key={h.id || idx} hindrance={h} colour={colour} />);
 
 	return (
 		<>
 			{currentJourney && (
 				<>
-					{renderObjects(currentJourney.objects, "blue")}
+					{renderHindrances(currentJourney.hindrances, "blue")}
 
-					{currentObjectPoints?.length > 0 && (
-						<ObjectGeometry
-							obj={{
-								id: "current-object",
-								points: currentObjectPoints,
+					{currentHindrancePoints?.length > 0 && (
+						<HindranceGeometry
+							hindrance={{
+								id: "current-hindrance",
+								points: currentHindrancePoints,
 								geometryType: placeMode,
 								deleted: false,
 								createdAt: new Date().toISOString(),
@@ -177,7 +177,7 @@ export const ObjectMarkers = React.memo(() => {
 				</>
 			)}
 
-			{!isLoading && !isError && renderObjects(serverObjects || [], "green")}
+			{!isLoading && !isError && renderHindrances(serverHindrances || [], "green")}
 		</>
 	);
 });

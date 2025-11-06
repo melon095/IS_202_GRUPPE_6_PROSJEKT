@@ -1,18 +1,18 @@
 import { useState } from "react";
 
-import { useObjectTypes } from "../contexts/ObjectTypesContext";
+import { useHindranceTypes } from "../contexts/HindranceTypesContext";
 import { useTranslation } from "../i18n";
 import { Icon } from "./Icon";
 import { IconFlex } from "./IconFlex";
 
-interface ObjectTypeSelectorProps {
+interface HindranceTypeSelectorProps {
 	onSelect: (typeId?: string) => void;
 	onCancel: () => void;
 }
 
-export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorProps) => {
+export const HindranceTypeSelector = ({ onSelect, onCancel }: HindranceTypeSelectorProps) => {
 	const { t } = useTranslation();
-	const { objectTypes, isLoading, error } = useObjectTypes();
+	const { hindranceTypes, isLoading, error } = useHindranceTypes();
 	const [selectedTypeId, setSelectedTypeId] = useState("");
 
 	const handleConfirm = () => {
@@ -23,7 +23,7 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 		return (
 			<div className="box">
 				<IconFlex as="div" icon={{ icon: ["fas", "spinner"], spin: true }} className="has-text-centered">
-					<p className="is-size-5">{t("objectTypeSelector.loading.message")}</p>
+					<p className="is-size-5">{t("hindranceTypeSelector.loading.message")}</p>
 				</IconFlex>
 			</div>
 		);
@@ -33,19 +33,19 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 		return (
 			<div className="box">
 				<IconFlex as="div" className="notification is-danger is-light" icon={["fas", "exclamation"]}>
-					<p className="is-size-5">{t("objectTypeSelector.error.message")}</p>
+					<p className="is-size-5">{t("hindranceTypeSelector.error.message")}</p>
 				</IconFlex>
 
 				<div className="field is-grouped">
 					<div className="control">
 						<button className="button is-light" onClick={() => onSelect(undefined)}>
-							{t("objectTypeSelector.actions.skip")}
+							{t("hindranceTypeSelector.actions.skip")}
 						</button>
 					</div>
 
 					<div className="control">
 						<button className="button is-light" onClick={onCancel}>
-							{t("objectTypeSelector.actions.cancel")}
+							{t("hindranceTypeSelector.actions.cancel")}
 						</button>
 					</div>
 				</div>
@@ -55,12 +55,12 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 
 	return (
 		<div className="box">
-			<h4 className="title is-5">{t("objectTypeSelector.title")}</h4>
+			<h4 className="title is-5">{t("hindranceTypeSelector.title")}</h4>
 
 			<div className="field">
 				<div className="control">
-					{objectTypes.map((type) => {
-						const inputId = `object-type-${type.id}`;
+					{hindranceTypes.map((type) => {
+						const inputId = `hindrance-type-${type.id}`;
 						return (
 							<div
 								key={type.id}
@@ -82,7 +82,7 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 								<input
 									type="radio"
 									id={inputId}
-									name="object-type"
+									name="hindrance-type"
 									value={type.id}
 									checked={selectedTypeId === type.id}
 									style={{ width: "24px", height: "24px" }}
@@ -108,19 +108,19 @@ export const ObjectTypeSelector = ({ onSelect, onCancel }: ObjectTypeSelectorPro
 			<div className="field is-grouped mt-4">
 				<div className="control">
 					<button className="button  is-primary" onClick={handleConfirm} disabled={selectedTypeId === ""}>
-						{t("objectTypeSelector.actions.add")}
+						{t("hindranceTypeSelector.actions.add")}
 					</button>
 				</div>
 
 				<div className="control">
 					<button className="button is-light is-danger" onClick={onCancel}>
-						{t("objectTypeSelector.actions.cancel")}
+						{t("hindranceTypeSelector.actions.cancel")}
 					</button>
 				</div>
 
 				<div className="control">
 					<button className="button is-light" onClick={() => onSelect(undefined)}>
-						{t("objectTypeSelector.actions.addWithoutType")}
+						{t("hindranceTypeSelector.actions.addWithoutType")}
 					</button>
 				</div>
 			</div>

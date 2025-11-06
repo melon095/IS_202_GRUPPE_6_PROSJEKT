@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { JourneyControls } from "./components/JourneyControls";
 import { JourneySummary } from "./components/JourneySummary";
 import { MapComponent } from "./components/MapComponent";
+import { HindranceTypesProvider } from "./contexts/HindranceTypesContext";
 import { JourneyProvider, useJourney } from "./contexts/JourneyContext";
-import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
 import { useFinalizeJourneyMutation } from "./hooks/useFinalizeJourneyMutation";
 
 const queryClient = new QueryClient({
@@ -44,7 +44,7 @@ const AppContent = () => {
 					title,
 					description,
 				},
-				objects: finishedJourney.objects,
+				hindrances: finishedJourney.hindrances,
 			},
 			{
 				onSuccess: () => {
@@ -85,11 +85,11 @@ const App = () => {
 			<QueryClientProvider client={queryClient}>
 				<ReactQueryDevtools initialIsOpen={false} />
 
-				<ObjectTypesProvider>
+				<HindranceTypesProvider>
 					<JourneyProvider>
 						<AppContent />
 					</JourneyProvider>
-				</ObjectTypesProvider>
+				</HindranceTypesProvider>
 			</QueryClientProvider>
 		</>
 	);

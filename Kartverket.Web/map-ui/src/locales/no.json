@@ -1,7 +1,7 @@
 {
 	"controls": {
 		"header": "Reisemodus",
-		"objects_count": "Objekter plassert",
+		"hindrances_count": "Hindringer plassert",
 		"point_count": "Punkter plassert",
 		"syncing": "Synkroniserer",
 		"placing_point": "Plasseringsmodus - Punkt",
@@ -9,7 +9,7 @@
 		"placing_area": "Plasseringsmodus - Område",
 		"buttons": {
 			"start": "Start reise",
-			"place": "Plasser objekt",
+			"place": "Plasser hindring",
 			"end": "Avslutt reise",
 			"stop": "Bekreft ({{count}})",
 			"cancel": "Kanseller",
@@ -24,7 +24,7 @@
 		"meta": {
 			"started": "Startet: {{time}}",
 			"ended": "Avsluttet: {{time}}",
-			"objectsPlaced": "Objekter plassert: {{count}}"
+			"hindrancesPlaced": "Hindringer plassert: {{count}}"
 		},
 		"form": {
 			"journeyTitle": {
@@ -36,9 +36,9 @@
 				"placeholder": "Skriv inn reisebeskrivelse"
 			}
 		},
-		"objects": {
-			"title": "Plasserte objekter",
-			"emptyState": "Ingen objekter ble plassert under denne reisen.",
+		"hindrances": {
+			"title": "Plasserte hindringer",
+			"emptyState": "Ingen hindringer ble plassert under denne reisen.",
 			"table": {
 				"headers": {
 					"type": "Type",
@@ -69,7 +69,7 @@
 			"title": "Noe gikk galt under innsending av reisesammendrag. Vennligst prøv igjen."
 		}
 	},
-	"objectEditForm": {
+	"hindranceEditForm": {
 		"form": {
 			"title": {
 				"label": "Tittel",
@@ -84,19 +84,19 @@
 			"close": "Lukk"
 		}
 	},
-	"objectTypeSelector": {
-		"title": "Hvilken type er dette objektet?",
+	"hindranceTypeSelector": {
+		"title": "Hvilken type er denne hindringen?",
 		"loading": {
-			"message": "Laster inn objekttyper..."
+			"message": "Laster inn hindring typer..."
 		},
 		"error": {
-			"message": "Klarte ikke å laste inn objekttyper"
+			"message": "Klarte ikke å laste inn hindring typer."
 		},
 		"actions": {
 			"add": "Legg til",
-			"addWithoutType": "Legg til objekt uten type",
+			"addWithoutType": "Legg til hindring uten type",
 			"skip": "Hopp over",
-			"cancel": "Kanseller (Ikke legg til objekt)"
+			"cancel": "Kanseller (Ikke legg til hindring)"
 		}
 	}
 }

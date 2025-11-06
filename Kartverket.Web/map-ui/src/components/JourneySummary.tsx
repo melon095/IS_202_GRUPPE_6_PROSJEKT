@@ -1,14 +1,14 @@
 import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 
+import { useHindranceTypes } from "../contexts/HindranceTypesContext";
 import { useJourney } from "../contexts/JourneyContext";
-import { useObjectTypes } from "../contexts/ObjectTypesContext";
 import "../css/JourneySummary.css";
 import { useTranslation } from "../i18n";
-import { Journey, PlacedObject, ResponseError } from "../types";
+import { Journey, PlacedHindrance, ResponseError } from "../types";
+import { HindranceEditForm } from "./HindranceEditForm";
 import { Icon } from "./Icon";
 import { IconFlex } from "./IconFlex";
-import { ObjectEditForm } from "./ObjectEditForm";
 
 const DELETE_TIMEOUT = 2000;
 
@@ -23,9 +23,9 @@ interface JourneySummaryProps {
 
 export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isError, errors }: JourneySummaryProps) => {
 	const { t } = useTranslation();
-	const { updateObjectinFinishedJourney, updateFinishedJourneyMeta } = useJourney();
-	const { getObjectTypeById } = useObjectTypes();
-	const [editingObjectId, setEditingObjectId] = useState<string | null>(null);
+	const { updateHindranceinFinishedJourney, updateFinishedJourneyMeta } = useJourney();
+	const { getHindranceTypeById } = useHindranceTypes();
+	const [editingHindranceId, setEditingHindranceId] = useState<string | null>(null);
 	const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 	const [journeyTitle, setJourneyTitle] = useState(journey.title || "");
 	const [journeyDescription, setJourneyDescription] = useState(journey.description || "");
@@ -51,12 +51,12 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 		updateFinishedJourneyMeta({ title: journeyTitle, description: journeyDescription });
 	}, [journeyTitle, journeyDescription, updateFinishedJourneyMeta]);
 
-	const handleEditObject = (objectId: string) => {
-		setEditingObjectId(objectId);
+	const handleEditHindrance = (hindranceId: string) => {
+		setEditingHindranceId(hindranceId);
 	};
 
-	const handleSaveObject = (objectId: string, updates: Partial<PlacedObject>) => {
-		updateObjectinFinishedJourney(objectId, updates);
+	const handleSaveHindrance = (hindranceId: string, updates: Partial<PlacedHindrance>) => {
+		updateHindranceinFinishedJourney(hindranceId, updates);
 	};
 
 	const handleFinalize = () => {
@@ -131,7 +131,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 							</p>
 						)}
 						<p className="is-size-6-tablet">
-							{t("journeySummary.meta.objectsPlaced", { count: journey.objects.length })}
+							{t("journeySummary.meta.hindrancesPlaced", { count: journey.hindrances.length })}
 						</p>
 					</div>
 
@@ -173,49 +173,53 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 				</div>
 
 				<div style={{ flex: 1, overflowY: "auto", marginBottom: "1rem" }}>
-					<h3 className="subtitle is-size-5-tablet">{t("journeySummary.objects.title")}</h3>
-					{journey.objects.length === 0 ? (
-						<p>{t("journeySummary.objects.emptyState")}</p>
+					<h3 className="subtitle is-size-5-tablet">{t("journeySummary.hindrances.title")}</h3>
+					{journey.hindrances.length === 0 ? (
+						<p>{t("journeySummary.hindrances.emptyState")}</p>
 					) : (
 						<div className="table-container">
 							<table className="table is-fullwidth is-striped is-hoverable is-narrow">
 								<thead>
 									<tr>
 										<th className="is-size-6-tablet">
-											{t("journeySummary.objects.table.headers.type")}
+											{t("journeySummary.hindrances.table.headers.type")}
 										</th>
 										<th className="is-size-6-tablet">
-											{t("journeySummary.objects.table.headers.title")}
+											{t("journeySummary.hindrances.table.headers.title")}
 										</th>
 										<th className="is-size-6-tablet">
-											{t("journeySummary.objects.table.headers.description")}
+											{t("journeySummary.hindrances.table.headers.description")}
 										</th>
 										<th className="is-size-6-tablet">
-											{t("journeySummary.objects.table.headers.points")}
+											{t("journeySummary.hindrances.table.headers.points")}
 										</th>
 										<th className="is-size-6-tablet">
-											{t("journeySummary.objects.table.headers.created")}
+											{t("journeySummary.hindrances.table.headers.created")}
 										</th>
 										<th className="is-size-6-tablet">
-											{t("journeySummary.objects.table.headers.deleted")}
+											{t("journeySummary.hindrances.table.headers.deleted")}
 										</th>
 										<th className="is-size-6-tablet"></th>
 									</tr>
 								</thead>
 								<tbody>
-									{journey.objects.map((obj) => {
-										const objectType = obj.typeId ? getObjectTypeById(obj.typeId) : null;
-										const isEditing = editingObjectId === obj.id;
+									{journey.hindrances.map((hindrance) => {
+										const hindranceType = hindrance.typeId
+											? getHindranceTypeById(hindrance.typeId)
+											: null;
+										const isEditing = editingHindranceId === hindrance.id;
 
 										if (isEditing) {
 											return (
-												<tr key={obj.id}>
+												<tr key={hindrance.id}>
 													<td colSpan={7}>
-														<ObjectEditForm
-															key={obj.id}
-															object={obj}
-															onSave={(updates) => handleSaveObject(obj.id!, updates)}
-															onCancel={() => setEditingObjectId(null)}
+														<HindranceEditForm
+															key={hindrance.id}
+															hindrance={hindrance}
+															onSave={(updates) =>
+																handleSaveHindrance(hindrance.id!, updates)
+															}
+															onCancel={() => setEditingHindranceId(null)}
 														/>
 													</td>
 												</tr>
@@ -223,39 +227,45 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 										}
 
 										return (
-											<tr key={obj.id}>
+											<tr key={hindrance.id}>
 												<td>
-													{objectType ? (
+													{hindranceType ? (
 														<div className="is-flex is-align-items-center">
 															<Icon
-																src={objectType.primaryImageUrl}
-																alt={objectType.name}
+																src={hindranceType.primaryImageUrl}
+																alt={hindranceType.name}
 															/>
-															<span className="is-size-6-tablet">{objectType.name}</span>
+															<span className="is-size-6-tablet">
+																{hindranceType.name}
+															</span>
 														</div>
 													) : (
-														<span className="is-size-6-tablet">{obj.typeId || "-"}</span>
+														<span className="is-size-6-tablet">
+															{hindrance.typeId || "-"}
+														</span>
 													)}
 												</td>
 												<td className="is-size-6-tablet">
 													<span>
-														{obj.title || <span className="has-text-grey-light">…</span>}
-													</span>
-												</td>
-												<td className="is-size-6-tablet">
-													<span className="is-ellipsis">
-														{obj.description || (
+														{hindrance.title || (
 															<span className="has-text-grey-light">…</span>
 														)}
 													</span>
 												</td>
-												<td className="is-size-6-tablet">{obj.points.length}</td>
-												<td className="is-size-6-tablet">{formatTime(obj.createdAt)}</td>
-												<td className="is-size-6-tablet">{obj.deleted ? "Yes" : "No"}</td>
+												<td className="is-size-6-tablet">
+													<span className="is-ellipsis">
+														{hindrance.description || (
+															<span className="has-text-grey-light">…</span>
+														)}
+													</span>
+												</td>
+												<td className="is-size-6-tablet">{hindrance.points.length}</td>
+												<td className="is-size-6-tablet">{formatTime(hindrance.createdAt)}</td>
+												<td className="is-size-6-tablet">{hindrance.deleted ? "Yes" : "No"}</td>
 												<td>
 													<IconFlex
 														as="button"
-														onClick={() => handleEditObject(obj.id!)}
+														onClick={() => handleEditHindrance(hindrance.id!)}
 														icon={["fas", "edit"]}
 														className="is-link is-medium"
 														style={{ marginBottom: "0.5em" }}
@@ -264,11 +274,11 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 														{t("journeySummary.actions.edit")}
 													</IconFlex>
 
-													{obj.deleted ? (
+													{hindrance.deleted ? (
 														<IconFlex
 															as="button"
 															onClick={() =>
-																updateObjectinFinishedJourney(obj.id!, {
+																updateHindranceinFinishedJourney(hindrance.id!, {
 																	deleted: false,
 																})
 															}
@@ -283,22 +293,24 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 														<IconFlex
 															as="button"
 															onClick={() => {
-																if (deleteConfirmId === obj.id) {
-																	updateObjectinFinishedJourney(obj.id!, {
+																if (deleteConfirmId === hindrance.id) {
+																	updateHindranceinFinishedJourney(hindrance.id!, {
 																		deleted: true,
 																	});
 																} else {
-																	setDeleteConfirmId(obj.id!);
+																	setDeleteConfirmId(hindrance.id!);
 																}
 															}}
 															icon={["fas", "trash"]}
 															className={`is-medium ${
-																deleteConfirmId === obj.id ? "is-danger" : "is-warning"
+																deleteConfirmId === hindrance.id
+																	? "is-danger"
+																	: "is-warning"
 															}`}
 															style={{ marginBottom: "0.5em" }}
 															fullWidth
 														>
-															{deleteConfirmId === obj.id
+															{deleteConfirmId === hindrance.id
 																? t("journeySummary.actions.deleteConfirm")
 																: t("journeySummary.actions.delete")}
 														</IconFlex>
@@ -321,7 +333,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 							as="button"
 							onClick={handleFinalize}
 							disabled={
-								isSubmitting || (journey.objects.length > 0 && !navigator.onLine) || !journeyTitle
+								isSubmitting || (journey.hindrances.length > 0 && !navigator.onLine) || !journeyTitle
 							}
 							className="is-primary is-large"
 							fullWidth

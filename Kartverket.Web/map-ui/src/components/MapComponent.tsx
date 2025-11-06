@@ -6,8 +6,8 @@ import { MapContainer, TileLayer, TileLayerProps } from "react-leaflet";
 import "../css/MapComponent.css";
 import "../css/zoom-control.css";
 import { GPSMarker } from "./GPSMarker.tsx";
+import { HindranceMarkers } from "./HindranceMarkers.tsx";
 import { MapClickHandler } from "./MapClickHandler";
-import { ObjectMarkers } from "./ObjectMarkers";
 
 const mapCenter = [58.1465456, 7.9911451] satisfies LatLngTuple;
 
@@ -25,7 +25,7 @@ export const MapComponent = ({ children }: MapComponentProps) => {
 		<MapContainer center={mapCenter} zoom={13} style={{ height: "100vh", width: "100vw" }} zoomControl={false}>
 			<TileLayer {...tileProps} />
 			<MapClickHandler />
-			<ObjectMarkers />
+			<HindranceMarkers />
 			<GPSMarker />
 
 			{children}

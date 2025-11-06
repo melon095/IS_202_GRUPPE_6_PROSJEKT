@@ -6,7 +6,7 @@ export interface Point {
 	createdAt?: string;
 }
 
-export interface PlacedObject {
+export interface PlacedHindrance {
 	id?: string;
 	points: Point[];
 	typeId?: string;
@@ -23,7 +23,7 @@ export interface Journey {
 	description?: string;
 	startTime: number;
 	endTime?: number;
-	objects: PlacedObject[];
+	hindrances: PlacedHindrance[];
 }
 
 export enum PlaceMode {
@@ -44,11 +44,12 @@ export const PlaceModeToString = {
 export interface JourneyState {
 	currentJourney: Journey | null;
 	finishedJourney: Journey | null;
+	isPlacingHindrance: boolean;
 	placeMode: PlaceMode;
-	currentObjectPoints: Point[];
+	currentHindrancePoints: Point[];
 }
 
-export interface ObjectType {
+export interface HindranceType {
 	id: string;
 	name: string;
 	primaryImageUrl: string;
@@ -56,13 +57,13 @@ export interface ObjectType {
 }
 
 export interface ServerSyncData {
-	object: PlacedObject;
 	journeyId?: string;
+	hindrance: PlacedHindrance;
 }
 
 export interface ServerSyncResponse {
 	journeyId: string;
-	objectId: string;
+	hindranceId: string;
 }
 
 export interface FinalizeJourneyData {
@@ -71,10 +72,10 @@ export interface FinalizeJourneyData {
 		title?: string;
 		description?: string;
 	};
-	objects: PlacedObject[];
+	hindrances: PlacedHindrance[];
 }
 
-export type ServerStateResponse = PlacedObject[];
+export type ServerStateResponse = PlacedHindrance[];
 
 export type ResponseError = Record<string, string[]>;
 

@@ -4,11 +4,11 @@ import { useGeolocated } from "react-geolocated";
 import { useMap } from "react-leaflet";
 
 import { useJourney } from "../contexts/JourneyContext";
-import { useSyncObjectMutation } from "../hooks/useSyncObjectMutation";
+import { useSyncHindrancesMutation } from "../hooks/useSyncHindrancesMutation";
 import { useTranslation } from "../i18n";
 import { PlaceMode } from "../types";
+import { HindranceTypeSelector } from "./HindranceTypeSelector";
 import { IconFlex } from "./IconFlex";
-import { ObjectTypeSelector } from "./ObjectTypeSelector";
 
 interface JourneyControlsProps {
 	children?: React.ReactNode;
@@ -19,18 +19,18 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	const {
 		currentJourney,
 		placeMode,
-		currentObjectPoints,
-		clearCurrentObjectPoints,
+		currentHindrancePoints,
+		clearCurrentHindrancePoints,
 		endJourney,
 		startJourney,
-		stopPlacingObject,
+		stopPlacingHindrance,
 		updateJourneyId,
-		updateObjectId,
+		updateHindranceId,
 		setPlaceMode,
 	} = useJourney();
 	const map = useMap();
 
-	const syncObjectMutation = useSyncObjectMutation();
+	const syncHindranceMutation = useSyncHindrancesMutation();
 	const [showTypeSelector, setShowTypeSelector] = useState(false);
 	const overlayRef = useRef<HTMLDivElement>(null);
 	const [isFollowing, setIsFollowing] = useState(false);
@@ -98,33 +98,33 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	};
 
 	const handleFinishPlace = () => {
-		if (currentObjectPoints.length > 0) {
+		if (currentHindrancePoints.length > 0) {
 			setShowTypeSelector(true);
 		} else {
-			stopPlacingObject();
+			stopPlacingHindrance();
 		}
 	};
 
 	const handleCancelPlace = () => {
-		clearCurrentObjectPoints();
-		stopPlacingObject();
+		clearCurrentHindrancePoints();
+		stopPlacingHindrance();
 	};
 
 	const handleTypeSelect = (typeId?: string) => {
-		const lastObject = stopPlacingObject(typeId);
+		const lastHindrance = stopPlacingHindrance(typeId);
 		setShowTypeSelector(false);
 
-		if (!currentJourney || !navigator.onLine || !lastObject) return;
+		if (!currentJourney || !navigator.onLine || !lastHindrance) return;
 
-		syncObjectMutation.mutate(
+		syncHindranceMutation.mutate(
 			{
-				object: lastObject,
+				hindrance: lastHindrance,
 				journeyId: currentJourney.id,
 			},
 			{
 				onSuccess(data) {
 					updateJourneyId(data.journeyId);
-					updateObjectId(lastObject, data.objectId);
+					updateHindranceId(lastHindrance, data.hindranceId);
 				},
 			}
 		);
@@ -132,7 +132,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 
 	const handleCancelTypeSelect = () => {
 		setShowTypeSelector(false);
-		clearCurrentObjectPoints();
+		clearCurrentHindrancePoints();
 	};
 
 	return (
@@ -159,7 +159,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 				</div>
 			) : showTypeSelector ? (
 				<div className="journey-controls-overlay">
-					<ObjectTypeSelector onSelect={handleTypeSelect} onCancel={handleCancelTypeSelect} />
+					<HindranceTypeSelector onSelect={handleTypeSelect} onCancel={handleCancelTypeSelect} />
 				</div>
 			) : (
 				<div className="journey-controls-overlay">
@@ -170,18 +170,18 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 							</IconFlex>
 
 							<div className="tags has-addons mb-3">
-								<span className="tag is-dark">{t("controls.objects_count")}</span>
-								<span className="tag is-info">{currentJourney.objects.length}</span>
+								<span className="tag is-dark">{t("controls.hindrances_count")}</span>
+								<span className="tag is-info">{currentJourney.hindrances.length}</span>
 							</div>
 
 							{placeMode !== PlaceMode.None && (
 								<div className="tags has-addons mb-3">
 									<span className="tag is-dark">{t("controls.point_count")}</span>
-									<span className="tag is-warning">{currentObjectPoints.length}</span>
+									<span className="tag is-warning">{currentHindrancePoints.length}</span>
 								</div>
 							)}
 
-							{syncObjectMutation.isPending && (
+							{syncHindranceMutation.isPending && (
 								<IconFlex as="div" icon={["fas", "sync"]} className="mb-3" fullWidth>
 									{t("controls.syncing")}
 								</IconFlex>
@@ -197,12 +197,12 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 								</IconFlex>
 							)}
 							{placeMode === PlaceMode.Line && (
-								<IconFlex as="div" icon={["fas", "route"]} className="is-info" fullWidth>
+								<IconFlex as="div" icon={["fas", "route"]} className="message is-info" fullWidth>
 									{t("controls.placing_line")}
 								</IconFlex>
 							)}
 							{placeMode === PlaceMode.Area && (
-								<IconFlex as="div" icon={["fas", "draw-polygon"]} className="is-info" fullWidth>
+								<IconFlex as="div" icon={["fas", "draw-polygon"]} className="message is-info" fullWidth>
 									{t("controls.placing_area")}
 								</IconFlex>
 							)}
@@ -258,7 +258,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 											className="is-success"
 											fullWidth
 										>
-											{t("controls.buttons.stop", { count: currentObjectPoints.length })}
+											{t("controls.buttons.stop", { count: currentHindrancePoints.length })}
 										</IconFlex>
 
 										<IconFlex

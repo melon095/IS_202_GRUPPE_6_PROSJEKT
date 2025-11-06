@@ -7,7 +7,7 @@ import { extrapolateErrors } from "../utils/extrapolateErrors";
 const ONE_MINUTE = 60 * 1000;
 const TWO_MINUTES = 2 * ONE_MINUTE;
 
-export const useServerObjectsQuery = (currentReportId?: string) => {
+export const useServerHindranceQuery = (currentReportId?: string) => {
 	const queryClient = useQueryClient();
 	const lastFetchTimeRef = useRef<string | null>(null);
 
@@ -17,7 +17,7 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 
 	return useQuery<ServerStateResponse>({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
-		queryKey: ["serverSideObjects", currentReportId],
+		queryKey: ["serverSideHindrances", currentReportId],
 		queryFn: async () => {
 			const qp = new URLSearchParams();
 
@@ -28,7 +28,7 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 				qp.append("reportId", currentReportId);
 			}
 
-			const res = await fetch(`/Map/GetObjects?${qp.toString()}`, {
+			const res = await fetch(`/Map/GetHindrances?${qp.toString()}`, {
 				method: "GET",
 			});
 
@@ -38,7 +38,7 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 
 			lastFetchTimeRef.current = new Date().toISOString();
 
-			const oldData = queryClient.getQueryData<ServerStateResponse>(["serverSideObjects", currentReportId]);
+			const oldData = queryClient.getQueryData<ServerStateResponse>(["serverSideHindrances", currentReportId]);
 
 			if (!oldData) return newData;
 
@@ -53,7 +53,7 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 				}
 			});
 
-			queryClient.setQueryData(["serverSideObjects", currentReportId], merged);
+			queryClient.setQueryData(["serverSideHindrances", currentReportId], merged);
 
 			return merged;
 		},

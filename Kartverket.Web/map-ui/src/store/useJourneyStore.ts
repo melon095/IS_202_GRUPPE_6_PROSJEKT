@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-import { Journey, JourneyState, PlacedObject, PlaceMode, Point } from "../types";
+import { Journey, JourneyState, PlacedHindrance, PlaceMode, Point } from "../types";
 
 export interface JourneyFunctions {
 	startJourney: () => void;
@@ -10,12 +10,12 @@ export interface JourneyFunctions {
 	deleteEndJourney: () => void;
 	updateFinishedJourneyMeta: (updates: Partial<Journey>) => void;
 	setPlaceMode: (mode: PlaceMode) => void;
-	stopPlacingObject: (typeId?: string | undefined) => PlacedObject | undefined;
-	addPointToCurrentObject: (point: Point) => void;
-	updateObjectinFinishedJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
-	clearCurrentObjectPoints: () => void;
+	stopPlacingHindrance: (typeId?: string | undefined) => PlacedHindrance | undefined;
+	addPointToCurrentHindrance: (point: Point) => void;
+	updateHindranceinFinishedJourney: (hindranceId: string, updates: Partial<PlacedHindrance>) => void;
+	clearCurrentHindrancePoints: () => void;
 	updateJourneyId: (newId: string) => void;
-	updateObjectId: (obj: PlacedObject, newId: string) => void;
+	updateHindranceId: (hindrance: PlacedHindrance, newId: string) => void;
 }
 
 export interface JourneyStore extends JourneyState, JourneyFunctions {}
@@ -25,13 +25,14 @@ export const useJourneyStore = create<JourneyStore>()(
 		(set, get) => ({
 			currentJourney: null,
 			finishedJourney: null,
+			isPlacingHindrance: false,
 			placeMode: PlaceMode.None,
-			currentObjectPoints: [],
+			currentHindrancePoints: [],
 
 			startJourney: () => {
 				const journey: Journey = {
 					startTime: Date.now(),
-					objects: [],
+					hindrances: [],
 				};
 
 				set({ currentJourney: journey });
@@ -59,8 +60,8 @@ export const useJourneyStore = create<JourneyStore>()(
 				set(() => ({
 					currentJourney: null,
 					finishedJourney: completedJourney,
-					isPlacingObject: false,
-					currentObjectPoints: [],
+					isPlacingHindrance: false,
+					currentHindrancePoints: [],
 				}));
 			},
 
@@ -85,17 +86,17 @@ export const useJourneyStore = create<JourneyStore>()(
 				set({ placeMode: mode });
 			},
 
-			stopPlacingObject: (typeId) => {
-				const { currentJourney, currentObjectPoints, placeMode } = get();
-				if (!currentJourney || currentObjectPoints.length === 0) {
-					set({ placeMode: PlaceMode.None, currentObjectPoints: [] });
+			stopPlacingHindrance: (typeId) => {
+				const { currentJourney, currentHindrancePoints: currentHindrancePoints, placeMode } = get();
+				if (!currentJourney || currentHindrancePoints.length === 0) {
+					set({ placeMode: PlaceMode.None, currentHindrancePoints: [] });
 
 					return;
 				}
 
-				const newObject: PlacedObject = {
+				const newHindrance: PlacedHindrance = {
 					id: globalThis.crypto.randomUUID(),
-					points: currentObjectPoints,
+					points: currentHindrancePoints,
 					typeId: typeId,
 					geometryType: placeMode,
 					createdAt: new Date().toISOString(),
@@ -104,19 +105,19 @@ export const useJourneyStore = create<JourneyStore>()(
 
 				const updatedJourney: Journey = {
 					...currentJourney,
-					objects: [...currentJourney.objects, newObject],
+					hindrances: [...currentJourney.hindrances, newHindrance],
 				};
 
 				set({
 					currentJourney: updatedJourney,
 					placeMode: PlaceMode.None,
-					currentObjectPoints: [],
+					currentHindrancePoints: [],
 				});
 
-				return newObject;
+				return newHindrance;
 			},
 
-			addPointToCurrentObject: (point) => {
+			addPointToCurrentHindrance: (point) => {
 				const { placeMode, currentJourney } = get();
 				if (placeMode === PlaceMode.None || !currentJourney) return;
 
@@ -124,33 +125,33 @@ export const useJourneyStore = create<JourneyStore>()(
 
 				if (placeMode == PlaceMode.Point) {
 					return set(() => ({
-						currentObjectPoints: [point],
+						currentHindrancePoints: [point],
 					}));
 				}
 
 				set((state) => ({
-					currentObjectPoints: [...state.currentObjectPoints, point],
+					currentHindrancePoints: [...state.currentHindrancePoints, point],
 				}));
 			},
 
-			updateObjectinFinishedJourney: (objectId, updates) => {
+			updateHindranceinFinishedJourney: (hindranceId, updates) => {
 				const { finishedJourney } = get();
 
 				if (!finishedJourney) return;
 
-				const updatedObjects = finishedJourney.objects.map((obj) =>
-					obj.id === objectId ? { ...obj, ...updates } : obj
+				const updatedHindrances = finishedJourney.hindrances.map((h) =>
+					h.id === hindranceId ? { ...h, ...updates } : h
 				);
 
-				const updatedJourney = {
+				const updatedJourney: Journey = {
 					...finishedJourney,
-					objects: updatedObjects,
+					hindrances: updatedHindrances,
 				};
 
 				set({ finishedJourney: updatedJourney });
 			},
 
-			clearCurrentObjectPoints: () => set({ currentObjectPoints: [] }),
+			clearCurrentHindrancePoints: () => set({ currentHindrancePoints: [] }),
 
 			updateJourneyId: (newId) => {
 				const { currentJourney } = get();
@@ -164,21 +165,21 @@ export const useJourneyStore = create<JourneyStore>()(
 				});
 			},
 
-			updateObjectId: (obj, newId) => {
+			updateHindranceId: (hindrance, newId) => {
 				const { currentJourney } = get();
 				if (!currentJourney) return;
 
-				const objectInStore = currentJourney.objects.find((o) => o === obj);
-				if (!objectInStore) return;
+				const hindrancesInStore = currentJourney.hindrances.find((h) => h === hindrance);
+				if (!hindrancesInStore) return;
 
-				const updatedObjects = currentJourney.objects.map((o) =>
-					o === objectInStore ? { ...o, id: newId } : o
+				const updateHindrances = currentJourney.hindrances.map((h) =>
+					h === hindrancesInStore ? { ...h, id: newId } : h
 				);
 
 				set({
 					currentJourney: {
 						...currentJourney,
-						objects: updatedObjects,
+						hindrances: updateHindrances,
 					},
 				});
 			},

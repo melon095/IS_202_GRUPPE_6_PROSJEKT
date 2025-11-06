@@ -7,10 +7,10 @@ const syncToServerEndpoint = (data: ServerSyncData): string => {
 	const qp = new URLSearchParams();
 	if (data.journeyId) qp.append("journeyId", data.journeyId);
 
-	return `/Map/SyncObject?${qp.toString()}`;
+	return `/Map/SyncHindrance?${qp.toString()}`;
 };
 
-const syncObjectsToServer = async (data: ServerSyncData): Promise<ServerSyncResponse> => {
+const syncHindrancesToServer = async (data: ServerSyncData): Promise<ServerSyncResponse> => {
 	const endpoint = syncToServerEndpoint(data);
 
 	const response = await fetch(endpoint, {
@@ -18,7 +18,7 @@ const syncObjectsToServer = async (data: ServerSyncData): Promise<ServerSyncResp
 		headers: {
 			"Content-Type": "application/json",
 		},
-		body: JSON.stringify(data.object),
+		body: JSON.stringify(data.hindrance),
 	});
 
 	if (!response.ok) {
@@ -28,15 +28,15 @@ const syncObjectsToServer = async (data: ServerSyncData): Promise<ServerSyncResp
 	return response.json() as Promise<ServerSyncResponse>;
 };
 
-export const useSyncObjectMutation = () => {
+export const useSyncHindrancesMutation = () => {
 	const queryClient = useQueryClient();
 	return useMutation<ServerSyncResponse, ResponseError, ServerSyncData>({
-		mutationFn: syncObjectsToServer,
+		mutationFn: syncHindrancesToServer,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["serverSideObjects"] });
+			queryClient.invalidateQueries({ queryKey: ["serverSideHindrances"] });
 		},
 		onError: (error) => {
-			console.error("Failed to sync object to server:", error);
+			console.error("Error syncing hindrance to server:", error);
 		},
 	});
 };
