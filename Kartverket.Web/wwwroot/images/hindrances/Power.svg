@@ -1,0 +1,10 @@
+<svg height="80" viewBox="0 0 80 80" width="80" xmlns="http://www.w3.org/2000/svg">
+    <path fill="currentColor" d="m38 18h4v40h-4z"/>
+    <path fill="currentColor" d="m28 18h24v3h-24z"/>
+    <path d="m38 28-8-10" stroke="currentColor" stroke-width="2"/>
+    <path d="m42 28 8-10" stroke="currentColor" stroke-width="2"/>
+    <circle fill="currentColor" cx="30" cy="19.5" r="1.5"/>
+    <circle fill="currentColor" cx="34" cy="19.5" r="1.5"/>
+    <circle fill="currentColor" cx="46" cy="19.5" r="1.5"/>
+    <circle fill="currentColor" cx="50" cy="19.5" r="1.5"/>
+</svg>
