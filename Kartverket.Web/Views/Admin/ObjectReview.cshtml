@@ -72,41 +72,95 @@
                     
                     <div class="box">
                         <h2 class="title is-5">Tilbakemeldinger</h2>
-                        @*
-                        @using (Html.BeginForm("Comment", "Admin", FormMethod.Post))
-                        {
-                            @Html.AntiForgeryToken()
-                            <div>
-                                <div class="control">
-
-                                </div>
-                            </div>
-                        }
-                        *@
-                        <form asp-controller="Admin" asp-action="Comment" method="post">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="Id" value="@Model.Id" />
-                            <input type="hidden" name="objectId" value="@Model.SelectedObject.Id" />
-
-                            <div class="field">
-                                <label class="label">Tilbakemelding</label>
-                                <div class="control">
-                                    <textarea name="feedbackText" class="textarea" placeholder="Skriv tilbakemelding her" required></textarea>
-                                </div>
-                            </div>
-
-                        </form>
                         @if(Model.SelectedObject != null)
                         {
-                            @foreach (var com in Model.SelectedObject.Feedbacks)
+                            <div id="CommentField">
+                            @if(Model.SelectedObject.Feedbacks.Any())
                             {
+                                @foreach (var com in Model.SelectedObject.Feedbacks)
+                                {
 
-                                <p>@com.Feedback</p>
+                                    <article class="message is-light mb-2">
+                                        <div class="message-body">
+                                            <strong>@com.FeedbackByName</strong> (@com.FeedbackType):
+                                            <br />
+                                            @com.Feedback
+                                        </div>
+                                    </article>
+
+                                }
                             }
+                            else
+                            {
+                                <p>Ingen tilbakemeldinger enda...</p>
+                            }
+                            </div>
+                            <hr />
+                            @using (Html.BeginForm("Comment", "Admin", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", Model.Id)
+                                @Html.Hidden("objectId", Model.SelectedObject.Id)
+                                <div class="field">
+                                    <label class="label">Tilbakemelding</label>
+                                    <div class="control">
+                                        <textarea name="feedbackText" class="textarea" placeholder="Skriv inn tilbakemelding (*Husk, statusforslag fra kommentarer endrer ikke objektets status)"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">Statusforslag</label>
+                                    <div class="control">
+                                        <div class="select">
+                                            <select name="feedbackType">
+                                            <option value="Note">Ingen forslag</option>
+                                            <option value="RequestForChange">Forslag om endring</option>
+                                            <option value="Approval">Godkjenn</option>
+                                            <option value="Rejection">Avslå</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="control mt-3">
+                                    <button type="submit" class="button is-link">Kommenter</button>
+                                </div>
+                            }
+                           @* <form asp-controller="Admin" asp-action="Comment" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="Id" value="@Model.Id" />
+                                <input type="hidden" name="objectId" value="@Model.SelectedObject.Id" />
+
+                                <div class="field">
+                                    <label class="label">Tilbakemelding</label>
+                                    <div class="control">
+                                        <textarea name="feedbackText" class="textarea" placeholder="Skriv tilbakemelding her" required></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">Validering</label>
+                                    <div class="control">
+                                        <div class="select">
+                                            <select name="feedbackType">
+                                                <option value="Note">Notat</option>
+                                                <option value="RequestForChange">Forslag om endring</option>
+                                                <option value="Approval">Godkjenn</option>
+                                                <option value="Rejection">Alvså</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="control mt-3">
+                                    <button type="submit" class="button is-link">Kommenter</button>
+                                </div>
+                            </form>
+                            *@
                         }
                         else
                         {
-                            <p>Her skal det komme kommentarer</p>
+                            <p>Velg et objekt for å kunne se/skrive tilbakemeldinger</p>
                         }
                     </div>
                 </div>
@@ -188,6 +242,9 @@
             height: 100%;
             border: none; /* Remove any inner box border */
             border-radius: 0 0 6px 6px; /* Optional: smooth bottom corners */
+        }
+        #CommentField {
+            overflow-x: auto;
         }
 
 

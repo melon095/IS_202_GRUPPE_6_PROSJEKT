@@ -25,13 +25,18 @@ public class ObjectReviewModel
         public string Description { get; set; }
         public ReviewStatus ObjectStatus { get; set; }
         public List<Point> Points { get; set; } = [];
-        public List<ReportFeedbackTable> Feedbacks { get; set; } = [];
+        public List<FeedBackModel> Feedbacks { get; set; } = [];
 
     }
 
     public class FeedBackModel
     {
-        public ReviewStatus ReviewStatus { get; set; }
-        public FeedbackType FeedBack { get; set; }
+        public Guid Id { get; set; }
+        public string Feedback { get; set; }
+        public FeedbackType FeedbackType { get; set; }
+        public Guid FeedbackById { get; set; }
+        public string FeedbackByName { get; set; }
+        public DateTime CreatedAt { get; set; }
+
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Kartverket.Web.Database.Tables;
+﻿using System.Text.Json.Serialization;
+
+namespace Kartverket.Web.Database.Tables;
 
 public enum FeedbackType
 {
@@ -16,8 +18,8 @@ public class ReportFeedbackTable : BaseModel
     public FeedbackType FeedbackType { get; set; }
 
     public Guid FeedbackById { get; set; }
-    public UserTable FeedbackBy { get; set; }
+    [JsonIgnore] public UserTable FeedbackBy { get; set; }
 
     public Guid ReportId { get; set; }
-    public ReportTable Report { get; set; }
+   [JsonIgnore]  public ReportTable Report { get; set; }
 }

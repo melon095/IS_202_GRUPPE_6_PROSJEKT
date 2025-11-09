@@ -1,4 +1,5 @@
 using System.Security.AccessControl;
+using System.Security.Claims;
 using Kartverket.Web.AuthPolicy;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
@@ -145,6 +146,7 @@ public class AdminController : Controller
             .Include(r => r.HindranceObjects)
             .ThenInclude(o => o.HindrancePoints)
             .Include(r => r.Feedbacks)
+            .ThenInclude(f => f.FeedbackBy)
             .FirstOrDefault(r => r.Id == id);
 
         if (report == null) return View("NoObjectsErr");
@@ -166,6 +168,18 @@ public class AdminController : Controller
                 Description = obj.Description,
                 ObjectStatus = obj.ReviewStatus,
             };
+            objectData.Feedbacks = report.Feedbacks
+                .Where(f => f.ReportId == report.Id)
+                .Select( f => new ObjectReviewModel.FeedBackModel
+                {
+                    Id = f.Id,
+                    Feedback = f.Feedback,
+                    FeedbackType = f.FeedbackType,
+                    FeedbackById = f.FeedbackById,
+                    FeedbackByName = f.FeedbackBy?.UserName,
+                    CreatedAt = f.CreatedAt
+                }).ToList();
+
             foreach (var points in obj.HindrancePoints)
                 objectData.Points.Add(new Point
                 {
@@ -256,9 +270,45 @@ public class AdminController : Controller
     }
 
     [HttpPost]
-    public IActionResult Comment(Guid id, Guid objectID)
+    [ValidateAntiForgeryToken]
+    public IActionResult Comment(Guid id, Guid objectID, string feedbackText, FeedbackType feedbackType)
     {
-        return View();
+        if (string.IsNullOrWhiteSpace(feedbackText))
+        {
+            TempData["Error"] = "Du må fylle ut kommentaren";
+            return RedirectToAction("ObjectReview", new { id, objectID });
+        }
+        var report = _dbContext.Reports
+            .Include(r => r.Feedbacks)
+            .ThenInclude(r => r.FeedbackBy )
+            .Include(r => r.HindranceObjects)
+            .FirstOrDefault(r => r.Id == id);
+
+        if (report == null)
+            return View("NoObjectsErr");
+
+        var obj = report.HindranceObjects.FirstOrDefault(o => o.Id == objectID);
+        if(obj == null)
+        {
+            TempData["Error"] = "Ingen objekter funnet";
+            return RedirectToAction("ObjectReview", new { id, objectID });
+        }
+
+        var feedback = new ReportFeedbackTable
+        {
+            Id = Guid.NewGuid(),
+            Feedback = feedbackText,
+            FeedbackType = feedbackType,
+            FeedbackById = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value),
+            ReportId = report.Id,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _dbContext.ReportFeedbacks.Add(feedback);
+        _dbContext.SaveChanges();
+
+        TempData["Success"] = "Tilbakemeldingen er sendt";
+        return RedirectToAction("ObjectReview", new { id, objectID });
     }
 
 
