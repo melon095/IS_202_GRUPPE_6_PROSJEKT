@@ -18,6 +18,15 @@
                             <br />
                             <p>@Model.SelectedObject.Description</p>
                             <br />
+                            <br />
+                            @if(Model.SelectedObject.IsVerified)
+                            {
+                                <p><strong>Objekt verifisert</strong> @Model.SelectedObject.VerifiedAt</p>
+                            }
+                            else
+                            {
+                                <p>Objekt enda ikke verifisert</p>
+                            }
                             <p>Status: Denne rapporten er @Model.SelectedObject.ObjectStatus</p>
                             @using (Html.BeginForm("ObjectReview", "Admin", FormMethod.Post))
                             {
@@ -126,37 +135,7 @@
                                     <button type="submit" class="button is-link">Kommenter</button>
                                 </div>
                             }
-                           @* <form asp-controller="Admin" asp-action="Comment" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="Id" value="@Model.Id" />
-                                <input type="hidden" name="objectId" value="@Model.SelectedObject.Id" />
-
-                                <div class="field">
-                                    <label class="label">Tilbakemelding</label>
-                                    <div class="control">
-                                        <textarea name="feedbackText" class="textarea" placeholder="Skriv tilbakemelding her" required></textarea>
-                                    </div>
-                                </div>
-
-                                <div class="field">
-                                    <label class="label">Validering</label>
-                                    <div class="control">
-                                        <div class="select">
-                                            <select name="feedbackType">
-                                                <option value="Note">Notat</option>
-                                                <option value="RequestForChange">Forslag om endring</option>
-                                                <option value="Approval">Godkjenn</option>
-                                                <option value="Rejection">Alvså</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="control mt-3">
-                                    <button type="submit" class="button is-link">Kommenter</button>
-                                </div>
-                            </form>
-                            *@
+                          
                         }
                         else
                         {

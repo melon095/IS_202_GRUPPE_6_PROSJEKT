@@ -22,6 +22,9 @@ namespace Kartverket.Web.Models.Report.Response
 
             public ReviewStatus ObjectStatus { get; set; }
             public List<Point> Points { get; set; } = [];
+            
+            public DateTime? VerifiedAt { get; set; }
+            public bool IsVerified => VerifiedAt.HasValue;
 
         }
     }

@@ -107,7 +107,8 @@ public class AdminController : Controller
                 Id = objects.Id,
                 Title = objects.Title,
                 Description = objects.Description,
-                ObjectStatus = objects.ReviewStatus
+                ObjectStatus = objects.ReviewStatus,
+                VerifiedAt = objects.VerifiedAt
             };
             foreach (var point in objects.HindrancePoints)
                 objectData.Points.Add(new Point
@@ -167,6 +168,7 @@ public class AdminController : Controller
                 Title = obj.Title,
                 Description = obj.Description,
                 ObjectStatus = obj.ReviewStatus,
+                VerifiedAt = obj.VerifiedAt
             };
             objectData.Feedbacks = report.Feedbacks
                 .Where(f => f.ReportId == report.Id)
@@ -230,9 +232,11 @@ public class AdminController : Controller
         {
             case "accept":
                 selectedObject.ReviewStatus = ReviewStatus.Resolved;
+                selectedObject.VerifiedAt = DateTime.UtcNow;
                 break;
             case "deny":
                 selectedObject.ReviewStatus = ReviewStatus.Closed;
+                selectedObject.VerifiedAt = DateTime.UtcNow;
                 break;
 
             default:
@@ -250,6 +254,8 @@ public class AdminController : Controller
         dersom alle objekter er closed/rejected skal rapporten bli rejected
          */
 
+        /* Trenger ikke denne koden akk nå hvis kartverket kan godta og avslå selv*/
+        /*
         if(reportVerify.All(o => o.ReviewStatus == ReviewStatus.Resolved))
         {
             report.ReviewStatus = ReviewStatus.Resolved;
@@ -262,6 +268,7 @@ public class AdminController : Controller
         {
             report.ReviewStatus = ReviewStatus.Draft;
         }
+        */
 
         _dbContext.SaveChanges();
 

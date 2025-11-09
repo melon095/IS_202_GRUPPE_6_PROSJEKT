@@ -59,12 +59,23 @@
                 @if(Model.SelectedObject is { } selObj)
                     {
                         <h3 class="title is-4">@selObj.Title</h3>
+                        <br />
                         <p>@selObj.Description</p>
+                        <br />
                         <p>Status: @selObj.ObjectStatus</p>
-                    <a asp-controller="Admin"
-                       asp-action="ObjectReview"
-                       asp-route-id="@Model.Id"
-                    asp-route-objectId="@Model.SelectedObject.Id">Vurder objekt</a>
+                        <br />
+                        @if(selObj.IsVerified)
+                        {
+                            <p><strong>Verifisert:</strong> @selObj.VerifiedAt</p>
+                        }
+                        else
+                        {
+                            <p>Dette objektet er ikke vurdert</p>
+                        }
+                         <a asp-controller="Admin"
+                          asp-action="ObjectReview"
+                          asp-route-id="@Model.Id"
+                          asp-route-objectId="@Model.SelectedObject.Id">Vurder objekt</a>
                     }
                 else
                 {
