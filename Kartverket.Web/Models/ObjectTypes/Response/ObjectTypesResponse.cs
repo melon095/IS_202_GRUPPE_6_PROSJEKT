@@ -1,4 +1,6 @@
-﻿namespace Kartverket.Web.Models.ObjectTypes.Response;
+﻿using Kartverket.Web.Database.Tables;
+
+namespace Kartverket.Web.Models.ObjectTypes.Response;
 
 public class ObjectTypesResponse(List<ObjectTypesResponse.ObjectType> objectTypes)
     : List<ObjectTypesResponse.ObjectType>(objectTypes)
@@ -7,8 +9,8 @@ public class ObjectTypesResponse(List<ObjectTypesResponse.ObjectType> objectType
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public string PrimaryImageUrl { get; set; }
-        public string? MarkerImageUrl { get; set; }
+        public string? ImageUrl { get; set; }
+        public string? Colour { get; set; }
+        public GeometryType GeometryType { get; set; }
     }
-
 }

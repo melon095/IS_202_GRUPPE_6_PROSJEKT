@@ -27,69 +27,59 @@ public static class SeedHindranceTypes
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Lyktestolpe",
-                PrimaryImageUrl = "/images/map-objects/Lyktestolpe.svg",
-                MarkerImageUrl = "/images/map-objects/Lyktestolpe.svg"
+                Name = "Standard",
+                ImageUrl = "/images/hindrances/Default.svg",
+                GeometryType = GeometryType.Point
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Kraftlinje",
-                PrimaryImageUrl = "/images/map-objects/Kraftlinje.svg",
-                MarkerImageUrl = "/images/map-objects/Kraftlinje.svg"
+                Name = "Flagstaff",
+                ImageUrl = "/images/hindrances/Flagstaff.svg",
+                GeometryType = GeometryType.Point
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Flagg Stang",
-                PrimaryImageUrl = "/images/map-objects/Flagg.svg",
-                MarkerImageUrl = "/images/map-objects/Flagg.svg"
+                Name = "Mast",
+                ImageUrl = "/images/hindrances/Mast.svg",
+                GeometryType = GeometryType.Point
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Kommunikasjons Tårn",
-                PrimaryImageUrl = "/images/map-objects/Radiomast.svg",
-                MarkerImageUrl = "/images/map-objects/Radiomast.svg"
+                Name = "Strømledning",
+                ImageUrl = "/images/hindrances/Power.svg",
+                GeometryType = GeometryType.Line
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Kran",
-                PrimaryImageUrl = "/images/map-objects/Heisekran.svg",
-                MarkerImageUrl = "/images/map-objects/Heisekran.svg"
+                Name = "Vindmølle",
+                ImageUrl = "/images/hindrances/Wind.svg",
+                GeometryType = GeometryType.Point
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Vind Mølle",
-                PrimaryImageUrl = "/images/map-objects/VindMolle.svg",
-                MarkerImageUrl = "/images/map-objects/VindMolle.svg"
-            },
-            new()
-            {
-                Id = Guid.NewGuid(),
-                Name = "Bro",
-                PrimaryImageUrl = "/images/map-objects/Bro.svg",
-                MarkerImageUrl = "/images/map-objects/Bro.svg"
+                Name = "Flyforbudssone",
+                Colour = "#EEAF61",
+                GeometryType = GeometryType.Area
             }
         };
 
         foreach (var type in types)
         {
+            if (type.ImageUrl is { } url && !File.Exists($"wwwroot{url}"))
+                continue;
+
             var existingType = await context.HindranceTypes
                 .FirstOrDefaultAsync(t => t.Name == type.Name);
 
             if (existingType == null)
-            {
                 await context.HindranceTypes.AddAsync(type);
-            }
             else
-            {
-                existingType.PrimaryImageUrl = type.PrimaryImageUrl;
-                existingType.MarkerImageUrl = type.MarkerImageUrl;
-                context.HindranceTypes.Update(existingType);
-            }
+                existingType.ImageUrl = type.ImageUrl;
         }
     }
 }

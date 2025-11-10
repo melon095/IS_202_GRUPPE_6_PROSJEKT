@@ -1,4 +1,4 @@
-﻿using Kartverket.Web.Database;
+using Kartverket.Web.Database;
 using Kartverket.Web.Models.ObjectTypes.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,8 +21,9 @@ public class ObjectTypesController : Controller
             {
                 Id = ot.Id,
                 Name = ot.Name,
-                PrimaryImageUrl = ot.PrimaryImageUrl,
-                MarkerImageUrl = ot.MarkerImageUrl
+                ImageUrl = ot.ImageUrl,
+                Colour = ot.Colour,
+                GeometryType = ot.GeometryType
             })
             .ToListAsync();
 
