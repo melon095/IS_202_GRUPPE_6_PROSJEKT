@@ -28,7 +28,7 @@ public class AdminController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index([FromQuery] int page = 1, [FromQuery] DateOnly? sortDate = null,
+    public IActionResult Index([FromQuery] int page = 1, [FromQuery] DateOnly? sortDate = null, [FromQuery] string sortStatus = "all",
         [FromQuery] string sortOrder = "desc")
     {
         sortDate ??= DateOnly.FromDateTime(DateTime.Now);
@@ -48,6 +48,14 @@ public class AdminController : Controller
             _ => reportQuery.OrderByDescending(r => r.CreatedAt)
         };
 
+        reportQuery = sortStatus.ToLower() switch
+        {
+            "resolved" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Resolved),
+            "closed" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Closed),
+            "draft" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Draft),
+            _ => reportQuery
+        };
+
         var reports = reportQuery
             .Skip((page - 1) * ReportPerPage)
             .Take(ReportPerPage)
@@ -58,7 +66,9 @@ public class AdminController : Controller
         {
             CurrentPage = page,
             TotalPages = totalpages,
-            SortDate = sortDate.Value
+            SortDate = sortDate.Value,
+            SortStatus = sortStatus
+            
         };
 
 
@@ -73,6 +83,7 @@ public class AdminController : Controller
             });
 
 
+        ViewData["SortStatus"] = sortStatus;    
         ViewBag.SortOrder = sortOrder.ToLower();
 
         return View(Model);
@@ -132,13 +143,13 @@ public class AdminController : Controller
 
                 Model.Objects.Add(objectData);
 
+
                 if (selectedObject != null && objects.Id == selectedObject.Id) Model.SelectedObject = objectData;
             }
         }
 
         return View(Model);
     }
-
     
     [HttpGet]
     public IActionResult ObjectReview(Guid id, [FromQuery] Guid? objectID)
@@ -172,6 +183,7 @@ public class AdminController : Controller
             };
             objectData.Feedbacks = report.Feedbacks
                 .Where(f => f.ReportId == report.Id)
+                .OrderByDescending(f => f.CreatedAt)
                 .Select( f => new ObjectReviewModel.FeedBackModel
                 {
                     Id = f.Id,
@@ -254,21 +266,22 @@ public class AdminController : Controller
         dersom alle objekter er closed/rejected skal rapporten bli rejected
          */
 
-        /* Trenger ikke denne koden akk nå hvis kartverket kan godta og avslå selv*/
-        /*
-        if(reportVerify.All(o => o.ReviewStatus == ReviewStatus.Resolved))
+        var notReviewed = reportVerify.Where(o => o.ReviewStatus == ReviewStatus.Draft).ToList();
+        var rejectedObjects = reportVerify.Where(o => o.ReviewStatus == ReviewStatus.Closed).ToList();
+
+        // Alle objekter er gjennomgått
+        if (notReviewed.Count == 0)
         {
             report.ReviewStatus = ReviewStatus.Resolved;
+            _logger.LogInformation("Alle objekter i rapporten er vurdert ({ID})", report.Id);
         }
-        else if (reportVerify.All(o => o.ReviewStatus == ReviewStatus.Closed))
+
+        // Alle objekter er avslått
+        if (rejectedObjects.Count == reportVerify.Count)
         {
             report.ReviewStatus = ReviewStatus.Closed;
+            _logger.LogInformation("Rapport rejecta! ({ID})", report.Id);
         }
-        else
-        {
-            report.ReviewStatus = ReviewStatus.Draft;
-        }
-        */
 
         _dbContext.SaveChanges();
 

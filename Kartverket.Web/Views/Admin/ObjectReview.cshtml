@@ -1,4 +1,5 @@
-﻿@{
+﻿@using Kartverket.Web.Database.Tables
+@{
     ViewBag.Title = "ObjectReview";
 }
 @* // TODO:  Bedre navn enn repotrviewmodel *@
@@ -91,9 +92,21 @@
 
                                     <article class="message is-light mb-2">
                                         <div class="message-body">
-                                            <strong>@com.FeedbackByName</strong> (@com.FeedbackType):
+                                            <strong>@com.FeedbackByName</strong> (
+                                            @(com.FeedbackType switch
+                                            {
+                                                FeedbackType.Approval => "Godkjenning",
+                                                FeedbackType.Rejection => "Åvslå",
+                                                FeedbackType.Note => "Notat",
+                                                FeedbackType.RequestForChange => "Forslag om endring",
+                                                _ => com.FeedbackType.ToString()
+                                            }
+                                            )
+                                            ):
                                             <br />
                                             @com.Feedback
+                                            <br />
+                                            @com.CreatedAt
                                         </div>
                                     </article>
 
@@ -202,6 +215,9 @@
             height: 100%;
             margin: 0;
         }
+        .section {
+            padding: 15px;
+        }
 
         .box {
         border: 1px solid #dbdbdb; /* Example border */
@@ -223,7 +239,9 @@
             border-radius: 0 0 6px 6px; /* Optional: smooth bottom corners */
         }
         #CommentField {
-            overflow-x: auto;
+            overflow-x: hidden;
+            max-height: 200px;
+            overflow-y: auto;
         }
 
 
