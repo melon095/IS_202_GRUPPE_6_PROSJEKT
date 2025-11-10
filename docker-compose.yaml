@@ -3,6 +3,7 @@ services:
     build:
       context: .
     environment:
+      - Logging:LogLevel:Vite=Debug
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Server=db;Database=gruppe6_db;User=root;Password=passord;
     restart: unless-stopped
