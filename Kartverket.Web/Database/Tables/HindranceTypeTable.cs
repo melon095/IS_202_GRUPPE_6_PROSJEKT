@@ -9,6 +9,8 @@ public enum GeometryType
 
 public class HindranceTypeTable : BaseModel
 {
+    public const string DEFAULT_TYPE_NAME = "Standard";
+
     public Guid Id { get; set; }
 
     public string Name { get; set; }

@@ -27,7 +27,7 @@ public static class SeedHindranceTypes
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Standard",
+                Name = HindranceTypeTable.DEFAULT_TYPE_NAME,
                 ImageUrl = "/images/hindrances/Default.svg",
                 GeometryType = GeometryType.Point
             },
