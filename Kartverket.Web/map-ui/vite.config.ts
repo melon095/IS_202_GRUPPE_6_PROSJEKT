@@ -1,14 +1,14 @@
 ﻿import react from "@vitejs/plugin-react-swc";
-import { spawn } from "child_process";
+import {spawn} from "child_process";
 import fs from "fs";
 import path from "path";
-import { UserConfig, defineConfig } from "vite";
+import {defineConfig, UserConfig} from "vite";
 
 // Get base folder for certificates.
 const baseFolder =
-	process.env.APPDATA !== undefined && process.env.APPDATA !== ""
-		? `${process.env.APPDATA}/ASP.NET/https`
-		: `${process.env.HOME}/.aspnet/https`;
+    process.env.APPDATA !== undefined && process.env.APPDATA !== ""
+        ? `${process.env.APPDATA}/ASP.NET/https`
+        : `${process.env.HOME}/.aspnet/https`;
 
 // Generate the certificate name using the NPM package name
 const certificateName = process.env.npm_package_name;
@@ -25,84 +25,88 @@ const imagePattern = /\.(png|jpe?g|gif|svg|webp|avif)$/;
 
 // Export Vite configuration
 export default defineConfig(async () => {
-	if (!fs.existsSync(baseFolder)) {
-		fs.mkdirSync(baseFolder, { recursive: true });
-	}
+    const isProduction = process.env.NODE_ENV === "production";
 
-	// Ensure the certificate and key exist
-	if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
-		// Wait for the certificate to be generated
-		await new Promise<void>((resolve) => {
-			spawn("dotnet", ["dev-certs", "https", "--export-path", certFilePath, "--format", "Pem", "--no-password"], {
-				stdio: "inherit",
-			}).on("exit", (code) => {
-				resolve();
-				if (code) {
-					process.exit(code);
-				}
-			});
-		});
-	}
+    if (!fs.existsSync(baseFolder)) {
+        fs.mkdirSync(baseFolder, {recursive: true});
+    }
 
-	// Define Vite configuration
-	const config: UserConfig = {
-		appType: "custom",
-		root: ".",
-		base: "/map-ui/",
-		publicDir: "public",
-		build: {
-			manifest: true,
-			emptyOutDir: true,
-			outDir: "../wwwroot/map-ui",
-			assetsDir: "",
-			rollupOptions: {
-				input: "src/main.tsx",
-				output: {
-					// Save entry files to the appropriate folder
-					entryFileNames: "js/[name].[hash].js",
-					// Save chunk files to the js folder
-					chunkFileNames: "js/[name]-chunk.js",
-					// Save asset files to the appropriate folder
-					assetFileNames: (info) => {
-						if (info.name) {
-							// If the file is a CSS file, save it to the css folder
-							if (cssPattern.test(info.name)) {
-								return "css/[name][extname]";
-							}
-							// If the file is an image file, save it to the images folder
-							if (imagePattern.test(info.name)) {
-								return "images/[name][extname]";
-							}
+    if (!isProduction) {
+        // Ensure the certificate and key exist
+        if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
+            // Wait for the certificate to be generated
+            await new Promise<void>((resolve) => {
+                spawn("dotnet", ["dev-certs", "https", "--export-path", certFilePath, "--format", "Pem", "--no-password"], {
+                    stdio: "inherit",
+                }).on("exit", (code) => {
+                    resolve();
+                    if (code) {
+                        process.exit(code);
+                    }
+                });
+            });
+        }
+    }
 
-							// If the file is any other type of file, save it to the assets folder
-							return "assets/[name][extname]";
-						} else {
-							// If the file name is not specified, save it to the output directory
-							return "[name][extname]";
-						}
-					},
-				},
-			},
-		},
-		server: {
-			strictPort: true,
-			https: {
-				cert: certFilePath,
-				key: keyFilePath,
-			},
-		},
-		plugins: [react()],
-		optimizeDeps: {
-			include: [],
-		},
-		css: {
-			preprocessorOptions: {
-				scss: {
-					api: "modern-compiler",
-				},
-			},
-		},
-	};
+    // Define Vite configuration
+    const config: UserConfig = {
+        appType: "custom",
+        root: ".",
+        base: "/map-ui/",
+        publicDir: "public",
+        build: {
+            manifest: true,
+            emptyOutDir: true,
+            outDir: "../wwwroot/map-ui",
+            assetsDir: "",
+            rollupOptions: {
+                input: "src/main.tsx",
+                output: {
+                    // Save entry files to the appropriate folder
+                    entryFileNames: "js/[name].[hash].js",
+                    // Save chunk files to the js folder
+                    chunkFileNames: "js/[name]-chunk.js",
+                    // Save asset files to the appropriate folder
+                    assetFileNames: (info) => {
+                        if (info.name) {
+                            // If the file is a CSS file, save it to the css folder
+                            if (cssPattern.test(info.name)) {
+                                return "css/[name][extname]";
+                            }
+                            // If the file is an image file, save it to the images folder
+                            if (imagePattern.test(info.name)) {
+                                return "images/[name][extname]";
+                            }
 
-	return config;
+                            // If the file is any other type of file, save it to the assets folder
+                            return "assets/[name][extname]";
+                        } else {
+                            // If the file name is not specified, save it to the output directory
+                            return "[name][extname]";
+                        }
+                    },
+                },
+            },
+        },
+        server: isProduction ? undefined : {
+            strictPort: true,
+            https: {
+                cert: certFilePath,
+                key: keyFilePath,
+            },
+        },
+        plugins: [react()],
+        optimizeDeps: {
+            include: [],
+        },
+        css: {
+            preprocessorOptions: {
+                scss: {
+                    api: "modern-compiler",
+                },
+            },
+        },
+    };
+
+    return config;
 });
