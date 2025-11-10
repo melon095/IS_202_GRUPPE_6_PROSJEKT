@@ -63,7 +63,7 @@ public static class SeedHindranceTypes
             {
                 Id = Guid.NewGuid(),
                 Name = "Flyforbudssone",
-                Colour = "#EEAF61",
+                Colour = "#8A02C0",
                 GeometryType = GeometryType.Area
             }
         };

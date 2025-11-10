@@ -22,7 +22,7 @@ const BASE_SHADOW_SIZE: [number, number] = [41, 41];
 
 const calculateIconSize = (
     currentZoom: number
-): { iconSize: [number, number]; shadowSize: [number, number]; iconAnchor: [number, number] } => {
+): { iconSize: [number, number]; shadowSize: [number, number] } => {
     const zoomDiff = currentZoom - BASE_ZOOM;
     const scale = Math.pow(2, zoomDiff * 0.5);
 
@@ -36,9 +36,9 @@ const calculateIconSize = (
     return {
         iconSize: [iconWidth, iconHeight],
         shadowSize: [shadowWidth, shadowHeight],
-        iconAnchor: [Math.round(iconWidth / 2), iconHeight],
     };
 };
+
 const ObjectGeometry = React.memo(({obj, colour}: ObjectGeometryProps) => {
     const {getObjectTypeById} = useObjectTypes();
     const map = useMap();
@@ -57,15 +57,14 @@ const ObjectGeometry = React.memo(({obj, colour}: ObjectGeometryProps) => {
 
     const icon = useMemo(() => {
         const objectType = getObjectTypeById(obj.typeId);
-        const sizes = calculateIconSize(zoom);
+        const {iconSize, shadowSize} = calculateIconSize(zoom);
 
         return L.icon({
             iconUrl: objectType?.imageUrl || DEFAULT_ICON_MARKER,
             shadowUrl: DEFAULT_SHADOW_MARKER,
-            iconSize: sizes.iconSize,
-            iconAnchor: sizes.iconAnchor,
+            iconSize: iconSize,
             popupAnchor: [1, -34],
-            shadowSize: sizes.shadowSize,
+            shadowSize: shadowSize,
         });
     }, [obj.typeId, zoom, getObjectTypeById]);
 

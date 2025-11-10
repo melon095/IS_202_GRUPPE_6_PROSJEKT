@@ -9,14 +9,12 @@ public enum GeometryType
 
 public class HindranceTypeTable : BaseModel
 {
-    public const string STANDARD_COLOUR = "#000000";
-
     public Guid Id { get; set; }
 
     public string Name { get; set; }
-    public string? ImageUrl { get; set; }
+    public string? ImageUrl { get; set; } = null;
     public GeometryType GeometryType { get; set; }
-    public string Colour { get; set; } = STANDARD_COLOUR;
+    public string? Colour { get; set; } = null;
 
     public List<HindranceObjectTable> MapObjects { get; set; }
 }
