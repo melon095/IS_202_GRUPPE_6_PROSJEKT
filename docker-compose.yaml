@@ -2,7 +2,6 @@ services:
   app:
     build:
       context: .
-      dockerfile: Kartverket.Web/Dockerfile
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Server=db;Database=gruppe6_db;User=root;Password=passord;
