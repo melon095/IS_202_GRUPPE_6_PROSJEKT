@@ -131,7 +131,7 @@ if (!app.Environment.IsDevelopment())
 {
     var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
     await db.Database.MigrateAsync();
-    // await DatabaseContextSeeding.Seed(db);
+    await DatabaseContextSeeding.Seed(db);
 }
 
 {
