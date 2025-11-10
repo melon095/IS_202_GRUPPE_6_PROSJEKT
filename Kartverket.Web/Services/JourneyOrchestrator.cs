@@ -42,7 +42,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         var report = await GetOrCreateDraft(userId, journeyId, cancellationToken);
 
         var typeCache = await BuildTypeCache(cancellationToken);
-        var defaultTypeId = GetDefaultTypeId(typeCache);
+        var defaultTypeId = GetDefaultTypeId(body.GeometryType, typeCache);
 
         var hindranceTypeId = body.TypeId.HasValue && typeCache.ContainsKey(body.TypeId.Value)
             ? body.TypeId.Value
@@ -99,10 +99,10 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         _reportService.FinaliseReport(report, request.Journey.Title, request.Journey.Description);
 
         var typeCache = await BuildTypeCache(cancellationToken);
-        var defaultTypeId = GetDefaultTypeId(typeCache);
-
         foreach (var objDto in request.Objects)
         {
+            var defaultTypeId = GetDefaultTypeId(objDto.GeometryType, typeCache);
+
             if (objDto.Deleted)
             {
                 await DeleteObject(report, objDto.Id, cancellationToken);
@@ -189,9 +189,10 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         return types.ToDictionary(t => t.Id, t => t);
     }
 
-    private Guid GetDefaultTypeId(Dictionary<Guid, HindranceTypeTable> typeCache)
+    private Guid GetDefaultTypeId(GeometryType type, Dictionary<Guid, HindranceTypeTable> typeCache)
     {
-        var defaultTypeId = typeCache.Where(x => x.Value.Name == HindranceTypeTable.DEFAULT_TYPE_NAME)
+        var defaultTypeId = typeCache.Where(x => x.Value.Name == HindranceTypeTable.DEFAULT_TYPE_NAME &&
+                                                 x.Value.GeometryType == type)
             .Select(x => x.Key)
             .FirstOrDefault();
 

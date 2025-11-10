@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createContext, useContext } from "react";
 
-import { ObjectType } from "../types";
+import { GeometryType, ObjectType, ObjectTypesListResponse } from "../types";
 
 interface ObjectTypesContextType {
 	objectTypes: ObjectType[];
@@ -9,11 +9,12 @@ interface ObjectTypesContextType {
 	error: Error | null;
 	getObjectTypeById: (id?: string) => ObjectType | undefined;
 	getObjectTypeByName: (name: string) => ObjectType | undefined;
+	getStandardObjectType: (type: GeometryType) => ObjectType | undefined;
 }
 
 const ObjectTypeContext = createContext<ObjectTypesContextType | undefined>(undefined);
 
-const fetchObjectTypes = async (): Promise<ObjectType[]> => {
+const fetchObjectTypes = async (): Promise<ObjectTypesListResponse> => {
 	const response = await fetch("/ObjectTypes/List");
 	if (!response.ok) {
 		throw new Error("Failed to fetch object types");
@@ -22,11 +23,7 @@ const fetchObjectTypes = async (): Promise<ObjectType[]> => {
 };
 
 export const ObjectTypesProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const {
-		data: objectTypes = [],
-		isLoading,
-		error,
-	} = useQuery<ObjectType[]>({
+	const { data, isLoading, error } = useQuery({
 		queryKey: ["objectTypes"],
 		queryFn: fetchObjectTypes,
 		staleTime: 1000 * 60 * 60, // 1 hour
@@ -37,23 +34,37 @@ export const ObjectTypesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 	});
 
 	const getObjectTypeById = (id?: string) => {
-		if (!id) return undefined;
+		if (!id || !data) return undefined;
 
-		return objectTypes.find((type) => type.id === id);
+		return data.objectTypes.find((type) => type.id === id);
 	};
 
 	const getObjectTypeByName = (name?: string) => {
-		if (!name) return undefined;
+		if (!name || !data) return undefined;
 
-		return objectTypes.find((type) => type.name === name);
+		return data?.objectTypes.find((type) => type.name === name);
+	};
+
+	const getStandardObjectType = (type: GeometryType): ObjectType | undefined => {
+		if (!data) return undefined;
+
+		const id = data?.standardTypeIds[type as keyof typeof data.standardTypeIds];
+		const objectType = getObjectTypeById(id);
+
+		if (!objectType) {
+			throw new Error(`Standard object type for geometry type ${type} not found.`);
+		}
+
+		return objectType;
 	};
 
 	const contextValue: ObjectTypesContextType = {
-		objectTypes,
+		objectTypes: data?.objectTypes || [],
 		isLoading,
 		error: error ? (error as Error) : null,
 		getObjectTypeById,
 		getObjectTypeByName,
+		getStandardObjectType,
 	};
 
 	return <ObjectTypeContext.Provider value={contextValue}>{children}</ObjectTypeContext.Provider>;

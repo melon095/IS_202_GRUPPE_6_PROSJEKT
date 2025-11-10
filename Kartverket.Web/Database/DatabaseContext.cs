@@ -1,4 +1,4 @@
-using Kartverket.Web.Database.Tables;
+﻿using Kartverket.Web.Database.Tables;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -52,10 +52,6 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
 
         modelBuilder.Entity<RoleTable>()
             .HasIndex(r => r.Name)
-            .IsUnique();
-
-        modelBuilder.Entity<HindranceTypeTable>()
-            .HasIndex(mot => mot.Name)
             .IsUnique();
 
         modelBuilder.Entity<ReportTable>()

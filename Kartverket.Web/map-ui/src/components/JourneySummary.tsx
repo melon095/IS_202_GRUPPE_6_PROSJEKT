@@ -228,7 +228,7 @@ export const JourneySummary = ({ journey, onClose, onSubmit, isSubmitting, isErr
 													{objectType ? (
 														<div className="is-flex is-align-items-center">
 															<Icon
-																src={objectType.primaryImageUrl}
+																src={objectType.imageUrl || ""}
 																alt={objectType.name}
 															/>
 															<span className="is-size-6-tablet">{objectType.name}</span>

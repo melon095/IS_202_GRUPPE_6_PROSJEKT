@@ -34,6 +34,20 @@ public static class SeedHindranceTypes
             new()
             {
                 Id = Guid.NewGuid(),
+                Name = HindranceTypeTable.DEFAULT_TYPE_NAME,
+                ImageUrl = "/images/hindrances/Default.svg",
+                GeometryType = GeometryType.Line
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = HindranceTypeTable.DEFAULT_TYPE_NAME,
+                ImageUrl = "/images/hindrances/Default.svg",
+                GeometryType = GeometryType.Area
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
                 Name = "Flagstaff",
                 ImageUrl = "/images/hindrances/Flagstaff.svg",
                 GeometryType = GeometryType.Point
@@ -74,7 +88,7 @@ public static class SeedHindranceTypes
                 continue;
 
             var existingType = await context.HindranceTypes
-                .FirstOrDefaultAsync(t => t.Name == type.Name);
+                .FirstOrDefaultAsync(t => t.Name == type.Name && t.GeometryType == type.GeometryType);
 
             if (existingType == null)
                 await context.HindranceTypes.AddAsync(type);

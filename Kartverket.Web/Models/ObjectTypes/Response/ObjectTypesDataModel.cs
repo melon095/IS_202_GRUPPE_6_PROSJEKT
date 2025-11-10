@@ -2,9 +2,12 @@
 
 namespace Kartverket.Web.Models.ObjectTypes.Response;
 
-public class ObjectTypesResponse(List<ObjectTypesResponse.ObjectType> objectTypes)
-    : List<ObjectTypesResponse.ObjectType>(objectTypes)
+public class ObjectTypesDataModel
 {
+    public List<ObjectType> ObjectTypes { get; set; } = [];
+
+    public List<Guid> StandardTypeIds { get; set; } = [];
+
     public class ObjectType
     {
         public Guid Id { get; set; }

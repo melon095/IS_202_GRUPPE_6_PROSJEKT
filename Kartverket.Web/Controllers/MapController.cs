@@ -95,14 +95,14 @@ public class MapController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<MapObjectsDataModel[]> GetObjects(
+    public async Task<MapObjectDataModel[]> GetObjects(
         [FromQuery] DateTime? since = null,
         [FromQuery] Guid? reportId = null,
         [FromServices] CancellationToken cancellationToken = default)
     {
         var mapObjects = await _hindranceService.GetAllObjectsSince(since, reportId, cancellationToken);
 
-        return mapObjects.Select(mo => new MapObjectsDataModel
+        return mapObjects.Select(mo => new MapObjectDataModel
         {
             Id = mo.Id,
             ReportId = mo.ReportId,
@@ -111,7 +111,7 @@ public class MapController : Controller
             Title = mo.Title,
             Points = mo.HindrancePoints
                 .OrderBy(o => o.Order)
-                .Select(mp => new MapPointDataModel
+                .Select(mp => new MapObjectDataModel.MapPoint
                 {
                     Lat = mp.Latitude,
                     Lng = mp.Longitude,

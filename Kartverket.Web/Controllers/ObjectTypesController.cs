@@ -1,4 +1,5 @@
 using Kartverket.Web.Database;
+using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.ObjectTypes.Response;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,10 @@ public class ObjectTypesController : Controller
         _dbContext = dbContext;
     }
 
-    public async Task<ObjectTypesResponse> List()
+    public async Task<ObjectTypesDataModel> List()
     {
         var objectTypes = await _dbContext.HindranceTypes
-            .Select(ot => new ObjectTypesResponse.ObjectType
+            .Select(ot => new ObjectTypesDataModel.ObjectType
             {
                 Id = ot.Id,
                 Name = ot.Name,
@@ -27,6 +28,14 @@ public class ObjectTypesController : Controller
             })
             .ToListAsync();
 
-        return new ObjectTypesResponse(objectTypes);
+        var standardTypeIds = objectTypes.Where(ot => ot.Name == HindranceTypeTable.DEFAULT_TYPE_NAME)
+            .Select(ot => ot.Id)
+            .ToList();
+
+        return new ObjectTypesDataModel
+        {
+            ObjectTypes = objectTypes,
+            StandardTypeIds = standardTypeIds
+        };
     }
 }
