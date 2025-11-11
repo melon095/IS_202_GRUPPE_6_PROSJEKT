@@ -26,34 +26,45 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
                 qp.append("reportId", currentReportId);
             }
 
-            const res = await fetch(`/Map/GetObjects?${qp.toString()}`, {
-                method: "GET",
-            });
+            try {
 
-            if (!res.ok) throw await extrapolateErrors(res);
+                const res = await fetch(`/Map/GetObjects?${qp.toString()}`, {
+                    method: "GET",
+                });
 
-            const newData = (await res.json()) as ServerStateResponse;
+                if (!res.ok) throw await extrapolateErrors(res);
 
-            lastFetchTimeRef.current = new Date().toISOString();
+                const newData = (await res.json()) as ServerStateResponse;
 
-            const oldData = queryClient.getQueryData<ServerStateResponse>(["serverSideObjects", currentReportId]);
+                lastFetchTimeRef.current = new Date().toISOString();
 
-            if (!oldData) return newData;
+                const oldData = queryClient.getQueryData<ServerStateResponse>(["serverSideObjects", currentReportId]);
 
-            const merged = [...oldData];
+                if (!oldData) return newData;
 
-            newData.forEach((newObj) => {
-                const index = merged.findIndex((obj) => obj.id === newObj.id);
-                if (index !== -1) {
-                    merged[index] = newObj;
-                } else {
-                    merged.push(newObj);
-                }
-            });
+                const merged = [...oldData];
 
-            queryClient.setQueryData(["serverSideObjects", currentReportId], merged);
+                newData.forEach((newObj) => {
+                    const index = merged.findIndex((obj) => obj.id === newObj.id);
+                    if (index !== -1) {
+                        merged[index] = newObj;
+                    } else {
+                        merged.push(newObj);
+                    }
+                });
 
-            return merged;
+                queryClient.setQueryData(["serverSideObjects", currentReportId], merged);
+
+                return merged;
+            } catch (error) {
+                // Hvis noe går galt, bryr vi oss ikke om feilmeldingen, vi bare fortsetter å bruke gamle data
+
+                const oldData = queryClient.getQueryData<ServerStateResponse>(["serverSideObjects", currentReportId]);
+                if (oldData)
+                    return oldData;
+
+                throw error;
+            }
         },
         refetchInterval: ONE_MINUTE_MS,
         refetchOnWindowFocus: false,
