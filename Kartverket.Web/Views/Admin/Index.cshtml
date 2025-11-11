@@ -30,6 +30,7 @@
                         <!option value="Resolved" @(Model.SortStatus == "Resolved" ? "selected" : "")>Godkjent</!option>
                         <!option value="Closed" @(Model.SortStatus == "Closed" ? "selected" : "")>Avlsått</!option>
                         <!option value="Draft" @(Model.SortStatus == "Draft" ? "selected" : "")>Utkast</!option>
+                        <!option value="Submitted" @(Model.SortStatus == "Submitted" ? "selected" : "")>Uåpnet</!option>
                     </select>
                     <input type="submit" value="Filtrer">
                 </div>
@@ -60,7 +61,14 @@
                     <td>
                         @report.TotalObjects
                     </td>
-                    <td>@report.Review.ToString()</td> 
+                    <td>@(report.Review switch
+                        {
+                            ReviewStatus.Resolved => "Godkjent",
+                            ReviewStatus.Closed => "Avslått",
+                            ReviewStatus.Draft => "Utkast",
+                            ReviewStatus.Submitted => "Uåpnet rapport",
+                            _ => report.Review.ToString()
+                        })</td> 
                     <td>
                         <a class="nav-link, text-dark"
                         asp-controller="Admin"

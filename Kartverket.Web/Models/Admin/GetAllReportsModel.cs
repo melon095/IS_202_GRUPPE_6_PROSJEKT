@@ -3,7 +3,7 @@ using Kartverket.Web.Database;
 
 namespace Kartverket.Web.Models.Admin
 {
-    // Må adde status for om rapporten er ferdigbehandlet eller ikke
+
     public class GetAllReportsModel
     {
         public int CurrentPage { get; set; }

@@ -39,6 +39,16 @@ public class AdminController : Controller
         reportQuery = reportQuery
             .Where(r => DateOnly.FromDateTime(r.CreatedAt) <= sortDate.Value);
 
+        reportQuery = sortStatus.ToLower() switch
+        {
+            "resolved" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Resolved),
+            "closed" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Closed),
+            "draft" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Draft),
+            "submitted" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Submitted),
+            _ => reportQuery
+        };
+
+
         var totalReports = reportQuery.Count();
         var totalpages = (int)Math.Ceiling(totalReports / (double)ReportPerPage);
 
@@ -46,14 +56,6 @@ public class AdminController : Controller
         {
             "asc" => reportQuery.OrderBy(r => r.CreatedAt),
             _ => reportQuery.OrderByDescending(r => r.CreatedAt)
-        };
-
-        reportQuery = sortStatus.ToLower() switch
-        {
-            "resolved" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Resolved),
-            "closed" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Closed),
-            "draft" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Draft),
-            _ => reportQuery
         };
 
         var reports = reportQuery
@@ -258,13 +260,6 @@ public class AdminController : Controller
 
         var reportVerify = report.HindranceObjects;
 
-        /*
-            Hvis alle objekter er "draft" skal rapporten ikke være godjkent eller closed
-
-            Dersom alle objekter er resolved eller closed kan rapporten bli godkjent
-        Dersom alle objekter er resolved kan rapporten bli godkjent
-        dersom alle objekter er closed/rejected skal rapporten bli rejected
-         */
 
         var notReviewed = reportVerify.Where(o => o.ReviewStatus == ReviewStatus.Draft).ToList();
         var rejectedObjects = reportVerify.Where(o => o.ReviewStatus == ReviewStatus.Closed).ToList();
