@@ -27,7 +27,7 @@ COPY ["Kartverket.Web/Kartverket.Web.csproj", "Kartverket.Web/"]
 RUN dotnet restore "./Kartverket.Web/Kartverket.Web.csproj"
 COPY . .
 
-COPY --from=frontend-build /wwwroot/ ./wwwroot/
+COPY --from=frontend-build /wwwroot/ ./Kartverket.Web/wwwroot/
 WORKDIR "/src"
 RUN dotnet build "./Kartverket.Web/" -c $BUILD_CONFIGURATION -o /app/build
 
