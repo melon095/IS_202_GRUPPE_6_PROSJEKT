@@ -6,7 +6,7 @@ public class ObjectTypesDataModel
 {
     public List<ObjectType> ObjectTypes { get; set; } = [];
 
-    public List<Guid> StandardTypeIds { get; set; } = [];
+    public Dictionary<int, Guid> StandardTypeIds { get; set; } = [];
 
     public class ObjectType
     {

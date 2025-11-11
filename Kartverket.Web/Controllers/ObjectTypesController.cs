@@ -8,6 +8,8 @@ namespace Kartverket.Web.Controllers;
 
 public class ObjectTypesController : Controller
 {
+    private static readonly GeometryType[] GEOMETRY_TYPE_VALUES = Enum.GetValues<GeometryType>();
+
     private readonly DatabaseContext _dbContext;
 
     public ObjectTypesController(DatabaseContext dbContext)
@@ -28,9 +30,14 @@ public class ObjectTypesController : Controller
             })
             .ToListAsync();
 
-        var standardTypeIds = objectTypes.Where(ot => ot.Name == HindranceTypeTable.DEFAULT_TYPE_NAME)
-            .Select(ot => ot.Id)
-            .ToList();
+        var standardTypeIds = new Dictionary<int, Guid>();
+        foreach (var geometryType in GEOMETRY_TYPE_VALUES)
+        {
+            var standardType = objectTypes.FirstOrDefault(ot =>
+                ot.Name == HindranceTypeTable.DEFAULT_TYPE_NAME && ot.GeometryType == geometryType);
+
+            if (standardType != null) standardTypeIds[(int)geometryType] = standardType.Id;
+        }
 
         return new ObjectTypesDataModel
         {
