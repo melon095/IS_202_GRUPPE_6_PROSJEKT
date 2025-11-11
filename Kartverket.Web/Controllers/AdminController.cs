@@ -83,9 +83,7 @@ public class AdminController : Controller
                 TotalObjects = report.HindranceObjects.Count,
                 Review = report.ReviewStatus
             });
-
-
-        ViewData["SortStatus"] = sortStatus;    
+ 
         ViewBag.SortOrder = sortOrder.ToLower();
 
         return View(Model);
@@ -192,7 +190,7 @@ public class AdminController : Controller
                     Feedback = f.Feedback,
                     FeedbackType = f.FeedbackType,
                     FeedbackById = f.FeedbackById,
-                    FeedbackByName = f.FeedbackBy?.UserName,
+                    FeedbackByName = f.FeedbackBy?.UserName ?? string.Empty,
                     CreatedAt = f.CreatedAt
                 }).ToList();
 
