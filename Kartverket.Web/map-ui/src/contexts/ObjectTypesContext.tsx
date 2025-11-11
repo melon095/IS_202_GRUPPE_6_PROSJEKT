@@ -52,7 +52,7 @@ export const ObjectTypesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 		const objectType = getObjectTypeById(id);
 
 		if (!objectType) {
-			throw new Error(`Standard object type for geometry type ${type} not found.`);
+			return undefined;
 		}
 
 		return objectType;

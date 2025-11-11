@@ -95,11 +95,7 @@ export const ObjectTypeSelector = ({ onSelect, onCancel, placeMode }: ObjectType
 									<div className="media">
 										{type.imageUrl && (
 											<div className="media-left">
-												<Icon
-													src={type.imageUrl}
-													alt={type.name}
-													fill={type.colour ?? "#000000"}
-												/>
+												<Icon src={type.imageUrl} alt={type.name} />
 											</div>
 										)}
 										<div className="media-content">

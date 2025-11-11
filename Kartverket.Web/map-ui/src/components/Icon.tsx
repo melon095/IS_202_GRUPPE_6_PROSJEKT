@@ -1,10 +1,9 @@
 interface IconProps {
 	alt: string;
 	src: string;
-	fill?: string;
 }
 
-export const Icon = ({ src, alt, fill }: IconProps) => {
+export const Icon = ({ src, alt }: IconProps) => {
 	return (
 		<figure className="image is-48x48">
 			<img
@@ -12,7 +11,6 @@ export const Icon = ({ src, alt, fill }: IconProps) => {
 				alt={alt}
 				style={{
 					objectFit: "cover",
-					fill: fill,
 				}}
 				className="icon"
 			/>

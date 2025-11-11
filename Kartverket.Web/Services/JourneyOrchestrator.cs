@@ -197,7 +197,8 @@ public class JourneyOrchestrator : IJourneyOrchestrator
             .FirstOrDefault();
 
         if (defaultTypeId == Guid.Empty)
-            throw new InvalidOperationException("No hindrance types available to assign to the object.");
+            throw new InvalidOperationException($"Ingen standardtype funnet for hindring. GeometryType: {type}");
+
         return defaultTypeId;
     }
 

@@ -161,7 +161,6 @@ export const ObjectMarkers = React.memo(() => {
 	const renderObjects = (objects: PlacedObject[], colour: string) =>
 		objects.map((obj, idx) => <ObjectGeometry key={obj.id || idx} obj={obj} colour={colour} />);
 
-	console.log({ currentJourney });
 	return (
 		<>
 			{currentJourney && (
