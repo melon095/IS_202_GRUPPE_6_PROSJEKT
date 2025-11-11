@@ -27,11 +27,11 @@ const imagePattern = /\.(png|jpe?g|gif|svg|webp|avif)$/;
 export default defineConfig(async () => {
 	const isProduction = process.env.NODE_ENV === "production";
 
-	if (!fs.existsSync(baseFolder)) {
-		fs.mkdirSync(baseFolder, { recursive: true });
-	}
-
 	if (!isProduction) {
+		if (!fs.existsSync(baseFolder)) {
+			fs.mkdirSync(baseFolder, { recursive: true });
+		}
+
 		// Ensure the certificate and key exist
 		if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
 			// Wait for the certificate to be generated
