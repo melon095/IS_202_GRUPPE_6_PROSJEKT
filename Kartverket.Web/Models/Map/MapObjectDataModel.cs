@@ -9,7 +9,7 @@ public class MapObjectDataModel
     public Guid? TypeId { get; set; }
     public GeometryType GeometryType { get; set; }
     public string? Title { get; set; }
-    public MapPoint[] Points { get; set; } = [];
+    public IEnumerable<MapPoint> Points { get; set; } = [];
 
     public class MapPoint
     {

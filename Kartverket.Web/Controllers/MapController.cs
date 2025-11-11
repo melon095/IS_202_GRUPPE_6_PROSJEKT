@@ -41,7 +41,7 @@ public class MapController : Controller
     public async Task<IActionResult> SyncObject(
         [FromBody] PlacedObjectDataModel body,
         [FromQuery] Guid? journeyId = null,
-        [FromServices] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -68,7 +68,7 @@ public class MapController : Controller
     public async Task<IActionResult> FinalizeJourney(
         [FromBody] FinalizeJourneyRequest body,
         [FromQuery] Guid? journeyId = null,
-        [FromServices] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         if (journeyId is null) return BadRequest("JourneyId is required");
@@ -95,30 +95,9 @@ public class MapController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<MapObjectDataModel[]> GetObjects(
+    public async Task<IEnumerable<MapObjectDataModel>> GetObjects(
         [FromQuery] DateTime? since = null,
         [FromQuery] Guid? reportId = null,
-        [FromServices] CancellationToken cancellationToken = default)
-    {
-        var mapObjects = await _hindranceService.GetAllObjectsSince(since, reportId, cancellationToken);
-
-        return mapObjects.Select(mo => new MapObjectDataModel
-        {
-            Id = mo.Id,
-            ReportId = mo.ReportId,
-            TypeId = mo.HindranceTypeId,
-            GeometryType = mo.GeometryType,
-            Title = mo.Title,
-            Points = mo.HindrancePoints
-                .OrderBy(o => o.Order)
-                .Select(mp => new MapObjectDataModel.MapPoint
-                {
-                    Lat = mp.Latitude,
-                    Lng = mp.Longitude,
-                    Alt = mp.Elevation,
-                    CreatedAt = mp.CreatedAt
-                })
-                .ToArray()
-        }).ToArray();
-    }
+        CancellationToken cancellationToken = default) =>
+        await _hindranceService.GetAllObjectsSince(since, reportId, cancellationToken);
 }

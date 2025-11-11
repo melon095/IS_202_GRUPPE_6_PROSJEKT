@@ -1,5 +1,6 @@
 ﻿using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
+using Kartverket.Web.Models.Map;
 using Kartverket.Web.Models.Map.Request;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,7 +33,7 @@ public interface IHindranceService
 
     void DeleteObject(Guid hindranceObjectId);
 
-    Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
+    Task<List<MapObjectDataModel>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
         CancellationToken cancellationToken = default);
 }
 
@@ -124,7 +125,7 @@ public class HindranceService : IHindranceService
         _dbContext.HindranceObjects.Remove(obj);
     }
 
-    public Task<List<HindranceObjectTable>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
+    public Task<List<MapObjectDataModel>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbContext.HindranceObjects
@@ -141,6 +142,25 @@ public class HindranceService : IHindranceService
 
         return query
             .OrderBy(o => o.CreatedAt)
+            .ThenBy(o => o.UpdatedAt)
+            .Select(o => new MapObjectDataModel
+            {
+                Id = o.Id,
+                ReportId = o.ReportId,
+                TypeId = o.HindranceTypeId,
+                GeometryType = o.GeometryType,
+                Title = o.Title,
+                Points = o.HindrancePoints
+                    .OrderBy(p => p.Order)
+                    .Select(mp => new MapObjectDataModel.MapPoint
+                    {
+                        Lat = mp.Latitude,
+                        Lng = mp.Longitude,
+                        Alt = mp.Elevation,
+                        CreatedAt = mp.CreatedAt
+                    })
+                    .ToList()
+            })
             .ToListAsync(cancellationToken);
     }
 }

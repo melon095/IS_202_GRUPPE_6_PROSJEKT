@@ -38,11 +38,6 @@ builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<
     .AddScoped<IJourneyOrchestrator, JourneyOrchestrator>();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped(typeof(CancellationToken), s =>
-{
-    var httpContextAccessor = s.GetRequiredService<IHttpContextAccessor>();
-    return httpContextAccessor.HttpContext?.RequestAborted ?? CancellationToken.None;
-});
 
 #region Authentication
 
