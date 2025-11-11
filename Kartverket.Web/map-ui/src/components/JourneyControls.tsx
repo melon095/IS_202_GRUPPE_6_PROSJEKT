@@ -1,3 +1,4 @@
+import { TFunction } from "i18next";
 import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 import { useGeolocated } from "react-geolocated";
@@ -14,6 +15,32 @@ interface JourneyControlsProps {
 	children?: React.ReactNode;
 }
 
+const hasNotEnoughPointsForPlaceMode = (placeMode: PlaceMode, pointCount: number) => {
+	switch (placeMode) {
+		case PlaceMode.Point:
+			return pointCount < 1;
+		case PlaceMode.Line:
+			return pointCount < 2;
+		case PlaceMode.Area:
+			return pointCount < 3;
+		default:
+			return true;
+	}
+};
+
+const getNotEnoughPointsMessage = (t: TFunction, placeMode: PlaceMode) => {
+	switch (placeMode) {
+		case PlaceMode.Point:
+			return t("controls.errors.not_enough_points.point");
+		case PlaceMode.Line:
+			return t("controls.errors.not_enough_points.line");
+		case PlaceMode.Area:
+			return t("controls.errors.not_enough_points.area");
+		default:
+			return null;
+	}
+};
+
 export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	const { t } = useTranslation();
 	const {
@@ -29,7 +56,6 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		setPlaceMode,
 	} = useJourney();
 	const map = useMap();
-
 	const syncObjectMutation = useSyncObjectMutation();
 	const [showTypeSelector, setShowTypeSelector] = useState(false);
 	const overlayRef = useRef<HTMLDivElement>(null);
@@ -41,6 +67,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	});
 	const watchIdRef = useRef<number | null>(null);
 	const programmaticFlyToRef = useRef(false);
+	const [notEnoughPointsMessage, setNotEnoughPointsMessage] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!overlayRef.current) return;
@@ -98,10 +125,17 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	};
 
 	const handleFinishPlace = () => {
-		if (currentObjectPoints.length > 0) {
-			setShowTypeSelector(true);
-		} else {
+		if (currentObjectPoints.length <= 0) {
 			stopPlacingObject();
+		} else if (hasNotEnoughPointsForPlaceMode(placeMode, currentObjectPoints.length)) {
+			const message = getNotEnoughPointsMessage(t, placeMode);
+			setNotEnoughPointsMessage(message);
+
+			setTimeout(() => {
+				setNotEnoughPointsMessage(null);
+			}, 5000);
+		} else {
+			setShowTypeSelector(true);
 		}
 	};
 
@@ -193,6 +227,12 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 						</div>
 
 						<hr className="divider my-3" />
+
+						<div className="content mb-3">
+							{notEnoughPointsMessage && (
+								<div className="notification is-warning is-light">{notEnoughPointsMessage}</div>
+							)}
+						</div>
 
 						<div className="content mb-3">
 							{placeMode === PlaceMode.Point && (
