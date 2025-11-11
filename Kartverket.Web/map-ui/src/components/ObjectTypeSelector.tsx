@@ -40,18 +40,13 @@ export const ObjectTypeSelector = ({ onSelect, onCancel, placeMode }: ObjectType
 					<p className="is-size-5">{t("objectTypeSelector.error.message")}</p>
 				</IconFlex>
 
-				<div className="field is-grouped">
-					<div className="control">
-						<button className="button is-light" onClick={() => onSelect(undefined)}>
-							{t("objectTypeSelector.actions.skip")}
-						</button>
-					</div>
-
-					<div className="control">
-						<button className="button is-light" onClick={onCancel}>
-							{t("objectTypeSelector.actions.cancel")}
-						</button>
-					</div>
+				<div className="buttons are-small-mobile">
+					<button className="button is-light" onClick={() => onSelect(undefined)}>
+						{t("objectTypeSelector.actions.skip")}
+					</button>
+					<button className="button is-light" onClick={onCancel}>
+						{t("objectTypeSelector.actions.cancel")}
+					</button>
 				</div>
 			</div>
 		);
@@ -59,7 +54,7 @@ export const ObjectTypeSelector = ({ onSelect, onCancel, placeMode }: ObjectType
 
 	return (
 		<div className="box">
-			<h4 className="title is-5">{t("objectTypeSelector.title")}</h4>
+			<h4 className="title is-5 is-6-mobile">{t("objectTypeSelector.title")}</h4>
 
 			<div className="field">
 				<div className="control">
@@ -68,16 +63,16 @@ export const ObjectTypeSelector = ({ onSelect, onCancel, placeMode }: ObjectType
 						return (
 							<div
 								key={type.id}
-								className="radio-box"
+								className="radio-box mb-2"
 								style={{
 									borderRadius: "8px",
 									border: "1px solid #dbdbdb",
 									cursor: "pointer",
 									display: "flex",
 									alignItems: "center",
-									gap: "1rem",
-									minHeight: "64px",
-									padding: "1rem",
+									gap: "0.75rem",
+									minHeight: "56px",
+									padding: "0.75rem",
 								}}
 								onClick={() => {
 									setSelectedTypeId(type.id);
@@ -89,17 +84,17 @@ export const ObjectTypeSelector = ({ onSelect, onCancel, placeMode }: ObjectType
 									name="object-type"
 									value={type.id}
 									checked={selectedTypeId === type.id}
-									style={{ width: "24px", height: "24px" }}
+									style={{ width: "20px", height: "20px", flexShrink: 0 }}
 								/>
-								<label htmlFor={inputId} style={{ flex: 1, cursor: "pointer" }}>
-									<div className="media">
+								<label htmlFor={inputId} style={{ flex: 1, cursor: "pointer", margin: 0 }}>
+									<div className="media" style={{ alignItems: "center" }}>
 										{type.imageUrl && (
-											<div className="media-left">
+											<div className="media-left" style={{ marginRight: "0.5rem" }}>
 												<Icon src={type.imageUrl} alt={type.name} />
 											</div>
 										)}
 										<div className="media-content">
-											<p className="title is-6">{type.name}</p>
+											<p className="title is-6 mb-0">{type.name}</p>
 										</div>
 									</div>
 								</label>
@@ -109,24 +104,16 @@ export const ObjectTypeSelector = ({ onSelect, onCancel, placeMode }: ObjectType
 				</div>
 			</div>
 
-			<div className="field is-grouped mt-4">
-				<div className="control">
-					<button className="button  is-primary" onClick={handleConfirm} disabled={selectedTypeId === ""}>
-						{t("objectTypeSelector.actions.add")}
-					</button>
-				</div>
-
-				<div className="control">
-					<button className="button is-light is-danger" onClick={onCancel}>
-						{t("objectTypeSelector.actions.cancel")}
-					</button>
-				</div>
-
-				<div className="control">
-					<button className="button is-light" onClick={() => onSelect(undefined)}>
-						{t("objectTypeSelector.actions.addWithoutType")}
-					</button>
-				</div>
+			<div className="buttons are-small-mobile mt-4">
+				<button className="button is-primary" onClick={handleConfirm} disabled={selectedTypeId === ""}>
+					{t("objectTypeSelector.actions.add")}
+				</button>
+				<button className="button is-light is-danger" onClick={onCancel}>
+					{t("objectTypeSelector.actions.cancel")}
+				</button>
+				<button className="button is-light" onClick={() => onSelect(undefined)}>
+					{t("objectTypeSelector.actions.addWithoutType")}
+				</button>
 			</div>
 		</div>
 	);
