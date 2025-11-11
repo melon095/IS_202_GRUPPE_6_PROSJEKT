@@ -35,7 +35,8 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DatabaseContext>())
     .AddScoped<IReportService, ReportService>()
     .AddScoped<IHindranceService, HindranceService>()
-    .AddScoped<IJourneyOrchestrator, JourneyOrchestrator>();
+    .AddScoped<IJourneyOrchestrator, JourneyOrchestrator>()
+    .AddScoped<IObjectTypesService, ObjectTypesService>();
 
 builder.Services.AddHttpContextAccessor();
 
