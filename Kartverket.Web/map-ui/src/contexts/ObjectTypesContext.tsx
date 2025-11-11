@@ -42,13 +42,13 @@ export const ObjectTypesProvider: React.FC<{ children: React.ReactNode }> = ({ c
 	const getObjectTypeByName = (name?: string) => {
 		if (!name || !data) return undefined;
 
-		return data?.objectTypes.find((type) => type.name === name);
+		return data.objectTypes.find((type) => type.name === name);
 	};
 
 	const getStandardObjectType = (type: GeometryType): ObjectType | undefined => {
 		if (!data) return undefined;
 
-		const id = data?.standardTypeIds[type as keyof typeof data.standardTypeIds];
+		const id = data.standardTypeIds[type as keyof typeof data.standardTypeIds];
 		const objectType = getObjectTypeById(id);
 
 		if (!objectType) {

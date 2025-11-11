@@ -74,7 +74,8 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 
 	if (!obj?.points?.length) return null;
 
-	const effectiveColour = colour || objectType?.colour || DEFAULT_COLOUR;
+	const effectiveColour = objectType?.colour || colour || DEFAULT_COLOUR;
+	console.log({ effectiveColour });
 
 	const firstPoint = obj.points[0];
 
