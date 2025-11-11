@@ -115,7 +115,7 @@ public class MapController : Controller
                 {
                     Lat = mp.Latitude,
                     Lng = mp.Longitude,
-                    Elevation = mp.Elevation,
+                    Alt = mp.Elevation,
                     CreatedAt = mp.CreatedAt
                 })
                 .ToArray()
