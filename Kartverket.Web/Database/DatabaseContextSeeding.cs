@@ -154,5 +154,10 @@ public static class SeedHindranceTypes
                 existingType.ImageUrl = type.ImageUrl;
             }
         }
+
+        var existingTypes = await context.HindranceTypes.ToListAsync();
+        foreach (var existingType in existingTypes)
+            if (!types.Any(t => t.Name == existingType.Name && t.GeometryType == existingType.GeometryType))
+                context.HindranceTypes.Remove(existingType);
     }
 }
