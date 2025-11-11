@@ -41,7 +41,7 @@ RUN dotnet publish "./Kartverket.Web" -c $BUILD_CONFIGURATION -o /app/publish /p
 # Kjøre applikasjonen
 FROM base AS final
 WORKDIR /app
-ENV ASPNETCORE_URLS=http://+:8080;http://+:8081 DOTNET_RUNNING_IN_CONTAINER=true ASPNETCORE_ENVIRONMENT=Production
+ENV ASPNETCORE_URLS=http://+:8080 DOTNET_RUNNING_IN_CONTAINER=true ASPNETCORE_ENVIRONMENT=Production
 EXPOSE 8080
 EXPOSE 8081
 COPY --from=publish /app/publish .
