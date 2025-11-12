@@ -12,7 +12,7 @@ export interface JourneyFunctions {
 	setPlaceMode: (mode: PlaceMode) => void;
 	stopPlacingObject: (typeId?: string | undefined) => PlacedObject | undefined;
 	addPointToCurrentObject: (point: Point) => void;
-	updateObjectinFinishedJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
+	updateObjectInFinishedJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
 	clearCurrentObjectPoints: () => void;
 	updateJourneyId: (newId: string) => void;
 	updateObjectId: (obj: PlacedObject, newId: string) => void;
@@ -133,7 +133,7 @@ export const useJourneyStore = create<JourneyStore>()(
 				}));
 			},
 
-			updateObjectinFinishedJourney: (objectId, updates) => {
+			updateObjectInFinishedJourney: (objectId, updates) => {
 				const { finishedJourney } = get();
 
 				if (!finishedJourney) return;

@@ -2,9 +2,9 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect, useState } from "react";
 
-import { JourneySummary } from "./components/JourneySummary";
 import { MapComponent } from "./components/MapComponent";
 import { JourneyControls } from "./components/journeyControls/JourneyControls";
+import { JourneySummary } from "./components/journeySummary/JourneySummary";
 import { JourneyProvider } from "./contexts/JourneyContext";
 import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
 import { useFinalizeJourneyMutation } from "./hooks/useFinalizeJourneyMutation";

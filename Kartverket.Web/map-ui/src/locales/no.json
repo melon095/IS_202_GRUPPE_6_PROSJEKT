@@ -60,6 +60,10 @@
 					"yes": "Ja",
 					"no": "Nei",
 					"noData": "-"
+				},
+				"deleted": {
+					"no": "Nei",
+					"yes": "Ja"
 				}
 			}
 		},
