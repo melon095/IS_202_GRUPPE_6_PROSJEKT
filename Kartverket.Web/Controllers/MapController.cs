@@ -109,24 +109,32 @@ public class MapController : Controller
     public async Task<IActionResult> SatelliteTiles(int x, int y, int z,
         CancellationToken cancellationToken = default)
     {
-        using var client = _httpClientFactory.CreateClient("StadiaTiles");
-
-        var response = await client.GetAsync($"/tiles/alidade_satellite/{z}/{x}/{y}.jpg", cancellationToken);
-        if (!response.IsSuccessStatusCode)
+        try
         {
-            var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-            _logger.LogWarning("Failed to fetch satellite tile {Z}/{X}/{Y}: {StatusCode} {ResponseBody}",
-                z, x, y, response.StatusCode, responseBody);
+            using var client = _httpClientFactory.CreateClient("StadiaTiles");
 
+            var response = await client.GetAsync($"/tiles/alidade_satellite/{z}/{x}/{y}.jpg", cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogWarning("Failed to fetch satellite tile {Z}/{X}/{Y}: {StatusCode} {ResponseBody}",
+                    z, x, y, response.StatusCode, responseBody);
+
+                return NotFound();
+            }
+
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+            HttpContext.Response.Headers.ETag = response.Headers.ETag?.Tag ?? null;
+            HttpContext.Response.Headers.LastModified = response.Content.Headers.LastModified?.ToString() ?? null;
+            HttpContext.Response.Headers.CacheControl =
+                response.Headers.CacheControl?.ToString() ?? "public,max-age=3600";
+
+            return File(stream, "image/jpeg");
+        }
+        catch
+        {
             return NotFound();
         }
-
-        var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
-
-        HttpContext.Response.Headers.ETag = response.Headers.ETag?.Tag ?? null;
-        HttpContext.Response.Headers.LastModified = response.Content.Headers.LastModified?.ToString() ?? null;
-        HttpContext.Response.Headers.CacheControl = response.Headers.CacheControl?.ToString() ?? "public,max-age=3600";
-
-        return File(stream, "image/jpeg");
     }
 }
