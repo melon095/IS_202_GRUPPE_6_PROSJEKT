@@ -32,11 +32,26 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     });
 });
 
-builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DatabaseContext>())
+builder.Services
+    .AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DatabaseContext>())
     .AddScoped<IReportService, ReportService>()
     .AddScoped<IHindranceService, HindranceService>()
     .AddScoped<IJourneyOrchestrator, JourneyOrchestrator>()
     .AddScoped<IObjectTypesService, ObjectTypesService>();
+
+builder.Services.AddHttpClient("StadiaTiles", (s, h) =>
+{
+    var config = s.GetRequiredService<IConfiguration>();
+    var key = config["StadiaKey"];
+    var userAgent = config["UserAgent"];
+
+    // if (!string.IsNullOrEmpty(key))
+    //     h.DefaultRequestHeaders.Add("Authorization", $"Stadia-Auth {key}");
+
+    h.BaseAddress = new Uri("https://tiles.stadiamaps.com");
+    h.DefaultRequestHeaders.Referrer = new Uri("https://localhost:7243");
+    h.DefaultRequestHeaders.Add("User-Agent", userAgent);
+});
 
 builder.Services.AddHttpContextAccessor();
 
