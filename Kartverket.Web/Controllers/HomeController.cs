@@ -29,8 +29,11 @@ public class HomeController : Controller
         [FromServices] UserManager<UserTable> userManager,
         CancellationToken cancellationToken = default)
     {
+        const int ITERATIONS = 100;
+        const double SIZE = 0.1;
+
         // Leftmost = 58.069402, 7.428365
-        // rightMost = 58.307080, 8.435572
+        // Rightmost = 58.307080, 8.435572
 
         var user = await userManager.GetUserAsync(User);
 
@@ -47,7 +50,7 @@ public class HomeController : Controller
         List<HindranceObjectTable> hindranceObjects = new();
         List<HindrancePointTable> hindrancePoints = new();
         Random random = new();
-        for (var i = 0; i < 1000; i++)
+        for (var i = 0; i < ITERATIONS; i++)
         {
             var lat = 58.069402 + random.NextDouble() * (58.307080 - 58.069402);
             var lon = 7.428365 + random.NextDouble() * (8.435572 - 7.428365);
@@ -86,8 +89,8 @@ public class HomeController : Controller
                 HindrancePointTable hindrancePoint2 = new()
                 {
                     HindranceObject = hindranceObject,
-                    Latitude = lat + random.NextDouble() * 0.01,
-                    Longitude = lon + random.NextDouble() * 0.01,
+                    Latitude = lat + random.NextDouble() * SIZE,
+                    Longitude = lon + random.NextDouble() * SIZE,
                     Label = ""
                 };
                 hindrancePoints.Add(hindrancePoint1);
@@ -108,15 +111,15 @@ public class HomeController : Controller
                 HindrancePointTable hindrancePoint2 = new()
                 {
                     HindranceObject = hindranceObject,
-                    Latitude = lat + random.NextDouble() * 0.01,
-                    Longitude = lon + random.NextDouble() * 0.01,
+                    Latitude = lat + random.NextDouble() * SIZE,
+                    Longitude = lon + random.NextDouble() * SIZE,
                     Label = ""
                 };
                 HindrancePointTable hindrancePoint3 = new()
                 {
                     HindranceObject = hindranceObject,
-                    Latitude = lat + random.NextDouble() * 0.01,
-                    Longitude = lon + random.NextDouble() * 0.01,
+                    Latitude = lat + random.NextDouble() * SIZE,
+                    Longitude = lon + random.NextDouble() * SIZE,
                     Label = ""
                 };
                 hindrancePoints.Add(hindrancePoint1);
