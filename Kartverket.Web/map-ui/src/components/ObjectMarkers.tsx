@@ -3,8 +3,8 @@ import L from "leaflet";
 import React, { useMemo } from "react";
 import { Marker, Polygon, Polyline, Popup, useMap } from "react-leaflet";
 
-import { useJourney } from "../contexts/JourneyContext";
-import { useObjectTypes } from "../contexts/ObjectTypesContext";
+import { useJourney } from "../hooks/useJourney.ts";
+import { useObjectTypes } from "../hooks/useObjectTypes.ts";
 import { useServerObjectsQuery } from "../hooks/useServerObjectsQuery";
 import { Colour, PlacedObject, PlaceMode, PlaceModeToString } from "../types";
 

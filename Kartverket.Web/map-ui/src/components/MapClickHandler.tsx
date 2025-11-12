@@ -2,8 +2,8 @@ import { LeafletMouseEvent } from "leaflet";
 import React, { useCallback } from "react";
 import { useMapEvent } from "react-leaflet";
 
-import { useJourney } from "../contexts/JourneyContext";
 import { Point } from "../types";
+import { useJourney } from "./../hooks/useJourney.ts";
 
 export const MapClickHandler = React.memo(() => {
 	const { addPointToCurrentObject } = useJourney();

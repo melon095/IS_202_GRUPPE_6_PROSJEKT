@@ -2,12 +2,13 @@
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { useEffect, useState } from "react";
 
-import { JourneyControls } from "./components/JourneyControls";
 import { JourneySummary } from "./components/JourneySummary";
 import { MapComponent } from "./components/MapComponent";
-import { JourneyProvider, useJourney } from "./contexts/JourneyContext";
+import { JourneyControls } from "./components/journeyControls/JourneyControls";
+import { JourneyProvider } from "./contexts/JourneyContext";
 import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
 import { useFinalizeJourneyMutation } from "./hooks/useFinalizeJourneyMutation";
+import { useJourney } from "./hooks/useJourney.ts";
 
 const queryClient = new QueryClient({
 	defaultOptions: {

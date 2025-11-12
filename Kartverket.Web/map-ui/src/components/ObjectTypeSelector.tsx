@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useObjectTypes } from "../contexts/ObjectTypesContext";
+import { useObjectTypes } from "../hooks/useObjectTypes.ts";
 import { useTranslation } from "../i18n";
 import { PlaceMode } from "../types.ts";
 import { Icon } from "./Icon";
@@ -84,6 +84,7 @@ export const ObjectTypeSelector = ({ onSelect, onCancel, placeMode }: ObjectType
 									name="object-type"
 									value={type.id}
 									checked={selectedTypeId === type.id}
+									onChange={() => {}}
 									style={{ width: "20px", height: "20px", flexShrink: 0 }}
 								/>
 								<label htmlFor={inputId} style={{ flex: 1, cursor: "pointer", margin: 0 }}>
