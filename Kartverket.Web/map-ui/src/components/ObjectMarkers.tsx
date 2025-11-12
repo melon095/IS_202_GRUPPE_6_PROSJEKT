@@ -42,6 +42,7 @@ export const ObjectMarkers = () => {
 	const { data: serverObjects } = useServerObjectsQuery(currentJourney?.id);
 
 	const perZoomIconCache = useRef<Record<string, L.Icon>>({});
+	const canvasRenderer = useRef<L.Renderer>(L.canvas({ padding: 0.5 }));
 
 	useEffect(() => {
 		const layer = L.layerGroup().addTo(map);
@@ -88,7 +89,7 @@ export const ObjectMarkers = () => {
 				case PlaceMode.Line: {
 					L.polyline(
 						obj.points.map((p) => [p.lat, p.lng]),
-						{ color: colour }
+						{ color: colour, renderer: canvasRenderer.current }
 					)
 						.bindPopup(popupHtml)
 						.addTo(layer);
@@ -107,7 +108,7 @@ export const ObjectMarkers = () => {
 
 					L.polygon(
 						polygonPoints.map((p) => [p.lat, p.lng]),
-						{ color: colour }
+						{ color: colour, renderer: canvasRenderer.current }
 					)
 						.bindPopup(popupHtml)
 						.addTo(layer);
