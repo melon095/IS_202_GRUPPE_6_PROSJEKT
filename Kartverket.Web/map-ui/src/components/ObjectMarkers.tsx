@@ -13,8 +13,7 @@ interface ObjectGeometryProps {
 	colour: Colour;
 }
 
-const DEFAULT_ICON_MARKER = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png";
-const DEFAULT_SHADOW_MARKER = "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png";
+const DEFAULT_ICON_MARKER = "/images/marker-icon.png";
 
 const BASE_ZOOM = 13;
 const BASE_ICON_SIZE: [number, number] = [25, 41];
@@ -76,7 +75,6 @@ const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
 
 		return L.icon({
 			iconUrl: objectType?.imageUrl || DEFAULT_ICON_MARKER,
-			shadowUrl: DEFAULT_SHADOW_MARKER,
 			iconSize: iconSize,
 			popupAnchor: [1, -34],
 			shadowSize: shadowSize,
