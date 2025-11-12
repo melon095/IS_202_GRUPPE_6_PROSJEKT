@@ -12,6 +12,8 @@ public class ObjectReviewModel
     public string Description { get; set; }
     public ReviewStatus ReviewStatus { get; set; }
     public ObjectDataModel? SelectedObject { get; set; }
+
+    public string? SuccsessMessage { get; set; }
     public DateTime CreatedAt { get; set; }
 
     public List<ObjectDataModel> Objects { get; set; } = [];

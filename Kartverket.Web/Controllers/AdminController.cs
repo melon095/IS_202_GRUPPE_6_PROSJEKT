@@ -237,7 +237,7 @@ public class AdminController : Controller
         var selectedObject = report.HindranceObjects.SingleOrDefault(x => x.Id == objectId);
         if (selectedObject == null)
         {
-            TempData["Error"] = "Objekt ikke funnet";
+            ModelState.AddModelError("", "Objektet ble ikke funnet");
         }
 
         switch (statusObject)
@@ -252,7 +252,7 @@ public class AdminController : Controller
                 break;
 
             default:
-                TempData["Error"] = "Ugyldig status";
+                ModelState.AddModelError("", "Ugyldig status valgt");
                 return RedirectToAction("ObjectReview", new { id, objectId });
         }
 
@@ -288,7 +288,7 @@ public class AdminController : Controller
     {
         if (string.IsNullOrWhiteSpace(feedbackText))
         {
-            TempData["Error"] = "Du må fylle ut kommentaren";
+            ModelState.AddModelError("", "Tilbakemeldingen kan ikke være tom");
             return RedirectToAction("ObjectReview", new { id, objectID });
         }
         var report = _dbContext.Reports
@@ -303,7 +303,7 @@ public class AdminController : Controller
         var obj = report.HindranceObjects.FirstOrDefault(o => o.Id == objectID);
         if(obj == null)
         {
-            TempData["Error"] = "Ingen objekter funnet";
+            ModelState.AddModelError("", "Objektet ble ikke funnet");
             return RedirectToAction("ObjectReview", new { id, objectID });
         }
 
