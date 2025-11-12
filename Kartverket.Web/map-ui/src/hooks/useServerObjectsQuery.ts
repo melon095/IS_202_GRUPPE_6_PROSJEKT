@@ -32,7 +32,9 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 				});
 
 				if (!res.ok) {
-					await extrapolateErrors(res);
+					throw new Error(
+						`Feil ved henting av serverobjekter: ${res.status} ${res.statusText}. ${extrapolateErrors(res)}`
+					);
 				}
 
 				const newData = (await res.json()) as ServerStateResponse;
