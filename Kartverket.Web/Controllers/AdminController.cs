@@ -95,7 +95,7 @@ public class AdminController : Controller
             .Include(r => r.HindranceObjects)
             .ThenInclude(mo => mo.HindrancePoints)
             .FirstOrDefault(r => r.Id == id);
-        if (report == null) return View("NoObjectsErr");
+        if (report == null) return View("ErrorView");
 
         var selectedObject = report.HindranceObjects
             .SingleOrDefault(x => x.Id == objectID);
@@ -158,7 +158,7 @@ public class AdminController : Controller
             .ThenInclude(f => f.FeedbackBy)
             .FirstOrDefault(r => r.Id == id);
 
-        if (report == null) return View("NoObjectsErr");
+        if (report == null) return View("ErrorView");
 
         var Model = new ObjectReviewModel
         {
@@ -229,12 +229,13 @@ public class AdminController : Controller
             .FirstOrDefault(r => r.Id == id);
 
         if (report == null)
-            return View("NoObjectsErr");
+            return View("ErrorView");
 
         var selectedObject = report.HindranceObjects.SingleOrDefault(x => x.Id == objectId);
         if (selectedObject == null)
         {
             ModelState.AddModelError("", "Objektet ble ikke funnet");
+            return View("ErrorView");
         }
 
         selectedObject.ReviewStatus = StatusObject switch
@@ -287,7 +288,7 @@ public class AdminController : Controller
             .FirstOrDefault(r => r.Id == id);
 
         if (report == null)
-            return View("NoObjectsErr");
+            return View("ErrorView");
 
         var obj = report.HindranceObjects.FirstOrDefault(o => o.Id == objectID);
         if(obj == null)
