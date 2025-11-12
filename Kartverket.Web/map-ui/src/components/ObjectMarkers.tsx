@@ -1,21 +1,17 @@
 import { parseISO } from "date-fns";
 import L from "leaflet";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Marker, Polygon, Polyline, Popup, useMap } from "react-leaflet";
 
 import { useJourney } from "../hooks/useJourney";
 import { useObjectTypes } from "../hooks/useObjectTypes";
 import { useServerObjectsQuery } from "../hooks/useServerObjectsQuery";
-import { Colour, PlacedObject, PlaceMode, PlaceModeToString } from "../types";
-
-interface ObjectGeometryProps {
-	obj: PlacedObject;
-	colour: Colour;
-}
+import { Colour, ObjectType, PlacedObject, PlaceMode, PlaceModeToString } from "../types";
 
 const DEFAULT_ICON_MARKER = "/images/marker-icon.png";
-const DEFAULT_COLOUR = "blue";
-const DEFAULT_AREA_ICON = L.divIcon({ className: "polygon-label", html: "" });
+const CURRENT_JOURNEY_COLOUR = "blue";
+const CURRENT_OBJECT_COLOUR = "red";
+const SERVER_OBJECTS_COLOUR = "green";
 
 const BASE_ZOOM = 13;
 const BASE_ICON_SIZE: [number, number] = [25, 41];
@@ -38,175 +34,147 @@ const calculateIconSize = (currentZoom: number): { iconSize: [number, number]; s
 	};
 };
 
-const ObjectGeometry = React.memo(({ obj, colour }: ObjectGeometryProps) => {
-	const { getObjectTypeById, getStandardObjectType, isObjectTypeStandard } = useObjectTypes();
+export const ObjectMarkers = () => {
 	const map = useMap();
-	const [zoom, setZoom] = React.useState(map.getZoom());
+	const layerRef = useRef<L.LayerGroup | null>(null);
+	const { currentJourney, currentObjectPoints, placeMode } = useJourney();
+	const { getObjectTypeById, getStandardObjectType, isObjectTypeStandard } = useObjectTypes();
+	const { data: serverObjects } = useServerObjectsQuery(currentJourney?.id);
 
-	const { objectType, isStandardObjectType } = useMemo(() => {
-		let objectType = getObjectTypeById(obj.typeId);
-		let isStandardObjectType = false;
+	const perZoomIconCache = useRef<Record<string, L.Icon>>({});
 
-		if (!objectType) {
-			objectType = getStandardObjectType(obj.geometryType);
-			isStandardObjectType = true;
-		} else {
-			isStandardObjectType = isObjectTypeStandard(objectType.id);
-		}
+	useEffect(() => {
+		const layer = L.layerGroup().addTo(map);
+		layerRef.current = layer;
 
-		return { objectType, isStandardObjectType };
-	}, [obj.typeId, obj.geometryType, getObjectTypeById, getStandardObjectType, isObjectTypeStandard]);
+		const buildIcon = (type: ObjectType, zoom: number): L.Icon => {
+			const { iconSize, shadowSize } = calculateIconSize(zoom);
+			const url = type?.imageUrl || DEFAULT_ICON_MARKER;
+			const key = `${url}-${zoom}`;
+			const cachedIcon = perZoomIconCache.current[key];
+			if (cachedIcon) return cachedIcon;
 
-	React.useEffect(() => {
+			const icon = L.icon({
+				iconUrl: url,
+				iconSize: iconSize,
+				popupAnchor: [1, -34],
+				shadowSize: shadowSize,
+			});
+
+			perZoomIconCache.current[key] = icon;
+			return icon;
+		};
+
+		const renderObject = (obj: PlacedObject, zoom: number, colour: Colour) => {
+			const objectType = getObjectTypeById(obj.typeId) || getStandardObjectType(obj.geometryType);
+			const icon = buildIcon(objectType, zoom);
+			const popupHtml = `<div>
+				<p>${objectType?.name || "Ukjent objekt"}</p>
+				<p>Type: ${PlaceModeToString[obj.geometryType as PlaceMode]}</p>
+				${obj.points[0]?.createdAt ? `<p>Laget: ${parseISO(obj.points[0].createdAt).toLocaleString()}</p>` : ""}
+				<div>
+					${obj.title ? `<strong>${obj.title}</strong>` : ""}
+					${obj.description ? `<p>${obj.description}</p>` : ""}
+				</div>
+			</div>`;
+
+			switch (obj.geometryType) {
+				case PlaceMode.Point: {
+					L.marker([obj.points[0].lat, obj.points[0].lng], { icon }).bindPopup(popupHtml).addTo(layer);
+					break;
+				}
+				case PlaceMode.Line: {
+					L.polyline(
+						obj.points.map((p) => [p.lat, p.lng]),
+						{ color: colour }
+					)
+						.bindPopup(popupHtml)
+						.addTo(layer);
+					obj.points.forEach((point) => {
+						L.marker([point.lat, point.lng], { icon }).bindPopup(popupHtml).addTo(layer);
+					});
+					break;
+				}
+				case PlaceMode.Area: {
+					const firstPoint = obj.points[0];
+					const lastPoint = obj.points[obj.points.length - 1];
+					const polygonPoints =
+						firstPoint === lastPoint
+							? obj.points
+							: [...obj.points, obj.points[0]].map((p) => ({ lat: p.lat, lng: p.lng }));
+
+					L.polygon(
+						polygonPoints.map((p) => [p.lat, p.lng]),
+						{ color: colour }
+					)
+						.bindPopup(popupHtml)
+						.addTo(layer);
+
+					if (!isObjectTypeStandard(objectType.id) && objectType?.name) {
+						const centroid: [number, number] = [
+							polygonPoints.reduce((sum, p) => sum + p.lat, 0) / polygonPoints.length,
+							polygonPoints.reduce((sum, p) => sum + p.lng, 0) / polygonPoints.length,
+						];
+
+						const areaIcon = L.divIcon({
+							className: "polygon-label",
+							html: `<div style="text-align:center; font-weight:bold; color:black">${objectType.name}</div>`,
+							iconSize: [100, 40],
+						});
+
+						L.marker(centroid, { icon: areaIcon, interactive: false }).addTo(layer);
+					}
+					break;
+				}
+				default:
+					break;
+			}
+		};
+
+		const drawAll = (zoom: number) => {
+			layer.clearLayers();
+
+			if (currentJourney) {
+				for (const obj of currentJourney.objects) {
+					renderObject(obj, zoom, CURRENT_JOURNEY_COLOUR);
+				}
+			}
+
+			if (currentObjectPoints?.length > 0) {
+				renderObject(
+					{
+						id: "current-object",
+						points: currentObjectPoints,
+						geometryType: placeMode,
+						deleted: false,
+						createdAt: new Date().toISOString(),
+					},
+					zoom,
+					CURRENT_OBJECT_COLOUR
+				);
+			}
+
+			if (serverObjects) {
+				for (const obj of serverObjects) {
+					renderObject(obj, zoom, SERVER_OBJECTS_COLOUR);
+				}
+			}
+		};
+
+		drawAll(map.getZoom());
+
 		const handleZoom = () => {
-			setZoom(map.getZoom());
+			const zoom = map.getZoom();
+			drawAll(zoom);
 		};
 
 		map.on("zoomend", handleZoom);
+
 		return () => {
 			map.off("zoomend", handleZoom);
+			layer.remove();
 		};
-	}, [map]);
+	}, [map, currentJourney, currentObjectPoints, placeMode, serverObjects]);
 
-	const icon = useMemo(() => {
-		const { iconSize, shadowSize } = calculateIconSize(zoom);
-
-		return L.icon({
-			iconUrl: objectType?.imageUrl || DEFAULT_ICON_MARKER,
-			iconSize: iconSize,
-			popupAnchor: [1, -34],
-			shadowSize: shadowSize,
-		});
-	}, [objectType, zoom]);
-
-	if (!obj?.points?.length) return null;
-
-	const effectiveColour = objectType?.colour || colour || DEFAULT_COLOUR;
-
-	const firstPoint = obj.points[0];
-
-	const popup = (
-		<Popup>
-			<div>
-				<p>{objectType?.name || "Ukjent objekt"}</p>
-				<p>Type: {PlaceModeToString[obj.geometryType as PlaceMode]}</p>
-				{firstPoint.createdAt && <>Laget: {parseISO(firstPoint.createdAt).toLocaleString()}</>}
-				<div>
-					{obj.title && <strong>{obj.title}</strong>}
-					{obj.description && <p>{obj.description}</p>}
-				</div>
-			</div>
-		</Popup>
-	);
-
-	switch (obj.geometryType) {
-		case PlaceMode.Point: {
-			return (
-				<Marker position={[firstPoint.lat, firstPoint.lng]} icon={icon}>
-					{popup}
-				</Marker>
-			);
-		}
-
-		case PlaceMode.Line: {
-			return (
-				<>
-					{obj.points.map((point, idx) => (
-						<React.Fragment key={idx}>
-							<Marker key={idx} position={[point.lat, point.lng]} icon={icon}>
-								{popup}
-							</Marker>
-							<Polyline
-								key={`line-${idx}`}
-								positions={obj.points.map((p) => [p.lat, p.lng])}
-								pathOptions={{ color: effectiveColour }}
-							/>
-						</React.Fragment>
-					))}
-				</>
-			);
-		}
-
-		case PlaceMode.Area: {
-			const firstPoint = obj.points[0];
-			const lastPoint = obj.points[obj.points.length - 1];
-
-			const polygonPoints =
-				firstPoint === lastPoint
-					? obj.points
-					: [...obj.points, obj.points[0]].map((p) => ({ lat: p.lat, lng: p.lng }));
-
-			const centroid: [number, number] = [
-				polygonPoints.reduce((sum, p) => sum + p.lat, 0) / polygonPoints.length,
-				polygonPoints.reduce((sum, p) => sum + p.lng, 0) / polygonPoints.length,
-			];
-
-			let areaIcon = DEFAULT_AREA_ICON;
-			if (!isStandardObjectType && objectType !== null && objectType?.name) {
-				areaIcon = L.divIcon({
-					className: "polygon-label",
-					html: `<div style="text-align:center; font-weight:bold; color:black">${objectType.name}</div>`,
-					iconSize: [100, 40],
-				});
-			}
-
-			return (
-				<>
-					<Polygon positions={polygonPoints} pathOptions={{ color: effectiveColour }}>
-						{popup}
-					</Polygon>
-					{isStandardObjectType ? null : <Marker position={centroid} icon={areaIcon} interactive={false} />}
-				</>
-			);
-		}
-
-		default: {
-			return (
-				<>
-					{obj.points.map((point, idx) => (
-						<Marker key={idx} position={[point.lat, point.lng]} icon={icon}>
-							{popup}
-						</Marker>
-					))}
-					<Polyline
-						positions={obj.points.map((p) => [p.lat, p.lng])}
-						pathOptions={{ color: effectiveColour }}
-					/>
-				</>
-			);
-		}
-	}
-});
-
-export const ObjectMarkers = React.memo(() => {
-	const { currentJourney, currentObjectPoints, placeMode } = useJourney();
-	const { data: serverObjects, isLoading, isError } = useServerObjectsQuery(currentJourney?.id);
-
-	const renderObjects = (objects: PlacedObject[], colour: string) =>
-		objects.map((obj, idx) => <ObjectGeometry key={obj.id || idx} obj={obj} colour={colour} />);
-
-	return (
-		<>
-			{currentJourney && (
-				<>
-					{renderObjects(currentJourney.objects, "blue")}
-
-					{currentObjectPoints?.length > 0 && (
-						<ObjectGeometry
-							obj={{
-								id: "current-object",
-								points: currentObjectPoints,
-								geometryType: placeMode,
-								deleted: false,
-								createdAt: new Date().toISOString(),
-							}}
-							colour="red"
-						/>
-					)}
-				</>
-			)}
-
-			{!isLoading && !isError && renderObjects(serverObjects || [], "green")}
-		</>
-	);
-});
+	return null;
+};
