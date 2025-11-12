@@ -41,6 +41,11 @@ const getNotEnoughPointsMessage = (t: TFunction, placeMode: PlaceMode) => {
 	}
 };
 
+const Box = ({ children }: { children: React.ReactNode }) => (
+	<div className="box" style={{ maxHeight: "calc(100vh)", overflowY: "auto" }}>
+		{children}
+	</div>
+);
 export const JourneyControls = ({ children }: JourneyControlsProps) => {
 	const { t } = useTranslation();
 	const {
@@ -173,7 +178,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		<div ref={overlayRef} style={{ zIndex: 1000 }}>
 			{currentJourney === null ? (
 				<div className="journey-controls-overlay">
-					<div className="box">
+					<Box>
 						<div className="field">
 							<div className="control">
 								<IconFlex
@@ -189,19 +194,21 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 						</div>
 
 						<div className="content">{children}</div>
-					</div>
+					</Box>
 				</div>
 			) : showTypeSelector ? (
 				<div className="journey-controls-overlay">
-					<ObjectTypeSelector
-						onSelect={handleTypeSelect}
-						onCancel={handleCancelTypeSelect}
-						placeMode={placeMode}
-					/>
+					<Box>
+						<ObjectTypeSelector
+							onSelect={handleTypeSelect}
+							onCancel={handleCancelTypeSelect}
+							placeMode={placeMode}
+						/>
+					</Box>
 				</div>
 			) : (
 				<div className="journey-controls-overlay">
-					<div className="box">
+					<Box>
 						<div className="content">
 							<IconFlex as="h4" icon={["fas", "route"]} className="title is-5 mb-3">
 								{t("controls.header")}
@@ -345,7 +352,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 							</div>
 						</div>
 						<div className="content">{children}</div>
-					</div>
+					</Box>
 				</div>
 			)}
 		</div>
