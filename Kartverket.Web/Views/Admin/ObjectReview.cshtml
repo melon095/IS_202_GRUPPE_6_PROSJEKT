@@ -56,6 +56,12 @@
 
                                 </div>
                             }
+                            @if (TempData["Success"] != null)
+                            {
+                                <div class="notification is-info mt-3">
+                                    @TempData["Success"]
+                                </div>
+                            }
                         }
                         else
                         {
@@ -129,6 +135,7 @@
                             }
                             </div>
                             <hr />
+                            
                             @using (Html.BeginForm("Comment", "Admin", FormMethod.Post))
                             {
                                 @Html.AntiForgeryToken()

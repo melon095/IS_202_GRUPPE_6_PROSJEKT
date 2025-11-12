@@ -4,13 +4,18 @@ using Kartverket.Web.Database;
 
 namespace Kartverket.Web.Models.Report.Response;
 
+public enum ObjectReviewAction
+{
+    Accept,
+    Deny
+}
 public class ObjectReviewModel
 {
     public Guid Id { get; set; }
     public string Title { get; set; }
 
     public string Description { get; set; }
-    public ReviewStatus ReviewStatus { get; set; }
+    public ReviewStatus? ReviewStatus { get; set; }
     public ObjectDataModel? SelectedObject { get; set; }
 
     public string? SuccsessMessage { get; set; }

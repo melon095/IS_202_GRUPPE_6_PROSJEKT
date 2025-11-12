@@ -39,15 +39,10 @@ public class AdminController : Controller
         reportQuery = reportQuery
             .Where(r => DateOnly.FromDateTime(r.CreatedAt) <= sortDate.Value);
 
-  
-        reportQuery = sortStatus switch
+        if(sortStatus != null)
         {
-            ReviewStatus.Resolved => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Resolved),
-            ReviewStatus.Closed => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Closed),
-            ReviewStatus.Draft => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Draft),
-            ReviewStatus.Submitted => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Submitted),
-            _ => reportQuery
-        };
+            reportQuery = reportQuery.Where(r => r.ReviewStatus == sortStatus.Value);
+        }
 
 
 
@@ -225,7 +220,7 @@ public class AdminController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public IActionResult ObjectReview(Guid id, Guid objectId, string statusObject)
+    public IActionResult ObjectReview(Guid id, Guid objectId, ObjectReviewAction StatusObject)
     {
         var report = _dbContext.Reports
             .Include(r => r.HindranceObjects)
@@ -242,21 +237,13 @@ public class AdminController : Controller
             ModelState.AddModelError("", "Objektet ble ikke funnet");
         }
 
-        switch (statusObject)
+        selectedObject.ReviewStatus = StatusObject switch
         {
-            case "accept":
-                selectedObject.ReviewStatus = ReviewStatus.Resolved;
-                selectedObject.VerifiedAt = DateTime.UtcNow;
-                break;
-            case "deny":
-                selectedObject.ReviewStatus = ReviewStatus.Closed;
-                selectedObject.VerifiedAt = DateTime.UtcNow;
-                break;
-
-            default:
-                ModelState.AddModelError("", "Ugyldig status valgt");
-                return RedirectToAction("ObjectReview", new { id, objectId });
-        }
+            ObjectReviewAction.Accept => ReviewStatus.Resolved,
+            ObjectReviewAction.Deny => ReviewStatus.Closed,
+            _ => throw new ArgumentOutOfRangeException(nameof(StatusObject), "Ugyldig status valgt")
+        };
+        selectedObject.VerifiedAt = DateTime.UtcNow;
 
         var reportVerify = report.HindranceObjects;
 
@@ -280,7 +267,7 @@ public class AdminController : Controller
 
         _dbContext.SaveChanges();
 
-        TempData["Success"] = $"Objekt status endret til {selectedObject.ReviewStatus}";
+        TempData["Success"] = $"Objekt status endret til {selectedObject.ReviewStatus.GetDisplayName()}";
         return RedirectToAction("ObjectReview", new {id, objectId});    
     }
 
@@ -309,12 +296,18 @@ public class AdminController : Controller
             return RedirectToAction("ObjectReview", new { id, objectID });
         }
 
+        var ClaimUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if(!Guid.TryParse(ClaimUserId, out var userId))
+        {
+            return Unauthorized();
+        }    
         var feedback = new ReportFeedbackTable
         {
             Id = Guid.NewGuid(),
             Feedback = feedbackText,
             FeedbackType = feedbackType,
-            FeedbackById = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value),
+            FeedbackById = userId,
             ReportId = report.Id,
             CreatedAt = DateTime.UtcNow
         };
