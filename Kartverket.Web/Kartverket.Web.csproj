@@ -20,16 +20,4 @@
         <PackageReference Include="Vite.AspNetCore" Version="2.4.1"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <_ContentIncludedByDefault Remove="wwwroot\js\map\index.js"/>
-        <_ContentIncludedByDefault Remove="wwwroot\js\site.js"/>
-        <_ContentIncludedByDefault Remove="wwwroot\images\map-objects\Bro.svg"/>
-        <_ContentIncludedByDefault Remove="wwwroot\images\map-objects\Flagg.svg"/>
-        <_ContentIncludedByDefault Remove="wwwroot\images\map-objects\Heisekran.svg"/>
-        <_ContentIncludedByDefault Remove="wwwroot\images\map-objects\Kraftlinje.svg"/>
-        <_ContentIncludedByDefault Remove="wwwroot\images\map-objects\Lyktestolpe.svg"/>
-        <_ContentIncludedByDefault Remove="wwwroot\images\map-objects\Radiomast.svg"/>
-        <_ContentIncludedByDefault Remove="wwwroot\images\map-objects\Vindmolle.svg"/>
-    </ItemGroup>
-
 </Project>
