@@ -2,6 +2,8 @@ import { Map } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 import { useGeolocated } from "react-geolocated";
 
+import { ONE_SECOND_MS } from "../utils/time-constants";
+
 export interface UseMapFollowingReturnType {
 	isFollowing: boolean;
 	toggleFollowing: () => void;
@@ -19,7 +21,7 @@ export const useMapFollowing = (map: Map): UseMapFollowingReturnType => {
 
 	useEffect(() => {
 		const handleMoveStart = () => {
-			if (!isFollowing || !programmaticFlyToRef.current) return;
+			if (!isFollowing || programmaticFlyToRef.current) return;
 
 			setIsFollowing(false);
 		};
@@ -44,7 +46,7 @@ export const useMapFollowing = (map: Map): UseMapFollowingReturnType => {
 
 		const timer = setTimeout(() => {
 			programmaticFlyToRef.current = false;
-		}, 1000);
+		}, ONE_SECOND_MS);
 
 		return () => clearTimeout(timer);
 	}, [map, coords, isFollowing]);
