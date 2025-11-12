@@ -8,7 +8,7 @@ import { JourneyControls } from "./components/journeyControls/JourneyControls";
 import { JourneyProvider } from "./contexts/JourneyContext";
 import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
 import { useFinalizeJourneyMutation } from "./hooks/useFinalizeJourneyMutation";
-import { useJourney } from "./hooks/useJourney.ts";
+import { useJourney } from "./hooks/useJourney";
 
 const queryClient = new QueryClient({
 	defaultOptions: {

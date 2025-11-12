@@ -2,8 +2,8 @@ import { DomEvent } from "leaflet";
 import { useEffect, useRef, useState } from "react";
 
 import "../css/JourneySummary.css";
-import { useJourney } from "../hooks/useJourney.ts";
-import { useObjectTypes } from "../hooks/useObjectTypes.ts";
+import { useJourney } from "../hooks/useJourney";
+import { useObjectTypes } from "../hooks/useObjectTypes";
 import { useTranslation } from "../i18n";
 import { Journey, PlacedObject, ResponseError } from "../types";
 import { Icon } from "./Icon";

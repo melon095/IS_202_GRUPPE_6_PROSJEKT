@@ -20,5 +20,4 @@ const useTranslation = () => {
 	return i18n.use(initReactI18next);
 };
 
-export default i18n;
 export { useTranslation };

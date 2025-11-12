@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { useObjectTypes } from "../hooks/useObjectTypes.ts";
+import { useObjectTypes } from "../hooks/useObjectTypes";
 import { useTranslation } from "../i18n";
-import { PlaceMode } from "../types.ts";
+import { PlaceMode } from "../types";
 import { Icon } from "./Icon";
 import { IconFlex } from "./IconFlex";
 

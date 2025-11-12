@@ -1,9 +1,10 @@
 ﻿import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { scan } from "react-scan";
+// eslint-disable-next-line import/no-unresolved
 import "vite/modulepreload-polyfill";
 
-import App from "./App.js";
+import App from "./App";
 
 if (process.env.NODE_ENV === "development") {
 	scan({

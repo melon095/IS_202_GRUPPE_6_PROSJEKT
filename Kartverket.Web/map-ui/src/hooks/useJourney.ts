@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import JourneyContext, { JourneyContextType } from "../contexts/JourneyContext.tsx";
+import JourneyContext, { JourneyContextType } from "../contexts/JourneyContext";
 
 export const useJourney = (): JourneyContextType => {
 	const context = useContext(JourneyContext);

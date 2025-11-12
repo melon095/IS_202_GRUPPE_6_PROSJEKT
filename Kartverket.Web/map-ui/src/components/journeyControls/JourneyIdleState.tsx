@@ -1,5 +1,5 @@
-import { useTranslation } from "../../i18n.ts";
-import { IconFlex } from "../IconFlex.tsx";
+import { useTranslation } from "../../i18n";
+import { IconFlex } from "../IconFlex";
 
 export interface JourneyIdleStateProps {
 	onStart: () => void;

@@ -5,7 +5,7 @@ import { FeatureGroup, LayersControl, MapContainer, TileLayer, TileLayerProps, Z
 
 import "../css/MapComponent.css";
 import "../css/zoom-control.css";
-import { GPSMarker } from "./GPSMarker.tsx";
+import { GPSMarker } from "./GPSMarker";
 import { MapClickHandler } from "./MapClickHandler";
 import { ObjectMarkers } from "./ObjectMarkers";
 

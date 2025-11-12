@@ -3,7 +3,7 @@ import React, { useCallback } from "react";
 import { useMapEvent } from "react-leaflet";
 
 import { Point } from "../types";
-import { useJourney } from "./../hooks/useJourney.ts";
+import { useJourney } from "./../hooks/useJourney";
 
 export const MapClickHandler = React.memo(() => {
 	const { addPointToCurrentObject } = useJourney();

@@ -3,8 +3,8 @@ import L from "leaflet";
 import React, { useMemo } from "react";
 import { Marker, Polygon, Polyline, Popup, useMap } from "react-leaflet";
 
-import { useJourney } from "../hooks/useJourney.ts";
-import { useObjectTypes } from "../hooks/useObjectTypes.ts";
+import { useJourney } from "../hooks/useJourney";
+import { useObjectTypes } from "../hooks/useObjectTypes";
 import { useServerObjectsQuery } from "../hooks/useServerObjectsQuery";
 import { Colour, PlacedObject, PlaceMode, PlaceModeToString } from "../types";
 
@@ -14,14 +14,12 @@ interface ObjectGeometryProps {
 }
 
 const DEFAULT_ICON_MARKER = "/images/marker-icon.png";
+const DEFAULT_COLOUR = "blue";
+const DEFAULT_AREA_ICON = L.divIcon({ className: "polygon-label", html: "" });
 
 const BASE_ZOOM = 13;
 const BASE_ICON_SIZE: [number, number] = [25, 41];
 const BASE_SHADOW_SIZE: [number, number] = [41, 41];
-
-const DEFAULT_COLOUR = "blue";
-
-const DEFAULT_AREA_ICON = L.divIcon({ className: "polygon-label", html: "" });
 
 const calculateIconSize = (currentZoom: number): { iconSize: [number, number]; shadowSize: [number, number] } => {
 	const zoomDiff = currentZoom - BASE_ZOOM;
