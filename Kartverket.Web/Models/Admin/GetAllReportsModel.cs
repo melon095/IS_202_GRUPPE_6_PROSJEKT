@@ -1,6 +1,7 @@
 ﻿using Kartverket.Web.Controllers;
 using Kartverket.Web.Database;
 
+
 namespace Kartverket.Web.Models.Admin
 {
 
@@ -9,7 +10,7 @@ namespace Kartverket.Web.Models.Admin
         public int CurrentPage { get; set; }
         public int TotalPages { get; set; }
         public DateOnly SortDate { get; set; }
-        public string SortStatus { get; set; }
+        public ReviewStatus? SortStatus { get; set; }
         // List of reports
         public List<MakeReportList> Reports { get; set; } = [];
         public class MakeReportList

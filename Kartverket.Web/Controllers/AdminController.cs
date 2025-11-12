@@ -28,7 +28,7 @@ public class AdminController : Controller
     }
 
     [HttpGet]
-    public IActionResult Index([FromQuery] int page = 1, [FromQuery] DateOnly? sortDate = null, [FromQuery] string sortStatus = "all",
+    public IActionResult Index([FromQuery] int page = 1, [FromQuery] DateOnly? sortDate = null, [FromQuery] ReviewStatus? sortStatus = null,
         [FromQuery] string sortOrder = "desc")
     {
         sortDate ??= DateOnly.FromDateTime(DateTime.Now);
@@ -39,14 +39,16 @@ public class AdminController : Controller
         reportQuery = reportQuery
             .Where(r => DateOnly.FromDateTime(r.CreatedAt) <= sortDate.Value);
 
-        reportQuery = sortStatus.ToLower() switch
+  
+        reportQuery = sortStatus switch
         {
-            "resolved" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Resolved),
-            "closed" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Closed),
-            "draft" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Draft),
-            "submitted" => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Submitted),
+            ReviewStatus.Resolved => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Resolved),
+            ReviewStatus.Closed => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Closed),
+            ReviewStatus.Draft => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Draft),
+            ReviewStatus.Submitted => reportQuery.Where(r => r.ReviewStatus == ReviewStatus.Submitted),
             _ => reportQuery
         };
+
 
 
         var totalReports = reportQuery.Count();
