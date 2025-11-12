@@ -1,7 +1,7 @@
 import { parseISO } from "date-fns";
 import L from "leaflet";
-import React, { useEffect, useMemo, useRef } from "react";
-import { Marker, Polygon, Polyline, Popup, useMap } from "react-leaflet";
+import { useEffect, useRef } from "react";
+import { useMap } from "react-leaflet";
 
 import { useJourney } from "../hooks/useJourney";
 import { useObjectTypes } from "../hooks/useObjectTypes";
@@ -67,6 +67,8 @@ export const ObjectMarkers = () => {
 
 		const renderObject = (obj: PlacedObject, zoom: number, colour: Colour) => {
 			const objectType = getObjectTypeById(obj.typeId) || getStandardObjectType(obj.geometryType);
+			if (!objectType) return;
+
 			const icon = buildIcon(objectType, zoom);
 			const popupHtml = `<div>
 				<p>${objectType?.name || "Ukjent objekt"}</p>
