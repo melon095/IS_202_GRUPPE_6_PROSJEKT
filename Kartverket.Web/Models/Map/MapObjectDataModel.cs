@@ -6,7 +6,7 @@ public class MapObjectDataModel
 {
     public Guid Id { get; set; }
     public Guid ReportId { get; set; }
-    public Guid? TypeId { get; set; }
+    public Guid TypeId { get; set; }
     public GeometryType GeometryType { get; set; }
     public string? Title { get; set; }
     public IEnumerable<MapPoint> Points { get; set; } = [];

@@ -31,7 +31,9 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 					method: "GET",
 				});
 
-				if (!res.ok) throw await extrapolateErrors(res);
+				if (!res.ok) {
+					await extrapolateErrors(res);
+				}
 
 				const newData = (await res.json()) as ServerStateResponse;
 
