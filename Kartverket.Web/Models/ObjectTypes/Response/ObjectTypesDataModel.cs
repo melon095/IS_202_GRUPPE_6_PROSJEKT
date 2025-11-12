@@ -6,6 +6,8 @@ public class ObjectTypesDataModel
 {
     public List<ObjectType> ObjectTypes { get; set; } = [];
 
+    // @NOTE: Diksjonær nøkkel må være av typen int for at JSON skal serialiseres korrekt til JavaScript,
+    //        ellers blir nøkkelen tolket som en streng.
     public Dictionary<int, Guid> StandardTypeIds { get; set; } = [];
 
     public class ObjectType
