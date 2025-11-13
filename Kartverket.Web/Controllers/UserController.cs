@@ -77,7 +77,7 @@ public class UserController : Controller
             return View(body);
         }
 
-        var result = await _signInManager.PasswordSignInAsync(body.Username, body.Password, false, true);
+        var result = await _signInManager.PasswordSignInAsync(body.Username, body.Password, body.RememberMe, true);
         if (!result.Succeeded)
         {
             ModelState.AddModelError(string.Empty, "Ugyldig brukernavn eller passord.");

@@ -46,6 +46,14 @@
                     @Html.ValidationMessageFor(m => m.Password)
                 </span>
             </div>
+            
+            <div class="field">
+                <div class="control">
+                    <label class="checkbox">
+                        @Html.CheckBoxFor(m => m.RememberMe) Husk meg
+                    </label>
+                </div>
+            </div>
 
             <div class="field is-grouped is-grouped-centered">
                 <div class="control">
