@@ -278,7 +278,7 @@ public class AdminController : Controller
     {
         if (string.IsNullOrWhiteSpace(feedbackText))
         {
-            ModelState.AddModelError("", "Tilbakemeldingen kan ikke være tom");
+            TempData["Error"] = "Du kan ikke sende blank tilbakemelding";
             return RedirectToAction("ObjectReview", new { id, objectID });
         }
         var report = _dbContext.Reports
