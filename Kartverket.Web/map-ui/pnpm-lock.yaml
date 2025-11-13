@@ -16,6 +16,9 @@ importers:
             "@fortawesome/react-fontawesome":
                 specifier: ^3.1.0
                 version: 3.1.0(@fortawesome/fontawesome-svg-core@7.1.0)(react@19.2.0)
+            "@react-leaflet/core":
+                specifier: ^3.0.0
+                version: 3.0.0(leaflet@1.9.4)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
             "@tanstack/react-query":
                 specifier: ^5.90.2
                 version: 5.90.2(react@19.2.0)

@@ -1,7 +1,7 @@
+import { useLeafletContext } from "@react-leaflet/core";
 import { parseISO } from "date-fns";
 import L from "leaflet";
 import { useEffect, useRef } from "react";
-import { useMap } from "react-leaflet";
 
 import { useJourney } from "../hooks/useJourney";
 import { useObjectTypes } from "../hooks/useObjectTypes";
@@ -35,7 +35,7 @@ const calculateIconSize = (currentZoom: number): { iconSize: [number, number]; s
 };
 
 export const ObjectMarkers = () => {
-	const map = useMap();
+	const leaflet = useLeafletContext();
 	const layerRef = useRef<L.LayerGroup | null>(null);
 	const { currentJourney, currentObjectPoints, placeMode } = useJourney();
 	const { getObjectTypeById, getStandardObjectType, isObjectTypeStandard } = useObjectTypes();
@@ -45,7 +45,11 @@ export const ObjectMarkers = () => {
 	const canvasRenderer = useRef<L.Renderer>(L.canvas({ padding: 0.5 }));
 
 	useEffect(() => {
-		const layer = L.layerGroup().addTo(map);
+		if (!leaflet.map || !leaflet.layerContainer) return;
+
+		const layer = L.layerGroup();
+		leaflet.layerContainer.addLayer(layer);
+
 		layerRef.current = layer;
 
 		const buildIcon = (type: ObjectType, zoom: number): L.Icon => {
@@ -164,20 +168,29 @@ export const ObjectMarkers = () => {
 			}
 		};
 
-		drawAll(map.getZoom());
+		drawAll(leaflet.map.getZoom());
 
 		const handleZoom = () => {
-			const zoom = map.getZoom();
+			const zoom = leaflet.map.getZoom();
 			drawAll(zoom);
 		};
 
-		map.on("zoomend", handleZoom);
+		leaflet.map.on("zoomend", handleZoom);
 
 		return () => {
-			map.off("zoomend", handleZoom);
+			leaflet.map.off("zoomend", handleZoom);
 			layer.remove();
 		};
-	}, [map, currentJourney, currentObjectPoints, placeMode, serverObjects]);
+	}, [
+		leaflet,
+		currentJourney,
+		currentObjectPoints,
+		placeMode,
+		serverObjects,
+		getObjectTypeById,
+		getStandardObjectType,
+		isObjectTypeStandard,
+	]);
 
 	return null;
 };
