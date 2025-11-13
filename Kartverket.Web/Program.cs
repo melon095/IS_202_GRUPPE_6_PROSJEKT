@@ -89,11 +89,11 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
 });
 
-builder.Services.AddSession(options =>
+builder.Services.AddSession(o =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
+    o.Cookie.Name = "Kartverket.Web.Session.6";
+    o.IdleTimeout = TimeSpan.FromMinutes(30);
+    o.Cookie.IsEssential = true;
 });
 
 #endregion // Authentication

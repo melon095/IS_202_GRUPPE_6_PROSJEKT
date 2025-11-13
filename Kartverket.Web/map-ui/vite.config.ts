@@ -2,7 +2,7 @@
 import { spawn } from "child_process";
 import fs from "fs";
 import path from "path";
-import { UserConfig, defineConfig } from "vite";
+import { defineConfig, UserConfig } from "vite";
 
 // Get base folder for certificates.
 const baseFolder =
@@ -25,23 +25,31 @@ const imagePattern = /\.(png|jpe?g|gif|svg|webp|avif)$/;
 
 // Export Vite configuration
 export default defineConfig(async () => {
-	if (!fs.existsSync(baseFolder)) {
-		fs.mkdirSync(baseFolder, { recursive: true });
-	}
+	const isProduction = process.env.NODE_ENV === "production";
 
-	// Ensure the certificate and key exist
-	if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
-		// Wait for the certificate to be generated
-		await new Promise<void>((resolve) => {
-			spawn("dotnet", ["dev-certs", "https", "--export-path", certFilePath, "--format", "Pem", "--no-password"], {
-				stdio: "inherit",
-			}).on("exit", (code) => {
-				resolve();
-				if (code) {
-					process.exit(code);
-				}
+	if (!isProduction) {
+		if (!fs.existsSync(baseFolder)) {
+			fs.mkdirSync(baseFolder, { recursive: true });
+		}
+
+		// Ensure the certificate and key exist
+		if (!fs.existsSync(certFilePath) || !fs.existsSync(keyFilePath)) {
+			// Wait for the certificate to be generated
+			await new Promise<void>((resolve) => {
+				spawn(
+					"dotnet",
+					["dev-certs", "https", "--export-path", certFilePath, "--format", "Pem", "--no-password"],
+					{
+						stdio: "inherit",
+					}
+				).on("exit", (code) => {
+					resolve();
+					if (code) {
+						process.exit(code);
+					}
+				});
 			});
-		});
+		}
 	}
 
 	// Define Vite configuration
@@ -84,13 +92,15 @@ export default defineConfig(async () => {
 				},
 			},
 		},
-		server: {
-			strictPort: true,
-			https: {
-				cert: certFilePath,
-				key: keyFilePath,
-			},
-		},
+		server: isProduction
+			? undefined
+			: {
+					strictPort: true,
+					https: {
+						cert: certFilePath,
+						key: keyFilePath,
+					},
+				},
 		plugins: [react()],
 		optimizeDeps: {
 			include: [],
