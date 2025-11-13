@@ -9,7 +9,6 @@ import { JourneyProvider } from "./contexts/JourneyContext";
 import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
 import { useFinalizeJourneyMutation } from "./hooks/useFinalizeJourneyMutation";
 import { useJourney } from "./hooks/useJourney";
-import { useTranslation } from "./i18n";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -21,7 +20,6 @@ const queryClient = new QueryClient({
 });
 
 const AppContent = () => {
-	const { t } = useTranslation();
 	const { finishedJourney, undoEndJourney, deleteEndJourney } = useJourney();
 	const [showSummary, setShowSummary] = useState(false);
 	const finalizeJourneyMutation = useFinalizeJourneyMutation();
