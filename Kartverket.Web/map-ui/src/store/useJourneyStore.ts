@@ -8,6 +8,7 @@ export interface JourneyFunctions {
 	undoEndJourney: () => void;
 	endJourney: () => void;
 	deleteEndJourney: () => void;
+	deleteStore: () => void;
 	updateFinishedJourneyMeta: (updates: Partial<Journey>) => void;
 	setPlaceMode: (mode: PlaceMode) => void;
 	stopPlacingObject: (typeId?: string | undefined) => PlacedObject | undefined;
@@ -66,6 +67,15 @@ export const useJourneyStore = create<JourneyStore>()(
 
 			deleteEndJourney: () => {
 				set({ finishedJourney: null });
+			},
+
+			deleteStore: () => {
+				set({
+					currentJourney: null,
+					finishedJourney: null,
+					placeMode: PlaceMode.None,
+					currentObjectPoints: [],
+				});
 			},
 
 			updateFinishedJourneyMeta: (updates) => {

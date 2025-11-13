@@ -16,6 +16,7 @@ const SERVER_OBJECTS_COLOUR = "green";
 const BASE_ZOOM = 13;
 const BASE_ICON_SIZE: [number, number] = [25, 41];
 const BASE_SHADOW_SIZE: [number, number] = [41, 41];
+const MINIMUM_ZOOM_FOR_AREA_LABELS = 11;
 
 const calculateIconSize = (currentZoom: number): { iconSize: [number, number]; shadowSize: [number, number] } => {
 	const zoomDiff = currentZoom - BASE_ZOOM;
@@ -117,7 +118,15 @@ export const ObjectMarkers = () => {
 						.bindPopup(popupHtml)
 						.addTo(layer);
 
-					if (!isObjectTypeStandard(objectType.id) && objectType?.name) {
+					const isStandardType = isObjectTypeStandard(objectType.id);
+					const isWithingZoomForLabels = leaflet.map.getZoom() >= MINIMUM_ZOOM_FOR_AREA_LABELS;
+
+					console.log({
+						zoom: leaflet.map.getZoom(),
+						isWithingZoomForLabels,
+					});
+
+					if (!isStandardType && objectType?.name && isWithingZoomForLabels) {
 						const centroid: [number, number] = [
 							polygonPoints.reduce((sum, p) => sum + p.lat, 0) / polygonPoints.length,
 							polygonPoints.reduce((sum, p) => sum + p.lng, 0) / polygonPoints.length,

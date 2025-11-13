@@ -32,6 +32,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 		updateJourneyId,
 		updateObjectId,
 		setPlaceMode,
+		deleteStore,
 	} = useJourney();
 	const map = useMap();
 	const syncObjectMutation = useSyncObjectMutation();
@@ -98,6 +99,7 @@ export const JourneyControls = ({ children }: JourneyControlsProps) => {
 							onCancelPlace={handleCancelPlace}
 							onEndJourney={endJourney}
 							onToggleFollowing={toggleFollowing}
+							onDeleteStore={deleteStore}
 						>
 							{children}
 						</JourneyActiveState>

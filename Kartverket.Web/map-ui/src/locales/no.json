@@ -18,6 +18,7 @@
 			"place_line": "Plasser Linje",
 			"place_area": "Plasser Område"
 		},
+		"restartJourney": "Start ny reise",
 		"errors": {
 			"not_enough_points": {
 				"point": "Et punkt krever nøyaktig ett punkt.",

@@ -19,6 +19,7 @@ export interface JourneyActiveStateProps {
 	onCancelPlace: () => void;
 	onEndJourney: () => void;
 	onToggleFollowing: () => void;
+	onDeleteStore: () => void;
 
 	children?: React.ReactNode;
 }
@@ -35,6 +36,7 @@ export const JourneyActiveState = ({
 	onCancelPlace,
 	onEndJourney,
 	onToggleFollowing,
+	onDeleteStore,
 	children,
 }: JourneyActiveStateProps) => {
 	const { t } = useTranslation();
@@ -112,6 +114,22 @@ export const JourneyActiveState = ({
 					</IconFlex>
 				</div>
 			</div>
+
+			<Divider />
+
+			<div className="content is-small mt-4">
+				<IconFlex
+					as="button"
+					onClick={onDeleteStore}
+					icon={["fas", "trash"]}
+					fullWidth
+					className="is-fullwidth is-light"
+				>
+					{t("controls.restartJourney")}
+				</IconFlex>
+			</div>
+
+			<Divider />
 
 			<div className="content">{children}</div>
 		</>
