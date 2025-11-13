@@ -6,8 +6,6 @@ import { PlaceMode } from "../types";
 import { Icon } from "./Icon";
 import { IconFlex } from "./IconFlex";
 
-export const STANDARD_OBJECT_TYPE_NAME = "Standard";
-
 interface ObjectTypeSelectorProps {
 	onSelect: (typeId?: string) => void;
 	onCancel: () => void;
@@ -16,11 +14,11 @@ interface ObjectTypeSelectorProps {
 
 export const ObjectTypeSelector = ({ onSelect, onCancel, placeMode }: ObjectTypeSelectorProps) => {
 	const { t } = useTranslation();
-	const { objectTypes, isLoading, error } = useObjectTypes();
+	const { objectTypes, isObjectTypeStandard, isLoading, error } = useObjectTypes();
 	const [selectedTypeId, setSelectedTypeId] = useState("");
 
 	const objectTypesFiltered = objectTypes.filter(
-		(type) => type.geometryType === placeMode && type.name === STANDARD_OBJECT_TYPE_NAME
+		(type) => type.geometryType === placeMode && !isObjectTypeStandard(type.id)
 	);
 
 	const handleConfirm = () => {
