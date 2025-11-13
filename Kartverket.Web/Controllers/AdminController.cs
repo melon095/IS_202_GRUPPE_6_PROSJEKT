@@ -90,6 +90,7 @@ public class AdminController : Controller
     [HttpGet]
     public IActionResult ReportInDepth(Guid id, [FromQuery] Guid? objectID)
     {
+
         var report = _dbContext.Reports
             .Include(r => r.ReportedBy)
             .Include(r => r.HindranceObjects)
