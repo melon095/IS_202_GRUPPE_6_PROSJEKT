@@ -36,8 +36,7 @@
                                 {
                                     ReviewStatus.Resolved => "Godkjent",
                                     ReviewStatus.Closed => "Avslått",
-                                    ReviewStatus.Draft => "Utkast",
-                                    ReviewStatus.Submitted => "Uverifisert",
+                                    ReviewStatus.Draft => "Uverifisert",
                                     _ => Model.SelectedObject.ObjectStatus
                                 })</p>
                             @using (Html.BeginForm("ObjectReview", "Admin", FormMethod.Post))
@@ -90,7 +89,7 @@
                                                 asp-controller="Admin"
                                                 asp-action="ObjectReview"
                                                 asp-route-id="@Model.Id"
-                                                asp-route-objectId="@obj.Id">Details</a>
+                                                asp-route-objectId="@obj.Id">Åpne</a>
                                             </td>
                                             <td>@obj.ObjectStatus</td>
                                         </tr>
@@ -158,7 +157,7 @@
                                     <div class="control">
                                         <div class="select">
                                             <select name="feedbackType">
-                                            <option value="Note">Ingen forslag</option>
+                                            <option value="Note">Notat</option>
                                             <option value="RequestForChange">Forslag om endring</option>
                                             <option value="Approval">Godkjenn</option>
                                             <option value="Rejection">Avslå</option>

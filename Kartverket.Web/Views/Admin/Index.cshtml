@@ -25,7 +25,7 @@
                     value="@(Model.SortDate.ToString("yyyy-MM-dd") ?? 
                         DateTime.Now.ToString("yyyy-MM-dd"))"/>
                     <label for="SelStatus">Status</label>
-                    <select name="SortStatus" asp-items="Html.GetEnumSelectList<Kartverket.Web.Database.ReviewStatus>()" id="Selstatus">
+                    <select asp-for="SortStatus" asp-items="Html.GetEnumSelectList<Kartverket.Web.Database.ReviewStatus>()" id="Selstatus">
                         <!option value="">Alle raporter</!option>
                     </select>
                     <input type="submit" value="Filtrer">
