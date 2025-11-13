@@ -1,0 +1,319 @@
+﻿@using Kartverket.Web.Database
+@using Kartverket.Web.Database.Tables
+@{
+    ViewBag.Title = "ObjektRevy";
+}
+@model Kartverket.Web.Models.Report.Response.ObjectReviewModel
+
+
+<body>
+    <section class="section">
+        <div class="container is-fluid">
+            <div class="columns">
+
+                <div class="column is-7">
+                    <div class="box mb-4">
+                        <a
+                            asp-controller="Admin"
+                        asp-action="ReportInDepth"
+                        asp-route-id="@Model.Id">Tilbake</a>
+                        @if(Model.SelectedObject != null)
+                        {
+                            <p class="is-size-3"><strong>Objekt:</strong> @Model.SelectedObject.Title</p>
+                            <br />
+                            <p>@Model.SelectedObject.Description</p>
+                            <br />
+                            <br />
+                            @if(Model.SelectedObject.IsVerified)
+                            {
+                                <p><strong>Objekt verifisert</strong> @Model.SelectedObject.VerifiedAt</p>
+                            }
+                            else
+                            {
+                                <p>Objekt enda ikke verifisert</p>
+                            }
+                            <p>Status: Denne rapporten er @(Model.SelectedObject.ObjectStatus switch
+                                {
+                                    ReviewStatus.Resolved => "Godkjent",
+                                    ReviewStatus.Closed => "Avslått",
+                                    ReviewStatus.Draft => "Uverifisert",
+                                    _ => Model.SelectedObject.ObjectStatus
+                                })</p>
+                            @using (Html.BeginForm("ObjectReview", "Admin", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", Model.Id)
+                                @Html.Hidden("objectId", Model.SelectedObject.Id)
+                                <div>
+                                    <div>
+
+                                        <div class="control">
+                                            <button type="submit" name="StatusObject" value="accept" class="button is-success">Aksepter</button>
+                                            <button type="submit" name="StatusObject" value="deny" class="button is-danger">Avslå</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            }
+                            @if (TempData["Success"] != null)
+                            {
+                                <div class="notification is-info mt-3">
+                                    @TempData["Success"]
+                                </div>
+                            }
+                            else if (TempData["Error"] != null)
+                            {
+                                <div class="notification is-danger mt-3">
+                                    @TempData["Error"]
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <p>Det er ingen objekter markert, velg en for å verifisere</p>
+                            <table class="table table-bordered">
+                                <thead>
+                                    <tr>
+                                        <th>Objekt</th>
+                                        <th>Åpne</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var obj in Model.Objects)
+                                    {
+                                        <tr>
+                                            <td>@obj.Title</td>
+                                            <td>
+                                                <a id="showIn"
+                                                asp-controller="Admin"
+                                                asp-action="ObjectReview"
+                                                asp-route-id="@Model.Id"
+                                                asp-route-objectId="@obj.Id">Åpne</a>
+                                            </td>
+                                            <td>@obj.ObjectStatus.GetDisplayName()</td>
+                                        </tr>
+                                    }
+
+
+                                </tbody>
+                            </table>
+                        }
+
+                    </div>
+                    
+                    <div class="box">
+                        <h2 class="title is-5">Tilbakemeldinger</h2>
+                        @if(Model.SelectedObject != null)
+                        {
+                            <div id="CommentField">
+                            @if(Model.SelectedObject.Feedbacks.Any())
+                            {
+                                @foreach (var com in Model.SelectedObject.Feedbacks)
+                                {
+
+                                    <article class="message is-light mb-2">
+                                        <div class="message-body">
+                                            <strong>@com.FeedbackByName</strong> (
+                                            @(com.FeedbackType switch
+                                            {
+                                                FeedbackType.Approval => "Godkjenn",
+                                                FeedbackType.Rejection => "Åvslå",
+                                                FeedbackType.Note => "Notat",
+                                                FeedbackType.RequestForChange => "Forslag om endring",
+                                                _ => com.FeedbackType.ToString()
+                                            }
+                                            )
+                                            ):
+                                            <br />
+                                            @com.Feedback
+                                            <br />
+                                            @com.CreatedAt
+                                        </div>
+                                    </article>
+
+                                }
+                            }
+                            else
+                            {
+                                <p>Ingen tilbakemeldinger enda...</p>
+                            }
+                            </div>
+                            <hr />
+                            @using (Html.BeginForm("Comment", "Admin", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", Model.Id)
+                                @Html.Hidden("objectId", Model.SelectedObject.Id)
+                                <div class="field">
+                                    <label class="label">Tilbakemelding</label>
+                                    <div class="control">
+                                        <textarea name="feedbackText" class="textarea" placeholder="Skriv inn tilbakemelding (*Husk, statusforslag fra kommentarer endrer ikke objektets status)"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">Statusforslag</label>
+                                    <div class="control">
+                                        <div class="select">
+                                            <select name="feedbackType">
+                                            <option value="Note">Notat</option>
+                                            <option value="RequestForChange">Forslag om endring</option>
+                                            <option value="Approval">Godkjenn</option>
+                                            <option value="Rejection">Avslå</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="control mt-3">
+                                    <button type="submit" class="button is-link">Kommenter</button>
+                                </div>
+                            }
+                          
+                        }
+                        else
+                        {
+                            <p>Velg et objekt for å kunne se/skrive tilbakemeldinger</p>
+                        }
+                    </div>
+                </div>
+
+
+                <div class="column is-5">
+                    <div class="kart-box box">
+                        <div id="map"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        @if (Model.Objects.Count > 1 && Model.SelectedObject != null)
+        {
+            var objIndex = Model.Objects.FindIndex(o => o.Id == Model.SelectedObject.Id);
+            var objPrev = objIndex > 0 ? Model.Objects[objIndex - 1].Id : (Guid?)null;
+            var objNext = objIndex < Model.Objects.Count - 1 ? Model.Objects[objIndex + 1].Id : (Guid?)null;
+
+            <div class="buttons mt-4">
+                @if (objPrev.HasValue)
+                {
+                    <a class="button is-light"
+                    asp-controller="Admin"
+                    asp-action="ObjectReview"
+                    asp-route-id="@Model.Id"
+                    asp-route-objectId="@objPrev">
+                        Forrige objekt
+                    </a>
+                }
+                else
+                {
+                    <a class="button is-light" disable>Forrige objekt</a>
+                }
+                @if (objNext.HasValue)
+                {
+                    <a class="button is-light"
+                    asp-controller="Admin"
+                    asp-action="ObjectReview"
+                    asp-route-id="@Model.Id"
+                    asp-route-objectId="@objNext">
+                        Neste objekt
+                    </a>
+                }
+                else
+                {
+                    <a class="button is-light" disable> Neste objekt</a>
+                }
+            </div>
+        }
+    </section>
+</body>
+
+@section styles
+{
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+          <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        .section {
+            padding: 15px;
+        }
+
+        .box {
+        border: 1px solid #dbdbdb;
+             }
+
+        .kart-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 0;
+        }
+
+        #map {
+            flex: 1;
+            width: 100%;
+            height: 100%;
+            border: none; 
+            border-radius: 0 0 6px 6px; 
+        }
+        #CommentField {
+            overflow-x: hidden;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+
+          </style>
+}
+
+@section Scripts {
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const centerOfNorway = [63.99164652261938, 12.306951660170679];
+        const { Objects: objects, SelectedObject: selectedObject } = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        let mapCenter = [58.16358810163733, 8.00377215125247];
+        let zoomLevel = 10;
+        let bounds = null;
+
+        if (selectedObject && selectedObject.CentroidPoint)
+        {
+            let centroid = selectedObject.CentroidPoint;
+            var points = selectedObject.Points;
+            mapCenter = [selectedObject.CentroidPoint.Lat, selectedObject.CentroidPoint.Lng];
+
+            let latLngPoints = points.map((p) => L.latLng(p.Lat, p.Lng));
+            bounds = L.latLngBounds(latLngPoints);
+            bounds.extend([centroid.Lat, centroid.Lng]);
+        } else {
+            let latLngPoints = objects.flatMap(o => o.Points.map(p => L.latLng(p.Lat, p.Lng)));
+            bounds = L.latLngBounds(latLngPoints);
+            bounds.extend(centerOfNorway);
+        }
+
+        const map = L.map('map').setView(mapCenter, zoomLevel);
+        map.fitBounds(bounds, {
+            padding: [50, 50]
+        });
+
+        L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
+            attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
+        }).addTo(map);
+
+        objects.forEach(obj => {
+            if (obj.Points && obj.Points.length > 0)
+            {
+                obj.Points.forEach(point =>
+                    {
+                if (point.Lat && point.Lng)
+                {
+                    L.marker([point.Lat, point.Lng]).addTo(map).bindPopup(obj.Description);
+                }
+            });
+            }
+        });
+    </script>
+}
+

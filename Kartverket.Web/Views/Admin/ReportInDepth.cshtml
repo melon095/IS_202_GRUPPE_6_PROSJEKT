@@ -1,34 +1,34 @@
-﻿@{
-    ViewBag.Title = "In-Depth Report";
+﻿@using Kartverket.Web.Database
+@{
+    ViewBag.Title = "Rapport";
 }
 @model Kartverket.Web.Models.Report.Response.InDepthReportModel
 
 <div id="model-title">
     <h2 class="is-size-2">
-        Rapport: @Model.Title
+       <strong>Rapport:</strong> @Model.Title
     </h2>
 </div>
 <body>
-    <!-- 1. Kolonne-->
+
     <div class="main-container">
 
         <div class="column-flex">
             <div class="box row-flex">
-                <h2>Report Description:</h2>
+                <h2><strong>Beskrivelse:</strong></h2>
                 <br />
                 <p>@Model.Description</p>
                 <br />
-                <p><strong>Created At:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+                <p><strong>Rapportert:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
             </div>
 
             <div class="box row-flex" id="ObjTable">
-                <h2>Objects</h2>
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Object Num</th>
-                            <th>Markers</th>
-                            <th>View</th>
+                            <th>Objekter</th>
+                            <th>Punkter</th>
+                            <th>Detaljer</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -42,7 +42,7 @@
                                        asp-controller="Admin"
                                        asp-action="ReportInDepth"
                                        asp-route-id="@Model.Id"
-                                       asp-route-objectId="@obj.Id">Details</a>
+                                       asp-route-objectId="@obj.Id">Åpne</a>
                                 </td>
                             </tr>
                         }
@@ -53,14 +53,37 @@
             </div>
         </div>
 
-        <!--2. kolonne-->
+
         <div class="column-flex">
             <div class="box" style="flex: 1">
                 
                 @if(Model.SelectedObject is { } selObj)
                     {
                         <h3 class="title is-4">@selObj.Title</h3>
+                        <br />
                         <p>@selObj.Description</p>
+                        <br />
+                        <p>Status:  @(selObj.ObjectStatus switch
+                            {
+                                ReviewStatus.Resolved => "Godkjent",
+                                ReviewStatus.Closed => "Avslått",
+                                ReviewStatus.Draft => "Utkast",
+                                ReviewStatus.Submitted => "Ikke verifisert",
+                                _ => selObj.ObjectStatus
+                            })</p>
+                        <br />
+                        @if(selObj.IsVerified)
+                        {
+                            <p><strong>Verifisert:</strong> @selObj.VerifiedAt</p>
+                        }
+                        else
+                        {
+                            <p>Dette objektet er ikke vurdert</p>
+                        }
+                         <a asp-controller="Admin"
+                          asp-action="ObjectReview"
+                          asp-route-id="@Model.Id"
+                          asp-route-objectId="@Model.SelectedObject.Id">Vurder objekt</a>
                     }
                 else
                 {
@@ -69,7 +92,7 @@
 
     </div>
 </div>
-<!--3. kolonne-->
+
 <div class="column-flex">
     <div>
         <div id="map" class="column-flex box"></div>
