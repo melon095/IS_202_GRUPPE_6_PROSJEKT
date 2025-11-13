@@ -17,6 +17,14 @@
 			"place_point": "Plasser Punkt",
 			"place_line": "Plasser Linje",
 			"place_area": "Plasser Område"
+		},
+		"restartJourney": "Start ny reise",
+		"errors": {
+			"not_enough_points": {
+				"point": "Et punkt krever nøyaktig ett punkt.",
+				"line": "En linje krever minst to punkter.",
+				"area": "Et område krever minst tre punkter."
+			}
 		}
 	},
 	"journeySummary": {
@@ -53,6 +61,10 @@
 					"yes": "Ja",
 					"no": "Nei",
 					"noData": "-"
+				},
+				"deleted": {
+					"no": "Nei",
+					"yes": "Ja"
 				}
 			}
 		},

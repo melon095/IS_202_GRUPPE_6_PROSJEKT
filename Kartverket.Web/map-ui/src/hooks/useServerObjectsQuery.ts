@@ -3,9 +3,7 @@ import { useEffect, useRef } from "react";
 
 import { ServerStateResponse } from "../types";
 import { extrapolateErrors } from "../utils/extrapolateErrors";
-
-const ONE_MINUTE = 60 * 1000;
-const TWO_MINUTES = 2 * ONE_MINUTE;
+import { ONE_MINUTE_MS, TWO_MINUTES_MS } from "../utils/time-constants";
 
 export const useServerObjectsQuery = (currentReportId?: string) => {
 	const queryClient = useQueryClient();
@@ -28,39 +26,52 @@ export const useServerObjectsQuery = (currentReportId?: string) => {
 				qp.append("reportId", currentReportId);
 			}
 
-			const res = await fetch(`/Map/GetObjects?${qp.toString()}`, {
-				method: "GET",
-			});
+			try {
+				const res = await fetch(`/Map/GetObjects?${qp.toString()}`, {
+					method: "GET",
+				});
 
-			if (!res.ok) throw await extrapolateErrors(res);
-
-			const newData = (await res.json()) as ServerStateResponse;
-
-			lastFetchTimeRef.current = new Date().toISOString();
-
-			const oldData = queryClient.getQueryData<ServerStateResponse>(["serverSideObjects", currentReportId]);
-
-			if (!oldData) return newData;
-
-			const merged = [...oldData];
-
-			newData.forEach((newObj) => {
-				const index = merged.findIndex((obj) => obj.id === newObj.id);
-				if (index !== -1) {
-					merged[index] = newObj;
-				} else {
-					merged.push(newObj);
+				if (!res.ok) {
+					throw new Error(
+						`Feil ved henting av serverobjekter: ${res.status} ${res.statusText}. ${extrapolateErrors(res)}`
+					);
 				}
-			});
 
-			queryClient.setQueryData(["serverSideObjects", currentReportId], merged);
+				const newData = (await res.json()) as ServerStateResponse;
 
-			return merged;
+				lastFetchTimeRef.current = new Date().toISOString();
+
+				const oldData = queryClient.getQueryData<ServerStateResponse>(["serverSideObjects", currentReportId]);
+
+				if (!oldData) return newData;
+
+				const merged = [...oldData];
+
+				newData.forEach((newObj) => {
+					const index = merged.findIndex((obj) => obj.id === newObj.id);
+					if (index !== -1) {
+						merged[index] = newObj;
+					} else {
+						merged.push(newObj);
+					}
+				});
+
+				queryClient.setQueryData(["serverSideObjects", currentReportId], merged);
+
+				return merged;
+			} catch (error) {
+				// Hvis noe går galt, bryr vi oss ikke om feilmeldingen, vi bare fortsetter å bruke gamle data
+
+				const oldData = queryClient.getQueryData<ServerStateResponse>(["serverSideObjects", currentReportId]);
+				if (oldData) return oldData;
+
+				throw error;
+			}
 		},
-		refetchInterval: ONE_MINUTE,
+		refetchInterval: ONE_MINUTE_MS,
 		refetchOnWindowFocus: false,
 		refetchOnReconnect: false,
-		staleTime: TWO_MINUTES,
+		staleTime: TWO_MINUTES_MS,
 		placeholderData: keepPreviousData,
 	});
 };

@@ -17,11 +17,7 @@ i18n.use(initReactI18next).init({
 });
 
 const useTranslation = () => {
-	const t = (key: string, options?: Record<string, unknown>) => {
-		return i18n.t(key, options);
-	};
-	return { t };
+	return i18n.use(initReactI18next);
 };
 
-export default i18n;
 export { useTranslation };

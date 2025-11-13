@@ -24,61 +24,125 @@ public static class SeedHindranceTypes
     {
         var types = new List<HindranceTypeTable>
         {
+            #region Standard
+
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Lyktestolpe",
-                PrimaryImageUrl = "/images/map-objects/Lyktestolpe.svg",
-                MarkerImageUrl = "/images/map-objects/Lyktestolpe.svg"
+                Name = HindranceTypeTable.DEFAULT_TYPE_NAME,
+                ImageUrl = "/images/hindrances/Default.svg",
+                GeometryType = GeometryType.Point
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Kraftlinje",
-                PrimaryImageUrl = "/images/map-objects/Kraftlinje.svg",
-                MarkerImageUrl = "/images/map-objects/Kraftlinje.svg"
+                Name = HindranceTypeTable.DEFAULT_TYPE_NAME,
+                ImageUrl = "/images/hindrances/Default.svg",
+                GeometryType = GeometryType.Line
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Flagg Stang",
-                PrimaryImageUrl = "/images/map-objects/Flagg.svg",
-                MarkerImageUrl = "/images/map-objects/Flagg.svg"
+                Name = HindranceTypeTable.DEFAULT_TYPE_NAME,
+                ImageUrl = "/images/hindrances/Default.svg",
+                GeometryType = GeometryType.Area
+            },
+
+            #endregion // Standard
+
+            #region Point
+
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Flagstaff",
+                ImageUrl = "/images/hindrances/Flagstaff.svg",
+                GeometryType = GeometryType.Point
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Kommunikasjons Tårn",
-                PrimaryImageUrl = "/images/map-objects/Radiomast.svg",
-                MarkerImageUrl = "/images/map-objects/Radiomast.svg"
+                Name = "Mast",
+                ImageUrl = "/images/hindrances/Mast.svg",
+                GeometryType = GeometryType.Point
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Kran",
-                PrimaryImageUrl = "/images/map-objects/Heisekran.svg",
-                MarkerImageUrl = "/images/map-objects/Heisekran.svg"
+                Name = "Vindmølle",
+                ImageUrl = "/images/hindrances/Wind.svg",
+                GeometryType = GeometryType.Point
+            },
+
+            #endregion // Point
+
+            #region Line
+
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Strømledning",
+                ImageUrl = "/images/hindrances/Power.svg",
+                GeometryType = GeometryType.Line
+            },
+
+            #endregion // Line
+
+            #region Area
+
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Flyforbudssone",
+                Colour = "#8A02C0",
+                GeometryType = GeometryType.Area
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Vind Mølle",
-                PrimaryImageUrl = "/images/map-objects/VindMolle.svg",
-                MarkerImageUrl = "/images/map-objects/VindMolle.svg"
+                Name = "Militært øvingsområde",
+                Colour = "#FF0000",
+                GeometryType = GeometryType.Area
             },
             new()
             {
                 Id = Guid.NewGuid(),
-                Name = "Bro",
-                PrimaryImageUrl = "/images/map-objects/Bro.svg",
-                MarkerImageUrl = "/images/map-objects/Bro.svg"
-            }
+                Name = "Naturreservat",
+                Colour = "#008000",
+                GeometryType = GeometryType.Area
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Nasjonalpark",
+                Colour = "#00FF00",
+                GeometryType = GeometryType.Area
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Vernområde for kulturminner",
+                Colour = "#FFA500",
+                GeometryType = GeometryType.Area
+            },
+            new()
+            {
+                Id = Guid.NewGuid(),
+                Name = "Farlig terreng",
+                Colour = "#FFFF00",
+                GeometryType = GeometryType.Area
+            },
+
+            #endregion // Area
         };
 
         foreach (var type in types)
         {
+            if (type.ImageUrl is { } url && !File.Exists($"wwwroot{url}"))
+                continue;
+
             var existingType = await context.HindranceTypes
-                .FirstOrDefaultAsync(t => t.Name == type.Name);
+                .FirstOrDefaultAsync(t => t.Name == type.Name && t.GeometryType == type.GeometryType);
 
             if (existingType == null)
             {
@@ -86,10 +150,14 @@ public static class SeedHindranceTypes
             }
             else
             {
-                existingType.PrimaryImageUrl = type.PrimaryImageUrl;
-                existingType.MarkerImageUrl = type.MarkerImageUrl;
-                context.HindranceTypes.Update(existingType);
+                existingType.Colour = type.Colour;
+                existingType.ImageUrl = type.ImageUrl;
             }
         }
+
+        var existingTypes = await context.HindranceTypes.ToListAsync();
+        foreach (var existingType in existingTypes)
+            if (!types.Any(t => t.Name == existingType.Name && t.GeometryType == existingType.GeometryType))
+                context.HindranceTypes.Remove(existingType);
     }
 }

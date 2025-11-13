@@ -17,19 +17,22 @@ public class MapController : Controller
     private readonly IJourneyOrchestrator _journeyOrchestrator;
     private readonly IUnitOfWork _unitOfWork;
     private readonly UserManager<UserTable> _userManager;
+    private readonly IHttpClientFactory _httpClientFactory;
 
     public MapController(
         ILogger<MapController> logger,
         IHindranceService hindranceService,
         IJourneyOrchestrator journeyOrchestrator,
         IUnitOfWork unitOfWork,
-        UserManager<UserTable> userManager)
+        UserManager<UserTable> userManager,
+        IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
         _hindranceService = hindranceService;
         _journeyOrchestrator = journeyOrchestrator;
         _unitOfWork = unitOfWork;
         _userManager = userManager;
+        _httpClientFactory = httpClientFactory;
     }
 
     [HttpGet]
@@ -41,7 +44,7 @@ public class MapController : Controller
     public async Task<IActionResult> SyncObject(
         [FromBody] PlacedObjectDataModel body,
         [FromQuery] Guid? journeyId = null,
-        [FromServices] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
 
@@ -68,7 +71,7 @@ public class MapController : Controller
     public async Task<IActionResult> FinalizeJourney(
         [FromBody] FinalizeJourneyRequest body,
         [FromQuery] Guid? journeyId = null,
-        [FromServices] CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
         if (journeyId is null) return BadRequest("JourneyId is required");
@@ -95,30 +98,43 @@ public class MapController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<MapObjectsDataModel[]> GetObjects(
+    public async Task<IEnumerable<MapObjectDataModel>> GetObjects(
         [FromQuery] DateTime? since = null,
         [FromQuery] Guid? reportId = null,
-        [FromServices] CancellationToken cancellationToken = default)
-    {
-        var mapObjects = await _hindranceService.GetAllObjectsSince(since, reportId, cancellationToken);
+        CancellationToken cancellationToken = default) =>
+        await _hindranceService.GetAllObjectsSince(since, reportId, cancellationToken);
 
-        return mapObjects.Select(mo => new MapObjectsDataModel
+    [HttpGet("/Map/SatelliteTiles/{z:int}/{x:int}/{y:int}.jpg")]
+    [Authorize]
+    public async Task<IActionResult> SatelliteTiles(int x, int y, int z,
+        CancellationToken cancellationToken = default)
+    {
+        try
         {
-            Id = mo.Id,
-            ReportId = mo.ReportId,
-            TypeId = mo.HindranceTypeId,
-            GeometryType = mo.GeometryType,
-            Title = mo.Title,
-            Points = mo.HindrancePoints
-                .OrderBy(o => o.Order)
-                .Select(mp => new MapPointDataModel
-                {
-                    Lat = mp.Latitude,
-                    Lng = mp.Longitude,
-                    Elevation = mp.Elevation,
-                    CreatedAt = mp.CreatedAt
-                })
-                .ToArray()
-        }).ToArray();
+            using var client = _httpClientFactory.CreateClient("StadiaTiles");
+
+            var response = await client.GetAsync($"/tiles/alidade_satellite/{z}/{x}/{y}.jpg", cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
+                _logger.LogWarning("Failed to fetch satellite tile {Z}/{X}/{Y}: {StatusCode} {ResponseBody}",
+                    z, x, y, response.StatusCode, responseBody);
+
+                return NotFound();
+            }
+
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+
+            HttpContext.Response.Headers.ETag = response.Headers.ETag?.Tag ?? null;
+            HttpContext.Response.Headers.LastModified = response.Content.Headers.LastModified?.ToString() ?? null;
+            HttpContext.Response.Headers.CacheControl =
+                response.Headers.CacheControl?.ToString() ?? "public,max-age=3600";
+
+            return File(stream, "image/jpeg");
+        }
+        catch
+        {
+            return NotFound();
+        }
     }
 }

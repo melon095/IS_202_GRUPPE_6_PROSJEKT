@@ -47,18 +47,6 @@ namespace Kartverket.Web.Migrations
                     b.Property<double>("Longitude")
                         .HasColumnType("double");
 
-                    b.Property<double?>("MaxLatitude")
-                        .HasColumnType("double");
-
-                    b.Property<double?>("MaxLongitude")
-                        .HasColumnType("double");
-
-                    b.Property<double?>("MinLatitude")
-                        .HasColumnType("double");
-
-                    b.Property<double?>("MinLongitude")
-                        .HasColumnType("double");
-
                     b.Property<Guid>("ReportId")
                         .HasColumnType("char(36)");
 
@@ -128,20 +116,19 @@ namespace Kartverket.Web.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("char(36)");
 
+                    b.Property<string>("Colour")
+                        .HasColumnType("longtext");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
 
                     b.Property<int>("GeometryType")
                         .HasColumnType("int");
 
-                    b.Property<string>("MarkerImageUrl")
+                    b.Property<string>("ImageUrl")
                         .HasColumnType("longtext");
 
                     b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("PrimaryImageUrl")
                         .IsRequired()
                         .HasColumnType("longtext");
 
@@ -149,9 +136,6 @@ namespace Kartverket.Web.Migrations
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.ToTable("HindranceTypes");
                 });

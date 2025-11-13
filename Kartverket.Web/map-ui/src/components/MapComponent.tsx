@@ -1,20 +1,19 @@
 import { LatLngTuple } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import React from "react";
-import { MapContainer, TileLayer, TileLayerProps } from "react-leaflet";
+import { FeatureGroup, LayersControl, MapContainer, TileLayer, TileLayerProps, ZoomControl } from "react-leaflet";
 
 import "../css/MapComponent.css";
 import "../css/zoom-control.css";
-import { GPSMarker } from "./GPSMarker.tsx";
+import { GPSMarker } from "./GPSMarker";
 import { MapClickHandler } from "./MapClickHandler";
 import { ObjectMarkers } from "./ObjectMarkers";
 
 const mapCenter = [58.1465456, 7.9911451] satisfies LatLngTuple;
 
-const tileProps = {
+const SHARED_TILE_PROPS: Partial<TileLayerProps> = {
 	attribution: `&copy; <a href="https://www.kartverket.no/">Kartverket</a>`,
-	url: `https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png`,
-} satisfies TileLayerProps;
+};
 
 interface MapComponentProps {
 	children?: React.ReactNode;
@@ -23,12 +22,38 @@ interface MapComponentProps {
 export const MapComponent = ({ children }: MapComponentProps) => {
 	return (
 		<MapContainer center={mapCenter} zoom={13} style={{ height: "100vh", width: "100vw" }} zoomControl={false}>
-			<TileLayer {...tileProps} />
+			<ZoomControl position="bottomleft" />
 			<MapClickHandler />
-			<ObjectMarkers />
-			<GPSMarker />
-
 			{children}
+
+			<LayersControl>
+				<LayersControl.BaseLayer checked name="Topografisk">
+					<TileLayer
+						{...SHARED_TILE_PROPS}
+						url="https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png"
+					/>
+				</LayersControl.BaseLayer>
+
+				<LayersControl.BaseLayer name="Topografisk Gråtone">
+					<TileLayer
+						{...SHARED_TILE_PROPS}
+						url="https://cache.kartverket.no/v1/wmts/1.0.0/topograatone/default/webmercator/{z}/{y}/{x}.png"
+					/>
+				</LayersControl.BaseLayer>
+
+				<LayersControl.BaseLayer name="Satellitt">
+					<TileLayer {...SHARED_TILE_PROPS} url="/Map/SatelliteTiles/{z}/{x}/{y}.jpg" />
+				</LayersControl.BaseLayer>
+
+				<LayersControl.Overlay name="Objekter" checked>
+					<FeatureGroup>
+						<ObjectMarkers />
+					</FeatureGroup>
+				</LayersControl.Overlay>
+				<LayersControl.Overlay name="GPS Markør" checked>
+					<GPSMarker />
+				</LayersControl.Overlay>
+			</LayersControl>
 		</MapContainer>
 	);
 };

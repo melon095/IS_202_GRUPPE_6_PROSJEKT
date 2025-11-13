@@ -54,10 +54,6 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
             .HasIndex(r => r.Name)
             .IsUnique();
 
-        modelBuilder.Entity<HindranceTypeTable>()
-            .HasIndex(mot => mot.Name)
-            .IsUnique();
-
         modelBuilder.Entity<ReportTable>()
             .HasOne(r => r.ReportedBy)
             .WithMany(u => u.Reports)

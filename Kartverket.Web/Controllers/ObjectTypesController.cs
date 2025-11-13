@@ -1,31 +1,18 @@
-﻿using Kartverket.Web.Database;
 using Kartverket.Web.Models.ObjectTypes.Response;
+using Kartverket.Web.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Controllers;
 
 public class ObjectTypesController : Controller
 {
-    private readonly DatabaseContext _dbContext;
+    private readonly IObjectTypesService _objectTypesService;
 
-    public ObjectTypesController(DatabaseContext dbContext)
+    public ObjectTypesController(IObjectTypesService objectTypesService)
     {
-        _dbContext = dbContext;
+        _objectTypesService = objectTypesService;
     }
 
-    public async Task<ObjectTypesResponse> List()
-    {
-        var objectTypes = await _dbContext.HindranceTypes
-            .Select(ot => new ObjectTypesResponse.ObjectType
-            {
-                Id = ot.Id,
-                Name = ot.Name,
-                PrimaryImageUrl = ot.PrimaryImageUrl,
-                MarkerImageUrl = ot.MarkerImageUrl
-            })
-            .ToListAsync();
-
-        return new ObjectTypesResponse(objectTypes);
-    }
+    public async Task<ObjectTypesDataModel> List(CancellationToken cancellationToken = default) =>
+        await _objectTypesService.List(cancellationToken);
 }

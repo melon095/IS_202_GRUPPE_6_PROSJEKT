@@ -1,7 +1,9 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, UseMutationResult, useQueryClient } from "@tanstack/react-query";
 
 import { ResponseError, ServerSyncData, ServerSyncResponse } from "../types";
 import { extrapolateErrors } from "../utils/extrapolateErrors";
+
+export type SyncObjectMutation = UseMutationResult<ServerSyncResponse, ResponseError, ServerSyncData>;
 
 const syncToServerEndpoint = (data: ServerSyncData): string => {
 	const qp = new URLSearchParams();
@@ -25,12 +27,12 @@ const syncObjectsToServer = async (data: ServerSyncData): Promise<ServerSyncResp
 		throw await extrapolateErrors(response);
 	}
 
-	return response.json() as Promise<ServerSyncResponse>;
+	return await response.json();
 };
 
-export const useSyncObjectMutation = () => {
+export const useSyncObjectMutation = (): SyncObjectMutation => {
 	const queryClient = useQueryClient();
-	return useMutation<ServerSyncResponse, ResponseError, ServerSyncData>({
+	return useMutation({
 		mutationFn: syncObjectsToServer,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["serverSideObjects"] });

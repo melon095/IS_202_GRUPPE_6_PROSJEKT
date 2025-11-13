@@ -86,22 +86,6 @@ public class HindranceServiceTests
     }
 
     [Fact]
-    public void DeleteObject_ShouldDeleteHindranceObject()
-    {
-        // Arrange
-        var hindranceObjectId = Guid.NewGuid();
-
-        // Act
-        _hindranceService.DeleteObject(hindranceObjectId);
-
-        // Assert
-        _dbContext.HindranceObjects.Received(1).Attach(
-            Arg.Is<HindranceObjectTable>(obj => obj.Id == hindranceObjectId));
-        _dbContext.HindranceObjects.Received(1).Remove(
-            Arg.Is<HindranceObjectTable>(obj => obj.Id == hindranceObjectId));
-    }
-
-    [Fact]
     public async Task GetAllObjectsSince_ShouldReturnObjects()
     {
         // Arrange

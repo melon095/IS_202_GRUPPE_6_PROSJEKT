@@ -12,12 +12,6 @@ public class HindranceObjectTable : BaseModel
     public double Latitude { get; set; }
     public double Longitude { get; set; }
 
-    // Bounding Box
-    public double? MinLatitude { get; set; }
-    public double? MinLongitude { get; set; }
-    public double? MaxLatitude { get; set; }
-    public double? MaxLongitude { get; set; }
-
     public ReviewStatus ReviewStatus { get; set; }
     public GeometryType GeometryType { get; set; }
 

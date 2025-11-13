@@ -1,7 +1,7 @@
 .leaflet-control-zoom-in,
 .leaflet-control-zoom-out {
-	width: 6rem !important;
-	height: 6rem !important;
+	width: 4rem !important;
+	height: 4rem !important;
 	font-size: 20px !important;
 
 	display: flex !important;

@@ -42,16 +42,15 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         var report = await GetOrCreateDraft(userId, journeyId, cancellationToken);
 
         var typeCache = await BuildTypeCache(cancellationToken);
-        var defaultTypeId = typeCache.Keys.FirstOrDefault();
-        if (defaultTypeId == Guid.Empty)
-            throw new InvalidOperationException("No hindrance types available to assign to the object.");
-        var hindranceType = body.TypeId.HasValue && typeCache.ContainsKey(body.TypeId.Value)
+        var defaultTypeId = GetDefaultTypeId(body.GeometryType, typeCache);
+
+        var hindranceTypeId = body.TypeId.HasValue && typeCache.ContainsKey(body.TypeId.Value)
             ? body.TypeId.Value
             : defaultTypeId;
 
         var obj = await _hindranceService.CreateObject(
             report.Id,
-            hindranceType,
+            hindranceTypeId,
             $"Object - {DateTime.UtcNow:yyyy-MM-dd HH:mm}",
             string.Empty,
             body.GeometryType,
@@ -100,12 +99,10 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         _reportService.FinaliseReport(report, request.Journey.Title, request.Journey.Description);
 
         var typeCache = await BuildTypeCache(cancellationToken);
-        var defaultTypeId = typeCache.Keys.FirstOrDefault();
-        if (defaultTypeId == Guid.Empty)
-            throw new InvalidOperationException("No hindrance types available to assign to the object.");
-
         foreach (var objDto in request.Objects)
         {
+            var defaultTypeId = GetDefaultTypeId(objDto.GeometryType, typeCache);
+
             if (objDto.Deleted)
             {
                 await DeleteObject(report, objDto.Id, cancellationToken);
@@ -117,6 +114,7 @@ public class JourneyOrchestrator : IJourneyOrchestrator
 
         return report.Id;
     }
+
 
     private async Task ProcessObject(
         ReportTable report,
@@ -189,6 +187,19 @@ public class JourneyOrchestrator : IJourneyOrchestrator
     {
         var types = await _hindranceService.GetAllTypes(cancellationToken);
         return types.ToDictionary(t => t.Id, t => t);
+    }
+
+    private Guid GetDefaultTypeId(GeometryType type, Dictionary<Guid, HindranceTypeTable> typeCache)
+    {
+        var defaultTypeId = typeCache.Where(x => x.Value.Name == HindranceTypeTable.DEFAULT_TYPE_NAME &&
+                                                 x.Value.GeometryType == type)
+            .Select(x => x.Key)
+            .FirstOrDefault();
+
+        if (defaultTypeId == Guid.Empty)
+            throw new InvalidOperationException($"Ingen standardtype funnet for hindring. GeometryType: {type}");
+
+        return defaultTypeId;
     }
 
     #endregion // Finalise

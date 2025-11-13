@@ -8,11 +8,12 @@ export interface JourneyFunctions {
 	undoEndJourney: () => void;
 	endJourney: () => void;
 	deleteEndJourney: () => void;
+	deleteStore: () => void;
 	updateFinishedJourneyMeta: (updates: Partial<Journey>) => void;
 	setPlaceMode: (mode: PlaceMode) => void;
 	stopPlacingObject: (typeId?: string | undefined) => PlacedObject | undefined;
 	addPointToCurrentObject: (point: Point) => void;
-	updateObjectinFinishedJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
+	updateObjectInFinishedJourney: (objectId: string, updates: Partial<PlacedObject>) => void;
 	clearCurrentObjectPoints: () => void;
 	updateJourneyId: (newId: string) => void;
 	updateObjectId: (obj: PlacedObject, newId: string) => void;
@@ -66,6 +67,15 @@ export const useJourneyStore = create<JourneyStore>()(
 
 			deleteEndJourney: () => {
 				set({ finishedJourney: null });
+			},
+
+			deleteStore: () => {
+				set({
+					currentJourney: null,
+					finishedJourney: null,
+					placeMode: PlaceMode.None,
+					currentObjectPoints: [],
+				});
 			},
 
 			updateFinishedJourneyMeta: (updates) => {
@@ -133,7 +143,7 @@ export const useJourneyStore = create<JourneyStore>()(
 				}));
 			},
 
-			updateObjectinFinishedJourney: (objectId, updates) => {
+			updateObjectInFinishedJourney: (objectId, updates) => {
 				const { finishedJourney } = get();
 
 				if (!finishedJourney) return;

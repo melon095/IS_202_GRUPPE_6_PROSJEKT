@@ -32,17 +32,24 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
     });
 });
 
-builder.Services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DatabaseContext>())
+builder.Services
+    .AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<DatabaseContext>())
     .AddScoped<IReportService, ReportService>()
     .AddScoped<IHindranceService, HindranceService>()
-    .AddScoped<IJourneyOrchestrator, JourneyOrchestrator>();
+    .AddScoped<IJourneyOrchestrator, JourneyOrchestrator>()
+    .AddScoped<IObjectTypesService, ObjectTypesService>();
+
+builder.Services.AddHttpClient("StadiaTiles", (s, h) =>
+{
+    var config = s.GetRequiredService<IConfiguration>();
+    var userAgent = config["UserAgent"];
+
+    h.BaseAddress = new Uri("https://tiles.stadiamaps.com");
+    h.DefaultRequestHeaders.Referrer = new Uri("https://localhost:7243");
+    h.DefaultRequestHeaders.Add("User-Agent", userAgent);
+});
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddScoped(typeof(CancellationToken), s =>
-{
-    var httpContextAccessor = s.GetRequiredService<IHttpContextAccessor>();
-    return httpContextAccessor.HttpContext?.RequestAborted ?? CancellationToken.None;
-});
 
 #region Authentication
 

@@ -1,8 +1,7 @@
-export interface Point {
-	lat: number;
-	lng: number;
+import { LatLngLiteral } from "leaflet";
+
+export interface Point extends LatLngLiteral {
 	// TODO: Elevation!
-	elevation?: number;
 	createdAt?: string;
 }
 
@@ -41,6 +40,8 @@ export const PlaceModeToString = {
 	[PlaceMode.Area]: "Område",
 };
 
+export type GeometryType = Omit<PlaceMode, PlaceMode.None>;
+
 export interface JourneyState {
 	currentJourney: Journey | null;
 	finishedJourney: Journey | null;
@@ -48,11 +49,19 @@ export interface JourneyState {
 	currentObjectPoints: Point[];
 }
 
+export interface ObjectTypesListResponse {
+	objectTypes: ObjectType[];
+
+	// key = GeometryType, value = ObjectType.id
+	standardTypeIds: Record<number, string>;
+}
+
 export interface ObjectType {
 	id: string;
 	name: string;
-	primaryImageUrl: string;
-	markerImageUrl?: string;
+	imageUrl?: string;
+	colour?: Colour;
+	geometryType: GeometryType;
 }
 
 export interface ServerSyncData {

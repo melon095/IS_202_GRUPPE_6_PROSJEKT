@@ -9,7 +9,7 @@
 	top: 1rem;
 	left: 1rem;
 	z-index: 1000;
-	max-width: auto;
+	max-width: fit-content;
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
@@ -28,8 +28,9 @@
 
 @media screen and (max-width: 768px) {
 	.journey-controls-overlay {
-		left: 0.5rem;
-		right: 0.5rem;
+		left: auto;
+		right: auto;
+		top: auto;
 		max-width: none;
 	}
 
