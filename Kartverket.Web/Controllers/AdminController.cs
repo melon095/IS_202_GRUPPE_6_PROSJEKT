@@ -86,7 +86,6 @@ public class AdminController : Controller
         return View(Model);
     }
 
-
     [HttpGet]
     public IActionResult ReportInDepth(Guid id, [FromQuery] Guid? objectID)
     {

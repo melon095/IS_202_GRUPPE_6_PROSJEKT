@@ -91,7 +91,7 @@
                                                 asp-route-id="@Model.Id"
                                                 asp-route-objectId="@obj.Id">Åpne</a>
                                             </td>
-                                            <td>@obj.ObjectStatus</td>
+                                            <td>@obj.ObjectStatus.GetDisplayName()</td>
                                         </tr>
                                     }
 
