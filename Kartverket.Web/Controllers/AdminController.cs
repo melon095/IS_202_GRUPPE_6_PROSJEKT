@@ -87,7 +87,7 @@ public class AdminController : Controller
     }
 
 
-    [HttpGet("/Admin/ReportInDepth/{id:guid}")]
+    [HttpGet]
     public IActionResult ReportInDepth(Guid id, [FromQuery] Guid? objectID)
     {
         var report = _dbContext.Reports
@@ -95,7 +95,11 @@ public class AdminController : Controller
             .Include(r => r.HindranceObjects)
             .ThenInclude(mo => mo.HindrancePoints)
             .FirstOrDefault(r => r.Id == id);
-        if (report == null) return View("ErrorView");
+        if (report == null)
+        {
+            ModelState.AddModelError("", "Du har ikke valgt en rapport");
+            return View("ErrorView", ViewData);
+        }
 
         var selectedObject = report.HindranceObjects
             .SingleOrDefault(x => x.Id == objectID);
@@ -158,7 +162,11 @@ public class AdminController : Controller
             .ThenInclude(f => f.FeedbackBy)
             .FirstOrDefault(r => r.Id == id);
 
-        if (report == null) return View("ErrorView");
+        if (report == null)
+        {
+            ModelState.AddModelError("", "Det er ikke valgt noen rapport");
+            return View("ErrorView", ViewData); 
+        }
 
         var Model = new ObjectReviewModel
         {
@@ -235,7 +243,7 @@ public class AdminController : Controller
         if (selectedObject == null)
         {
             ModelState.AddModelError("", "Objektet ble ikke funnet");
-            return View("ErrorView");
+            return View("ErrorView", ViewData);
         }
 
         selectedObject.ReviewStatus = StatusObject switch
@@ -288,7 +296,10 @@ public class AdminController : Controller
             .FirstOrDefault(r => r.Id == id);
 
         if (report == null)
+        {
+            ModelState.AddModelError("", "Rapprten ble ikke funnet");
             return View("ErrorView");
+        }
 
         var obj = report.HindranceObjects.FirstOrDefault(o => o.Id == objectID);
         if(obj == null)

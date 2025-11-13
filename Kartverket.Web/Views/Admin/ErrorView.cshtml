@@ -4,5 +4,15 @@
 
 <div class="container box">
     <h2 class="is-size-3 3rem has-text-black"><strong>Det oppsto en feil under handlingen</strong></h2>
+    <div>
+        @foreach(var modelState in ViewData.ModelState.Values)
+        {
+            foreach(var error in modelState.Errors)
+            {
+                <p><strong>Feilmelding:</strong> @error.ErrorMessage</p>
+            }
+        }
+    </div>
+   
 	<p class="text-muted">Vennligst gå tilbake til <a asp-controller="Admin" asp-action="Index">Administrasjonssiden</a>.</p>
 </div>
