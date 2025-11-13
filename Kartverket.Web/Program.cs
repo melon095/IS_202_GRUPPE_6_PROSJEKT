@@ -88,7 +88,6 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.AccessDeniedPath = "/User/AccessDenied";
     o.SlidingExpiration = true;
     o.ExpireTimeSpan = TimeSpan.FromHours(2);
-    o.Cookie.MaxAge = TimeSpan.FromDays(365);
     o.Cookie.HttpOnly = true;
     o.Cookie.SameSite = SameSiteMode.Lax;
 
@@ -120,7 +119,7 @@ builder.Services.ConfigureApplicationCookie(o =>
 builder.Services.AddSession(o =>
 {
     o.Cookie.Name = "Kartverket.Web.Session.6";
-    o.IdleTimeout = TimeSpan.FromDays(30);
+    o.IdleTimeout = TimeSpan.FromHours(2);
     o.Cookie.IsEssential = true;
 });
 
