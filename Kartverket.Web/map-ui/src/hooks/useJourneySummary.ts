@@ -45,7 +45,6 @@ export const useJourneySummary = (
 
 	const handleSaveObject = (objectId: string, updates: Partial<PlacedObject>) => {
 		updateObjectInFinishedJourney(objectId, updates);
-		setEditingObjectId(null);
 	};
 
 	const handleDeleteClick = (objectId: string) => {
