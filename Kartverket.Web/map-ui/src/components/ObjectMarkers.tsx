@@ -12,7 +12,6 @@ const DEFAULT_ICON_MARKER = "/images/marker-icon.png";
 const CURRENT_JOURNEY_COLOUR = "blue";
 const CURRENT_OBJECT_COLOUR = "red";
 const SERVER_OBJECTS_COLOUR = "green";
-const PANE_NAME = "object-markers-pane";
 
 const BASE_ZOOM = 13;
 const BASE_ICON_SIZE: [number, number] = [25, 41];
@@ -41,7 +40,6 @@ const calculateIconSize = (currentZoom: number): IconSize => {
 export const ObjectMarkers = () => {
 	const leaflet = useLeafletContext();
 	const layerRef = useRef<L.LayerGroup | null>(null);
-	const paneRef = useRef<HTMLElement | null>(null);
 	const { currentJourney, currentObjectPoints, placeMode } = useJourney();
 
 	const { getObjectTypeById, getStandardObjectType, isObjectTypeStandard } = useObjectTypes();
@@ -49,19 +47,15 @@ export const ObjectMarkers = () => {
 
 	const perZoomIconCache = useRef<Record<string, L.Icon>>({});
 	const canvasRenderer = useRef<L.Renderer>(L.canvas({ padding: 0.5 }));
-	const allLayersRef = useRef<L.Layer[]>([]);
 
 	useEffect(() => {
 		if (!leaflet.map || !leaflet.layerContainer) return;
 
 		const layer = L.layerGroup();
-		const pane = leaflet.map.createPane(PANE_NAME);
-		pane.style.zIndex = "500";
 
 		leaflet.layerContainer.addLayer(layer);
 
 		layerRef.current = layer;
-		paneRef.current = pane;
 
 		const buildIcon = (type: ObjectType, zoom: number): L.Icon => {
 			const { iconSize, popupAnchor } = calculateIconSize(zoom);
@@ -112,7 +106,6 @@ export const ObjectMarkers = () => {
 					}
 
 					marker.addTo(layer);
-					allLayersRef.current.push(marker);
 					break;
 				}
 
@@ -120,7 +113,6 @@ export const ObjectMarkers = () => {
 					const polyline = L.polyline(obj.points, {
 						color: colour,
 						renderer: canvasRenderer.current,
-						pane: PANE_NAME,
 						interactive: placeMode === PlaceMode.None,
 					});
 
@@ -129,7 +121,6 @@ export const ObjectMarkers = () => {
 					}
 
 					polyline.addTo(layer);
-					allLayersRef.current.push(polyline);
 
 					obj.points.forEach((point) => {
 						const marker = L.marker(point, {
@@ -137,7 +128,6 @@ export const ObjectMarkers = () => {
 							interactive: placeMode === PlaceMode.None,
 						});
 						marker.addTo(layer);
-						allLayersRef.current.push(marker);
 					});
 					break;
 				}
@@ -150,7 +140,6 @@ export const ObjectMarkers = () => {
 					const polygon = L.polygon(polygonPoints, {
 						color: colour,
 						renderer: canvasRenderer.current,
-						pane: PANE_NAME,
 						interactive: placeMode === PlaceMode.None,
 					});
 
@@ -159,7 +148,6 @@ export const ObjectMarkers = () => {
 					}
 
 					polygon.addTo(layer);
-					allLayersRef.current.push(polygon);
 
 					const isStandardType = isObjectTypeStandard(objectType.id);
 					const isWithingZoomForLabels = leaflet.map.getZoom() >= MINIMUM_ZOOM_FOR_AREA_LABELS;
@@ -178,7 +166,6 @@ export const ObjectMarkers = () => {
 
 						const labelMarker = L.marker(centroid, { icon: areaIcon, interactive: false });
 						labelMarker.addTo(layer);
-						allLayersRef.current.push(labelMarker);
 					}
 					break;
 				}
@@ -189,7 +176,6 @@ export const ObjectMarkers = () => {
 
 		const drawAll = (zoom: number) => {
 			layer.clearLayers();
-			allLayersRef.current = [];
 
 			if (currentJourney) {
 				for (const obj of currentJourney.objects) {
