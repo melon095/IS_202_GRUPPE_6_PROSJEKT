@@ -17,7 +17,14 @@
             <div class="box row-flex">
                 <h2><strong>Beskrivelse:</strong></h2>
                 <br />
-                <p>@Model.Description</p>
+				@if (string.IsNullOrWhiteSpace(Model.Description))
+				{
+					<p><em>Ingen beskrivelse på rapport ...</em></p>
+				}
+				else
+				{
+                    <p>@Model.Description</p>
+				}
                 <br />
                 <p><strong>Rapportert:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
             </div>
@@ -36,7 +43,7 @@
                         @foreach (var obj in Model.Objects)
                         {
                             <tr>
-                                <td>@if(obj.Title == "")
+                                <td>@if(string.IsNullOrWhiteSpace(obj.Title))
                                     {
                                         <p><em>Objekt uten tittel</em></p>
                                     }
@@ -69,7 +76,7 @@
                 
                 @if(Model.SelectedObject is { } selObj)
                     {
-                        @if(selObj.Title == "")
+                        @if(string.IsNullOrWhiteSpace(selObj.Title))
                         {
                             <h3 class="title is-4"><em>Objekt uten tittel</em></h3>
                         }
@@ -78,7 +85,7 @@
                         }
                        
                         <br />
-                        @if(selObj.Description == "")
+                        @if(string.IsNullOrWhiteSpace(selObj.Description))
                         {
                             <p><em>Ingen beskrivelse på objekt ...</em></p>
                         }

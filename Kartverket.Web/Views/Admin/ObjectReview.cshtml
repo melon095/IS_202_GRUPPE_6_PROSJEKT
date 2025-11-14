@@ -19,7 +19,7 @@
                         asp-route-id="@Model.Id">Tilbake</a>
                         @if(Model.SelectedObject != null)
                         {
-                            @if(Model.SelectedObject.Title == "")
+                            @if(string.IsNullOrWhiteSpace(Model.SelectedObject.Title))
                             {
                                 <p class="is-size-3"><em>Objekt uten tittel</em></p>
                             }
@@ -28,7 +28,7 @@
                             }
                             
                             <br />
-                            @if(Model.SelectedObject.Description == "")
+                            @if(string.IsNullOrWhiteSpace(Model.SelectedObject.Description))
                             {
                                 <p><em>Ingen beskrivelse på objekt ...</em></p>
                             }
