@@ -2,6 +2,7 @@ using Kartverket.Web.AuthPolicy;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Identity;
@@ -86,13 +87,39 @@ builder.Services.ConfigureApplicationCookie(o =>
     o.LoginPath = "/User/Login";
     o.AccessDeniedPath = "/User/AccessDenied";
     o.SlidingExpiration = true;
-    o.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    o.ExpireTimeSpan = TimeSpan.FromHours(2);
+    o.Cookie.HttpOnly = true;
+    o.Cookie.SameSite = SameSiteMode.Lax;
+
+    // Ved bruk av ConfigureApplicationCookie kan vi bestemme hvordan utløp skal håndteres ved persistent cookie
+    // Dersom brukeren trykker på "Husk Meg" knappen ved innlogging settes IsPersistent til true
+    // som gjør at cookien varer i 1 år, ellers i 2 timer.
+    // Formålet med dette er å kunne ha lengre økter for brukere som ønsker det, dette er gunstig for en pilot
+    // fordi det reduserer friksjon ved begynnelsen av en flytur.
+    o.Events = new CookieAuthenticationEvents
+    {
+        OnSigningIn = ctx =>
+        {
+            if (ctx.Properties.IsPersistent)
+            {
+                ctx.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(365);
+                ctx.CookieOptions.MaxAge = TimeSpan.FromDays(365);
+            }
+            else
+            {
+                ctx.Properties.ExpiresUtc = DateTimeOffset.UtcNow.AddHours(2);
+                ctx.CookieOptions.MaxAge = null;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddSession(o =>
 {
     o.Cookie.Name = "Kartverket.Web.Session.6";
-    o.IdleTimeout = TimeSpan.FromMinutes(30);
+    o.IdleTimeout = TimeSpan.FromHours(2);
     o.Cookie.IsEssential = true;
 });
 
