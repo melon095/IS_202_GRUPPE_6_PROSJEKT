@@ -12,49 +12,59 @@ const DEFAULT_ICON_MARKER = "/images/marker-icon.png";
 const CURRENT_JOURNEY_COLOUR = "blue";
 const CURRENT_OBJECT_COLOUR = "red";
 const SERVER_OBJECTS_COLOUR = "green";
+const PANE_NAME = "object-markers-pane";
 
 const BASE_ZOOM = 13;
 const BASE_ICON_SIZE: [number, number] = [25, 41];
-const BASE_SHADOW_SIZE: [number, number] = [41, 41];
 const MINIMUM_ZOOM_FOR_AREA_LABELS = 11;
 
-const calculateIconSize = (currentZoom: number): { iconSize: [number, number]; shadowSize: [number, number] } => {
+interface IconSize {
+	iconSize: [number, number];
+	popupAnchor: [number, number];
+}
+
+const calculateIconSize = (currentZoom: number): IconSize => {
 	const zoomDiff = currentZoom - BASE_ZOOM;
 	const scale = Math.pow(2, zoomDiff * 0.5);
-
 	const clampedScale = Math.max(0.3, Math.min(2, scale));
 
 	const iconWidth = Math.round(BASE_ICON_SIZE[0] * clampedScale);
 	const iconHeight = Math.round(BASE_ICON_SIZE[1] * clampedScale);
-	const shadowWidth = Math.round(BASE_SHADOW_SIZE[0] * clampedScale);
-	const shadowHeight = Math.round(BASE_SHADOW_SIZE[1] * clampedScale);
+	const popupAnchor: [number, number] = [1, -Math.floor(iconHeight / 2)];
 
 	return {
 		iconSize: [iconWidth, iconHeight],
-		shadowSize: [shadowWidth, shadowHeight],
+		popupAnchor,
 	};
 };
 
 export const ObjectMarkers = () => {
 	const leaflet = useLeafletContext();
 	const layerRef = useRef<L.LayerGroup | null>(null);
+	const paneRef = useRef<HTMLElement | null>(null);
 	const { currentJourney, currentObjectPoints, placeMode } = useJourney();
+
 	const { getObjectTypeById, getStandardObjectType, isObjectTypeStandard } = useObjectTypes();
 	const { data: serverObjects } = useServerObjectsQuery(currentJourney?.id);
 
 	const perZoomIconCache = useRef<Record<string, L.Icon>>({});
 	const canvasRenderer = useRef<L.Renderer>(L.canvas({ padding: 0.5 }));
+	const allLayersRef = useRef<L.Layer[]>([]);
 
 	useEffect(() => {
 		if (!leaflet.map || !leaflet.layerContainer) return;
 
 		const layer = L.layerGroup();
+		const pane = leaflet.map.createPane(PANE_NAME);
+		pane.style.zIndex = "500";
+
 		leaflet.layerContainer.addLayer(layer);
 
 		layerRef.current = layer;
+		paneRef.current = pane;
 
 		const buildIcon = (type: ObjectType, zoom: number): L.Icon => {
-			const { iconSize, shadowSize } = calculateIconSize(zoom);
+			const { iconSize, popupAnchor } = calculateIconSize(zoom);
 			const url = type?.imageUrl || DEFAULT_ICON_MARKER;
 			const key = `${url}-${zoom}`;
 			const cachedIcon = perZoomIconCache.current[key];
@@ -63,8 +73,7 @@ export const ObjectMarkers = () => {
 			const icon = L.icon({
 				iconUrl: url,
 				iconSize: iconSize,
-				popupAnchor: [1, -34],
-				shadowSize: shadowSize,
+				popupAnchor,
 			});
 
 			perZoomIconCache.current[key] = icon;
@@ -76,55 +85,84 @@ export const ObjectMarkers = () => {
 			if (!objectType) return;
 
 			const icon = buildIcon(objectType, zoom);
+
 			const popupHtml = `<div>
 				<p>${objectType?.name || "Ukjent objekt"}</p>
 				<p>Type: ${PlaceModeToString[obj.geometryType as PlaceMode]}</p>
 				${obj.points[0]?.createdAt ? `<p>Laget: ${parseISO(obj.points[0].createdAt).toLocaleString()}</p>` : ""}
 				<div>
-					${obj.title ? `<strong>${obj.title}</strong>` : ""}
-					${obj.description ? `<p>${obj.description}</p>` : ""}
+					${obj.title ?? ""}
+					${obj.description ?? ""}
 				</div>
 			</div>`;
 
 			switch (obj.geometryType) {
 				case PlaceMode.Point: {
-					L.marker([obj.points[0].lat, obj.points[0].lng], { icon }).bindPopup(popupHtml).addTo(layer);
+					if (obj.points.length === 0) return;
+
+					const point = obj.points[0];
+
+					const marker = L.marker(point, {
+						icon,
+						interactive: placeMode === PlaceMode.None,
+					});
+
+					if (placeMode === PlaceMode.None) {
+						marker.bindPopup(popupHtml);
+					}
+
+					marker.addTo(layer);
+					allLayersRef.current.push(marker);
 					break;
 				}
+
 				case PlaceMode.Line: {
-					L.polyline(
-						obj.points.map((p) => [p.lat, p.lng]),
-						{ color: colour, renderer: canvasRenderer.current }
-					)
-						.bindPopup(popupHtml)
-						.addTo(layer);
+					const polyline = L.polyline(obj.points, {
+						color: colour,
+						renderer: canvasRenderer.current,
+						pane: PANE_NAME,
+						interactive: placeMode === PlaceMode.None,
+					});
+
+					if (placeMode === PlaceMode.None) {
+						polyline.bindPopup(popupHtml);
+					}
+
+					polyline.addTo(layer);
+					allLayersRef.current.push(polyline);
+
 					obj.points.forEach((point) => {
-						L.marker([point.lat, point.lng], { icon }).bindPopup(popupHtml).addTo(layer);
+						const marker = L.marker(point, {
+							icon,
+							interactive: placeMode === PlaceMode.None,
+						});
+						marker.addTo(layer);
+						allLayersRef.current.push(marker);
 					});
 					break;
 				}
+
 				case PlaceMode.Area: {
 					const firstPoint = obj.points[0];
 					const lastPoint = obj.points[obj.points.length - 1];
-					const polygonPoints =
-						firstPoint === lastPoint
-							? obj.points
-							: [...obj.points, obj.points[0]].map((p) => ({ lat: p.lat, lng: p.lng }));
+					const polygonPoints = firstPoint === lastPoint ? obj.points : [...obj.points, obj.points[0]];
 
-					L.polygon(
-						polygonPoints.map((p) => [p.lat, p.lng]),
-						{ color: colour, renderer: canvasRenderer.current }
-					)
-						.bindPopup(popupHtml)
-						.addTo(layer);
+					const polygon = L.polygon(polygonPoints, {
+						color: colour,
+						renderer: canvasRenderer.current,
+						pane: PANE_NAME,
+						interactive: placeMode === PlaceMode.None,
+					});
+
+					if (placeMode === PlaceMode.None) {
+						polygon.bindPopup(popupHtml);
+					}
+
+					polygon.addTo(layer);
+					allLayersRef.current.push(polygon);
 
 					const isStandardType = isObjectTypeStandard(objectType.id);
 					const isWithingZoomForLabels = leaflet.map.getZoom() >= MINIMUM_ZOOM_FOR_AREA_LABELS;
-
-					console.log({
-						zoom: leaflet.map.getZoom(),
-						isWithingZoomForLabels,
-					});
 
 					if (!isStandardType && objectType?.name && isWithingZoomForLabels) {
 						const centroid: [number, number] = [
@@ -138,7 +176,9 @@ export const ObjectMarkers = () => {
 							iconSize: [100, 40],
 						});
 
-						L.marker(centroid, { icon: areaIcon, interactive: false }).addTo(layer);
+						const labelMarker = L.marker(centroid, { icon: areaIcon, interactive: false });
+						labelMarker.addTo(layer);
+						allLayersRef.current.push(labelMarker);
 					}
 					break;
 				}
@@ -149,6 +189,7 @@ export const ObjectMarkers = () => {
 
 		const drawAll = (zoom: number) => {
 			layer.clearLayers();
+			allLayersRef.current = [];
 
 			if (currentJourney) {
 				for (const obj of currentJourney.objects) {
