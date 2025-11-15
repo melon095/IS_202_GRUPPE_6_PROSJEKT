@@ -23,7 +23,7 @@ export const GPSMarker = () => {
 			iconAnchor: [12, 12],
 			popupAnchor: [0, -12],
 		});
-	}, []);
+	}, [coords?.heading]);
 
 	if (!isGeolocationEnabled || !coords) {
 		return null;

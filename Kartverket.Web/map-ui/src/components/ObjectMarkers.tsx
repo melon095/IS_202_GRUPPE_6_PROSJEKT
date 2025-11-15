@@ -200,7 +200,7 @@ export const ObjectMarkers = ({ objects, placeMode }: ObjectMarkerProps) => {
 			leaflet.map.off("zoomend", handleZoom);
 			layer.remove();
 		};
-	}, [leaflet, objects]);
+	}, [leaflet, objects, placeMode, getObjectTypeById, getStandardObjectType, isObjectTypeStandard]);
 
 	return null;
 };
