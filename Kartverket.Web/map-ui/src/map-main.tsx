@@ -55,7 +55,7 @@ const Centroid = () => {
 
 	const selectedObject = window.APP_DATA.selectedObject;
 	const objects = window.APP_DATA.objectDefinitions;
-	
+
 	if (selectedObject && selectedObject.centroidPoint) {
 		const centroid = selectedObject.centroidPoint;
 		const points = selectedObject.points;
@@ -65,7 +65,7 @@ const Centroid = () => {
 		map.fitBounds(bounds, {
 			padding: [50, 50],
 		});
-	} else if(objects.length <= 0) {
+	} else if (objects.length <= 0) {
 		map.setView(CENTRE_OF_NORWAY, 5);
 	} else {
 		const points = window.APP_DATA.objectDefinitions.flatMap((o) =>
@@ -79,7 +79,7 @@ const Centroid = () => {
 	}
 
 	return null;
-}
+};
 
 const MapWrapper = () => {
 	const { isLoading } = useObjectTypes();

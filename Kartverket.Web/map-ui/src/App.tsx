@@ -105,9 +105,9 @@ const AppContent = () => {
 	return (
 		<div>
 			<div>
-				<MapComponent 
-					objects={objectsForMap} 
-					placeMode={placeMode} 
+				<MapComponent
+					objects={objectsForMap}
+					placeMode={placeMode}
 					onClick={addPointToCurrentObject}
 					style={{ height: "100vh", width: "100vw" }}
 				>
