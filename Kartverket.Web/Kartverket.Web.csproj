@@ -27,4 +27,8 @@
         <PackageReference Include="Vite.AspNetCore" Version="2.4.1"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <_ContentIncludedByDefault Remove="Views\Shared\Components\Map\Default.cshtml"/>
+    </ItemGroup>
+
 </Project>

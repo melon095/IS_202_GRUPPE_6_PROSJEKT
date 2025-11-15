@@ -7,8 +7,8 @@ import "../css/MapComponent.css";
 import "../css/zoom-control.css";
 import { PlaceMode, Point } from "../types";
 import { GPSMarker } from "./GPSMarker";
-import { MapClickHandler } from "./MapClickHandler";
 import { ObjectDefinition, ObjectMarkers } from "./ObjectMarkers";
+import { MapClickHandler } from "./MapClickHandler";
 
 const mapCenter = [58.1465456, 7.9911451] satisfies LatLngTuple;
 

@@ -88,8 +88,8 @@ export const ObjectMarkers = ({ objects, placeMode }: ObjectMarkerProps) => {
 				<p>Type: ${PlaceModeToString[obj.geometryType as PlaceMode]}</p>
 				${obj.points[0]?.createdAt ? `<p>Laget: ${parseISO(obj.points[0].createdAt).toLocaleString()}</p>` : ""}
 				<div>
-					${obj.title ?? ""}
-					${obj.description ?? ""}
+					<p>${obj.title ?? ""}</p>
+					<p>${obj.description ?? ""}</p>
 				</div>
 			</div>`;
 

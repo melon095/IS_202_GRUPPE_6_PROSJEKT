@@ -11,10 +11,6 @@ export const GPSMarker = () => {
 	});
 
 	const icon = useMemo(() => {
-		if (!coords) {
-			return undefined;
-		}
-
 		const svg = `   
 <div style="transform: rotate(${coords?.heading ?? 0}deg);">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path d="m0 9 24-9-8.986 24L12 12z"/></svg>
@@ -27,9 +23,9 @@ export const GPSMarker = () => {
 			iconAnchor: [12, 12],
 			popupAnchor: [0, -12],
 		});
-	}, [coords]);
+	}, []);
 
-	if (!isGeolocationEnabled) {
+	if (!isGeolocationEnabled || !coords) {
 		return null;
 	}
 

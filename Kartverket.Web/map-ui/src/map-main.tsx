@@ -47,12 +47,15 @@ const queryClient = new QueryClient({
 const container = document.getElementById(window.APP_DATA.mapElementId);
 const root = createRoot(container!);
 
+const CENTRE_OF_NORWAY = L.latLng(64.0, 11.0);
+
 const Centroid = () => {
 	const map = useMap();
 	if (!map) return null;
 
 	const selectedObject = window.APP_DATA.selectedObject;
-
+	const objects = window.APP_DATA.objectDefinitions;
+	
 	if (selectedObject && selectedObject.centroidPoint) {
 		const centroid = selectedObject.centroidPoint;
 		const points = selectedObject.points;
@@ -62,21 +65,21 @@ const Centroid = () => {
 		map.fitBounds(bounds, {
 			padding: [50, 50],
 		});
+	} else if(objects.length <= 0) {
+		map.setView(CENTRE_OF_NORWAY, 5);
 	} else {
 		const points = window.APP_DATA.objectDefinitions.flatMap((o) =>
 			o.objects.flatMap((obj) => obj.points.map((p) => L.latLng(p.lat, p.lng)))
 		);
 
 		const bounds = L.latLngBounds(points);
-		const centreOfNorway = L.latLng(64.0, 11.0);
-		bounds.extend(centreOfNorway);
 		map.fitBounds(bounds, {
 			padding: [50, 50],
 		});
 	}
 
 	return null;
-};
+}
 
 const MapWrapper = () => {
 	const { isLoading } = useObjectTypes();

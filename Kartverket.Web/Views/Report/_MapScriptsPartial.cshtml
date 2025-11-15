@@ -1,12 +1,6 @@
 @using System.Text.Json
 @model Kartverket.Web.Models.Report.MapViewModel
 
-<div class="kart-box box">
-    <div id="@(Model.MapElementId)"></div>
-</div>
-
-<link rel="stylesheet" vite-href="~/src/map-main.tsx" asp-append-version="true"/>
-
 <script>
     const {mapObjects, selectedMapObject} =
     @Html.Raw(JsonSerializer.Serialize(Model, new JsonSerializerOptions
