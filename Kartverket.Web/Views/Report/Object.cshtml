@@ -1,11 +1,9 @@
 @using Kartverket.Web.Database.Tables
-@using System.Text.Json
 @model ReportObjectViewModel
 @{
     ViewBag.Title = "ObjektRevy";
 }
 
-<body>
 <section class="section">
     <div class="container is-fluid">
         <div class="columns">
@@ -132,7 +130,7 @@
                                             @(com.FeedbackType switch
                                                 {
                                                     FeedbackType.Approval => "Godkjenn",
-                                                    FeedbackType.Rejection => "Åvslå",
+                                                    FeedbackType.Rejection => "Avslå",
                                                     FeedbackType.Note => "Notat",
                                                     FeedbackType.RequestForChange => "Forslag om endring",
                                                     _ => com.FeedbackType.ToString()
@@ -222,7 +220,7 @@
             }
             else
             {
-                <a class="button is-light" disable>Forrige objekt</a>
+                <a class="button is-light" disabled>Forrige objekt</a>
             }
             @if (objNext.HasValue)
             {
@@ -236,100 +234,112 @@
             }
             else
             {
-                <a class="button is-light" disable> Neste objekt</a>
+                <a class="button is-light" disabled> Neste objekt</a>
             }
         </div>
     }
 </section>
-</body>
 
-@section styles
-{
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-
-        .section {
-            padding: 15px;
-        }
-
-        .box {
-            border: 1px solid #dbdbdb;
-        }
-
-        .kart-box {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            padding: 0;
-        }
-
-        #map {
-            flex: 1;
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 0 0 6px 6px;
-        }
-
-        #CommentField {
-            overflow-x: hidden;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-
-    </style>
+@section Styles {
+    <link rel="stylesheet" vite-href="~/src/map-main.tsx" asp-append-version="true"/>
 }
 
 @section Scripts {
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const centerOfNorway = [63.99164652261938, 12.306951660170679];
-        const {
-            Objects: objects,
-            SelectedObject: selectedObject
-        } = @Html.Raw(JsonSerializer.Serialize(Model));
-        let mapCenter = [58.16358810163733, 8.00377215125247];
-        let zoomLevel = 10;
-        let bounds = null;
-
-        if (selectedObject && selectedObject.CentroidPoint) {
-            let centroid = selectedObject.CentroidPoint;
-            var points = selectedObject.Points;
-            mapCenter = [selectedObject.CentroidPoint.Lat, selectedObject.CentroidPoint.Lng];
-
-            let latLngPoints = points.map((p) => L.latLng(p.Lat, p.Lng));
-            bounds = L.latLngBounds(latLngPoints);
-            bounds.extend([centroid.Lat, centroid.Lng]);
-        } else {
-            let latLngPoints = objects.flatMap(o => o.Points.map(p => L.latLng(p.Lat, p.Lng)));
-            bounds = L.latLngBounds(latLngPoints);
-            bounds.extend(centerOfNorway);
+        window.APP_DATA = {
+            mapElementId: "map"
         }
-
-        const map = L.map('map').setView(mapCenter, zoomLevel);
-        map.fitBounds(bounds, {
-            padding: [50, 50]
-        });
-
-        L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
-            attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>'
-        }).addTo(map);
-
-        objects.forEach(obj => {
-            if (obj.Points && obj.Points.length > 0) {
-                obj.Points.forEach(point => {
-                    if (point.Lat && point.Lng) {
-                        L.marker([point.Lat, point.Lng]).addTo(map).bindPopup(obj.Description);
-                    }
-                });
-            }
-        });
     </script>
+    <script type="module" vite-src="~/src/map-main.tsx"></script>
 }
 
+@* @section styles *@
+@* { *@
+@*     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/> *@
+@*     <style> *@
+@*         html, body { *@
+@*             height: 100%; *@
+@*             margin: 0; *@
+@*         } *@
+@* *@
+@*         .section { *@
+@*             padding: 15px; *@
+@*         } *@
+@* *@
+@*         .box { *@
+@*             border: 1px solid #dbdbdb; *@
+@*         } *@
+@* *@
+@*         .kart-box { *@
+@*             flex: 1; *@
+@*             display: flex; *@
+@*             flex-direction: column; *@
+@*             height: 100%; *@
+@*             padding: 0; *@
+@*         } *@
+@* *@
+@*         #map { *@
+@*             flex: 1; *@
+@*             width: 100%; *@
+@*             height: 100%; *@
+@*             border: none; *@
+@*             border-radius: 0 0 6px 6px; *@
+@*         } *@
+@* *@
+@*         #CommentField { *@
+@*             overflow-x: hidden; *@
+@*             max-height: 200px; *@
+@*             overflow-y: auto; *@
+@*         } *@
+@* *@
+@* *@
+@*     </style> *@
+@* } *@
+@* *@
+@* @section Scripts { *@
+@*     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script> *@
+@*     <script> *@
+@*         const centerOfNorway = [63.99164652261938, 12.306951660170679]; *@
+@*         const { *@
+@*             Objects: objects, *@
+@*             SelectedObject: selectedObject *@
+@*         } = @Html.Raw(JsonSerializer.Serialize(Model)); *@
+@*         let mapCenter = [58.16358810163733, 8.00377215125247]; *@
+@*         let zoomLevel = 10; *@
+@*         let bounds = null; *@
+@* *@
+@*         if (selectedObject && selectedObject.CentroidPoint) { *@
+@*             let centroid = selectedObject.CentroidPoint; *@
+@*             var points = selectedObject.Points; *@
+@*             mapCenter = [selectedObject.CentroidPoint.Lat, selectedObject.CentroidPoint.Lng]; *@
+@* *@
+@*             let latLngPoints = points.map((p) => L.latLng(p.Lat, p.Lng)); *@
+@*             bounds = L.latLngBounds(latLngPoints); *@
+@*             bounds.extend([centroid.Lat, centroid.Lng]); *@
+@*         } else { *@
+@*             let latLngPoints = objects.flatMap(o => o.Points.map(p => L.latLng(p.Lat, p.Lng))); *@
+@*             bounds = L.latLngBounds(latLngPoints); *@
+@*             bounds.extend(centerOfNorway); *@
+@*         } *@
+@* *@
+@*         const map = L.map('map').setView(mapCenter, zoomLevel); *@
+@*         map.fitBounds(bounds, { *@
+@*             padding: [50, 50] *@
+@*         }); *@
+@* *@
+@*         L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', { *@
+@*             attribution: '&copy; <a href="http://www.kartverket.no/">Kartverket</a>' *@
+@*         }).addTo(map); *@
+@* *@
+@*         objects.forEach(obj => { *@
+@*             if (obj.Points && obj.Points.length > 0) { *@
+@*                 obj.Points.forEach(point => { *@
+@*                     if (point.Lat && point.Lng) { *@
+@*                         L.marker([point.Lat, point.Lng]).addTo(map).bindPopup(obj.Description); *@
+@*                     } *@
+@*                 }); *@
+@*             } *@
+@*         }); *@
+@*     </script> *@
+@* } *@
+@* *@

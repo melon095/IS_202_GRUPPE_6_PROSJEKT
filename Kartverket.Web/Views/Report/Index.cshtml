@@ -97,7 +97,7 @@
             }
             else
             {
-                <a class="pagination-previous" disable>
+                <a class="pagination-previous" disabled>
                     Forrige
                 </a>
             }
@@ -115,7 +115,7 @@
             }
             else
             {
-                <a class="pagination-next" disable>
+                <a class="pagination-next" disabled>
                     Neste
                 </a>
             }
@@ -125,14 +125,14 @@
                     <li>
                         @if (i == Model.CurrentPage)
                         {
-                            <a class="pagination-link column is-half" disable>@i</a>
+                            <a class="pagination-link column is-half" disabled>@i</a>
                         }
                         else
                         {
                             <a class="pagination-link
                             column is-half"
                                asp-action="Index"
-                               asp-route-page="@i"
+                               asp-route-Page="@i"
                                asp-route-SortDate="@(sortDate)"
                                asp-route-SortOrder="@(Model.SortOrder)"
                                asp-route-SortStatus="@(Model.SortStatus)">
