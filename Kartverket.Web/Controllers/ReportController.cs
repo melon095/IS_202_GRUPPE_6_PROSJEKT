@@ -98,8 +98,10 @@ public class ReportController : Controller
                 Id = obj.Id,
                 Title = obj.Title,
                 Description = obj.Description,
+                TypeId = obj.HindranceTypeId,
                 ObjectStatus = obj.ReviewStatus,
                 VerifiedAt = obj.VerifiedAt,
+                GeometryType = obj.GeometryType,
                 CentroidPoint = obj.HindrancePoints.Count > 0
                     ? new Point(
                         obj.HindrancePoints.Average(p => p.Latitude),
@@ -155,16 +157,18 @@ public class ReportController : Controller
                 Id = obj.Id,
                 Title = obj.Title,
                 Description = obj.Description,
+                TypeId = obj.HindranceTypeId,
                 ObjectStatus = obj.ReviewStatus,
                 VerifiedAt = obj.VerifiedAt,
+                GeometryType = obj.GeometryType,
                 CentroidPoint = obj.HindrancePoints.Count > 0
                     ? new Point(
                         obj.HindrancePoints.Average(p => p.Latitude),
                         obj.HindrancePoints.Average(p => p.Longitude))
                     : null,
                 Points = obj.HindrancePoints
-                    .Select(p => new Point(p.Latitude, p.Longitude))
-                    .ToList(),
+                    .Select(p => new Point(p))
+                    .ToArray(),
                 Feedbacks = report.Feedbacks
                     .Where(f => f.ReportId == report.Id)
                     .OrderBy(f => f.CreatedAt)
@@ -177,7 +181,7 @@ public class ReportController : Controller
                         FeedbackByName = f.FeedbackBy?.UserName ?? "Ukjent",
                         CreatedAt = f.CreatedAt
                     })
-                    .ToList()
+                    .ToArray()
             };
 
             if (obj.Id == model.ObjectId)

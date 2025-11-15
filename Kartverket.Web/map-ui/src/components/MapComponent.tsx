@@ -21,11 +21,12 @@ export interface MapComponentProps {
 	objects: ObjectDefinition[];
 	placeMode: PlaceMode;
 	onClick: (point: Point) => void;
+	style?: React.CSSProperties;
 }
 
-export const MapComponent = ({ children, objects, placeMode, onClick }: MapComponentProps) => {
+export const MapComponent = ({ children, objects, placeMode, onClick, style }: MapComponentProps) => {
 	return (
-		<MapContainer center={mapCenter} zoom={13} style={{ height: "100vh", width: "100vw" }} zoomControl={false}>
+		<MapContainer center={mapCenter} zoom={13} style={style} zoomControl={false}>
 			<ZoomControl position="bottomleft" />
 			<MapClickHandler onClick={onClick} />
 			{children}

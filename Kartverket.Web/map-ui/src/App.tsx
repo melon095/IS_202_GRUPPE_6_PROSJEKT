@@ -105,7 +105,12 @@ const AppContent = () => {
 	return (
 		<div>
 			<div>
-				<MapComponent objects={objectsForMap} placeMode={placeMode} onClick={addPointToCurrentObject}>
+				<MapComponent 
+					objects={objectsForMap} 
+					placeMode={placeMode} 
+					onClick={addPointToCurrentObject}
+					style={{ height: "100vh", width: "100vw" }}
+				>
 					<JourneyControls>
 						<div>{navigator.onLine ? "🟢 Kobla til internett" : "🔴 Mangler internett"}</div>
 					</JourneyControls>

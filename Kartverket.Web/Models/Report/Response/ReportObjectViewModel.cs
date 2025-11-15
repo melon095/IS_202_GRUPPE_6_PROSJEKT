@@ -27,18 +27,21 @@ public class ReportObjectViewModel
 
     public List<ObjectDataModel> Objects { get; set; } = [];
 
-    public class ObjectDataModel
+    public class ObjectDataModel : IMapObject
     {
         public Guid Id { get; set; }
+        public Guid TypeId { get; set; }
         public Point? CentroidPoint { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public ReviewStatus ObjectStatus { get; set; }
-        public List<Point> Points { get; set; } = [];
-        public List<FeedbackModel> Feedbacks { get; set; } = [];
+        public Point[] Points { get; set; } = [];
+        public FeedbackModel[] Feedbacks { get; set; } = [];
 
         public DateTime? VerifiedAt { get; set; }
         public bool IsVerified => VerifiedAt.HasValue;
+
+        public GeometryType GeometryType { get; set; }
     }
 
     public class FeedbackModel

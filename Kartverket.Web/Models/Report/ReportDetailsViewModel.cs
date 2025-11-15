@@ -1,4 +1,5 @@
 using Kartverket.Web.Database;
+using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.Report.Response;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,15 +17,17 @@ public class ReportDetailsViewModel
 
     public List<ObjectDataModel> Objects { get; set; } = [];
 
-    public class ObjectDataModel
+    public class ObjectDataModel : IMapObject
     {
         public Guid Id { get; set; }
+        public Guid TypeId { get; set; }
         public Point? CentroidPoint { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
 
         public ReviewStatus ObjectStatus { get; set; }
         public Point[] Points { get; set; } = [];
+        public GeometryType GeometryType { get; set; }
 
         public DateTime? VerifiedAt { get; set; }
         public bool IsVerified => VerifiedAt.HasValue;
