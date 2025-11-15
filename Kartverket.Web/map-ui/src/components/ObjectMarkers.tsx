@@ -8,7 +8,6 @@ import { Colour, ObjectType, PlacedObject, PlaceMode, PlaceModeToString } from "
 
 const DEFAULT_ICON_MARKER = "/images/marker-icon.png";
 
-
 const BASE_ZOOM = 13;
 const BASE_ICON_SIZE: [number, number] = [25, 41];
 const MINIMUM_ZOOM_FOR_AREA_LABELS = 11;

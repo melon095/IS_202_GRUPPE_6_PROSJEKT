@@ -8,10 +8,11 @@ import "vite/modulepreload-polyfill";
 
 import { MapComponent } from "./components/MapComponent";
 import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
+import { PlaceMode } from "./types";
 
 declare global {
 	export interface AppData {
-		mapElementId: string
+		mapElementId: string;
 	}
 
 	// eslint-disable-next-line no-var
@@ -46,7 +47,7 @@ root.render(
 			<ReactQueryDevtools initialIsOpen={false} />
 
 			<ObjectTypesProvider>
-				<MapComponent objects={[]} />
+				<MapComponent objects={[]} placeMode={PlaceMode.None} onClick={() => {}} />
 			</ObjectTypesProvider>
 		</QueryClientProvider>
 	</StrictMode>

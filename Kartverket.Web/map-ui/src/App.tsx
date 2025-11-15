@@ -10,7 +10,6 @@ import { JourneyProvider } from "./contexts/JourneyContext";
 import { ObjectTypesProvider } from "./contexts/ObjectTypesContext";
 import { useFinalizeJourneyMutation } from "./hooks/useFinalizeJourneyMutation";
 import { useJourney } from "./hooks/useJourney";
-import { useServerObjectsQuery } from "./hooks/useServerObjectsQuery";
 
 const queryClient = new QueryClient({
 	defaultOptions: {
@@ -21,13 +20,13 @@ const queryClient = new QueryClient({
 	},
 });
 
-const CURRENT_JOURNEY_COLOUR = "blue";
+// const CURRENT_JOURNEY_COLOUR = "blue";
 const CURRENT_OBJECT_COLOUR = "red";
-const SERVER_OBJECTS_COLOUR = "green";
+// const SERVER_OBJECTS_COLOUR = "green";
 
 const AppContent = () => {
 	const {
-		currentJourney,
+		// currentJourney,
 		currentObjectPoints,
 		placeMode,
 		finishedJourney,
@@ -37,7 +36,7 @@ const AppContent = () => {
 	} = useJourney();
 	const [showSummary, setShowSummary] = useState(false);
 	const finalizeJourneyMutation = useFinalizeJourneyMutation();
-	const { data: serverObjects } = useServerObjectsQuery(currentJourney?.id);
+	// const { data: serverObjects } = useServerObjectsQuery(currentJourney?.id);
 
 	useEffect(() => {
 		setShowSummary(finishedJourney !== null);
@@ -73,12 +72,12 @@ const AppContent = () => {
 
 	const objectsForMap: ObjectDefinition[] = [];
 
-	if (currentJourney?.objects?.length > 0) {
-		objectsForMap.push({
-			colour: CURRENT_JOURNEY_COLOUR,
-			objects: currentJourney.objects,
-		});
-	}
+	// if (currentJourney?.objects?.length > 0) {
+	// 	objectsForMap.push({
+	// 		colour: CURRENT_JOURNEY_COLOUR,
+	// 		objects: currentJourney.objects,
+	// 	});
+	// }
 
 	if (currentObjectPoints?.length > 0) {
 		objectsForMap.push({
@@ -95,12 +94,12 @@ const AppContent = () => {
 		});
 	}
 
-	if (serverObjects?.length > 0) {
-		objectsForMap.push({
-			colour: SERVER_OBJECTS_COLOUR,
-			objects: serverObjects,
-		});
-	}
+	// if (serverObjects?.length > 0) {
+	// 	objectsForMap.push({
+	// 		colour: SERVER_OBJECTS_COLOUR,
+	// 		objects: serverObjects,
+	// 	});
+	// }
 
 	return (
 		<div>
