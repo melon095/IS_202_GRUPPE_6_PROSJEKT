@@ -19,9 +19,24 @@
                         asp-route-id="@Model.Id">Tilbake</a>
                         @if(Model.SelectedObject != null)
                         {
-                            <p class="is-size-3"><strong>Objekt:</strong> @Model.SelectedObject.Title</p>
+                            @if(string.IsNullOrWhiteSpace(Model.SelectedObject.Title))
+                            {
+                                <p class="is-size-3"><em>Objekt uten tittel</em></p>
+                            }
+                            else{
+                                <p class="is-size-3"><strong>Objekt:</strong> @Model.SelectedObject.Title</p>
+                            }
+                            
                             <br />
-                            <p>@Model.SelectedObject.Description</p>
+                            @if(string.IsNullOrWhiteSpace(Model.SelectedObject.Description))
+                            {
+                                <p><em>Ingen beskrivelse på objekt ...</em></p>
+                            }
+                            else
+                            {
+                                <p>@Model.SelectedObject.Description</p>
+                            }
+                            
                             <br />
                             <br />
                             @if(Model.SelectedObject.IsVerified)
@@ -32,13 +47,7 @@
                             {
                                 <p>Objekt enda ikke verifisert</p>
                             }
-                            <p>Status: Denne rapporten er @(Model.SelectedObject.ObjectStatus switch
-                                {
-                                    ReviewStatus.Resolved => "Godkjent",
-                                    ReviewStatus.Closed => "Avslått",
-                                    ReviewStatus.Draft => "Uverifisert",
-                                    _ => Model.SelectedObject.ObjectStatus
-                                })</p>
+                            <p>Status: Denne rapporten er @Model.SelectedObject.ObjectStatus.GetDisplayName()</p>
                             @using (Html.BeginForm("ObjectReview", "Admin", FormMethod.Post))
                             {
                                 @Html.AntiForgeryToken()
@@ -136,7 +145,7 @@
                             }
                             else
                             {
-                                <p>Ingen tilbakemeldinger enda...</p>
+                                <p><em>Ingen tilbakemeldinger enda...</em></p>
                             }
                             </div>
                             <hr />

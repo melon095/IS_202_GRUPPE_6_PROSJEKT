@@ -17,7 +17,14 @@
             <div class="box row-flex">
                 <h2><strong>Beskrivelse:</strong></h2>
                 <br />
-                <p>@Model.Description</p>
+				@if (string.IsNullOrWhiteSpace(Model.Description))
+				{
+					<p><em>Ingen beskrivelse på rapport ...</em></p>
+				}
+				else
+				{
+                    <p>@Model.Description</p>
+				}
                 <br />
                 <p><strong>Rapportert:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
             </div>
@@ -26,16 +33,25 @@
                 <table class="table table-bordered">
                     <thead>
                         <tr>
-                            <th>Objekter</th>
+                            <th>Objekt tittel</th>
                             <th>Punkter</th>
                             <th>Detaljer</th>
+                            <th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var obj in Model.Objects)
                         {
                             <tr>
-                                <td>@obj.Title</td>
+                                <td>@if(string.IsNullOrWhiteSpace(obj.Title))
+                                    {
+                                        <p><em>Objekt uten tittel</em></p>
+                                    }
+                                    else
+                                    {
+                                        @obj.Title
+                                    }
+                                 </td>
                                 <td>@obj.Points.Count</td>
                                 <td>
                                     <a id="showIn"
@@ -44,6 +60,7 @@
                                        asp-route-id="@Model.Id"
                                        asp-route-objectId="@obj.Id">Åpne</a>
                                 </td>
+                                <td>@obj.ObjectStatus.GetDisplayName()</td>
                             </tr>
                         }
 
@@ -59,18 +76,25 @@
                 
                 @if(Model.SelectedObject is { } selObj)
                     {
-                        <h3 class="title is-4">@selObj.Title</h3>
+                        @if(string.IsNullOrWhiteSpace(selObj.Title))
+                        {
+                            <h3 class="title is-4"><em>Objekt uten tittel</em></h3>
+                        }
+                        else{
+                            <h3 class="title is-4">@selObj.Title</h3>
+                        }
+                       
                         <br />
-                        <p>@selObj.Description</p>
+                        @if(string.IsNullOrWhiteSpace(selObj.Description))
+                        {
+                            <p><em>Ingen beskrivelse på objekt ...</em></p>
+                        }
+                        else{
+                            <p>@selObj.Description</p>
+                        }
+  
                         <br />
-                        <p>Status:  @(selObj.ObjectStatus switch
-                            {
-                                ReviewStatus.Resolved => "Godkjent",
-                                ReviewStatus.Closed => "Avslått",
-                                ReviewStatus.Draft => "Utkast",
-                                ReviewStatus.Submitted => "Ikke verifisert",
-                                _ => selObj.ObjectStatus
-                            })</p>
+                        <p>Status:  @selObj.ObjectStatus.GetDisplayName()</p>
                         <br />
                         @if(selObj.IsVerified)
                         {
