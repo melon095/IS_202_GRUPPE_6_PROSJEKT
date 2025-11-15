@@ -1,10 +1,15 @@
-﻿namespace Kartverket.Web.Models.Report.Response
+﻿namespace Kartverket.Web.Models.Report.Response;
+
+public struct Point
 {
-    public struct Point
+    public Guid Id { get; set; }
+    public double Lat { get; set; }
+    public double Lng { get; set; }
+    public double Elevation { get; set; }
+
+    public Point(double lat, double lng)
     {
-        public Guid Id { get; set; }
-        public double Lat { get; set; }
-        public double Lng { get; set; }
-        public double Elevation { get; set; }
+        Lat = lat;
+        Lng = lng;
     }
 }
