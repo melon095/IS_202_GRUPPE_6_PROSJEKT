@@ -1,4 +1,8 @@
-﻿<!DOCTYPE html>
+﻿@{
+    var roles = new List<string> { RoleValue.Kartverket, RoleValue.Pilot, RoleValue.User };
+}
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
@@ -25,7 +29,7 @@
 
     @await RenderSectionAsync("Styles", false)
 </head>
-<body style="margin: 0; padding: 0; box-sizing: border-box;">
+<body>
 <header>
     <nav class="navbar is-info" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
@@ -43,17 +47,59 @@
 
         <div id="navbarBasicExample" class="navbar-menu">
             <div class="navbar-end">
-                <a class="navbar-item" href="@Url.Action("Index", "Home")">
-                    Hjemside
-                </a>
+                <div class="navbar-item has-dropdown is-hoverable" id="role-dropdown">
+                    <a class="navbar-link" id="role-dropdown-button">
+                        Roller
+                    </a>
 
-                <a class="navbar-item" href="@Url.Action("Index", "Map")">
-                    Kart
-                </a>
-                @if (User.IsInRole("Kartverket"))
+                    <div class="navbar-dropdown is-left">
+                        @foreach (var role in roles)
+                        {
+                            <a asp-controller="User"
+                               asp-action="SetRole"
+                               asp-route-role="@role"
+                               class="navbar-item">
+                                Bytt til @role
+                            </a>
+                        }
+                    </div>
+                </div>
+
+                <div class="navbar-item">
+                    <div class="buttons">
+                        <a asp-controller="Map" asp-action="Index"
+                           class="button is-info is-rounded">
+                            <span>Start Reise</span>
+                            <span class="icon is-small ml-2">
+                                    <i class="fas fa-map"></i>
+                                </span>
+                        </a>
+
+                        <a asp-controller="Report" asp-action="Index"
+                           class="button is-info is-rounded">
+                            <span>Se Rapporter</span>
+                            <span class="icon is-small ml-2">
+                                    <i class="fas fa-file-alt"></i>
+                                </span>
+                        </a>
+
+                        <a asp-controller="Home" asp-action="Index"
+                           class="button is-info is-rounded">
+                            <span>Hjemside</span>
+                            <span class="icon is-small ml-2">
+                                    <i class="fas fa-home"></i>
+                                </span>
+                        </a>
+                    </div>
+                </div>
+
+                @if (User.HasAtLeastRole(RoleValue.Kartverket))
                 {
-                    <a class="navbar-item" href="@Url.Action("Index", "Admin")">
-                        Administrator
+                    <a asp-controller="Admin" asp-action="Index" class="navbar-item">
+                        <span>Admin</span>
+                        <span class="icon">
+                            <i class="fas fa-user-shield"></i>
+                        </span>
                     </a>
                 }
 
@@ -61,17 +107,19 @@
                     <div class="buttons">
                         @if (User.Identity is { IsAuthenticated: true })
                         {
-                            <a class="button is-light" href="@Url.Action("Logout", "User")">
+                            <a asp-controller="User" asp-action="Logout"
+                               class="button is-light is-rounded">
                                 Logg Ut
                             </a>
                         }
                         else
                         {
-                            <a class="button is-primary" href="@Url.Action("Login", "User")">
+                            <a asp-controller="User" asp-action="Login"
+                               class="button is-primary is-rounded">
                                 <strong>Logg Inn</strong>
                             </a>
-
-                            <a class="button is-light" href="@Url.Action("Register", "User")">
+                            <a asp-controller="User" asp-action="Register"
+                               class="button is-light is-rounded">
                                 Registrer
                             </a>
                         }
@@ -82,7 +130,7 @@
     </nav>
 </header>
 
-<main style="display: flex; flex-direction: column; min-height: 100vh;">
+<main class="is-flex is-flex-direction-column" style="min-height: 100vh;">
     @RenderBody()
 </main>
 
@@ -106,6 +154,20 @@
                 el.classList.toggle('is-active');
                 $target.classList.toggle('is-active');
             });
+        });
+
+        const roleDropdown = document.getElementById('role-dropdown'),
+            roleDropdownButton = document.getElementById('role-dropdown-button');
+
+        roleDropdownButton?.addEventListener('click', (e) => {
+            e.preventDefault();
+            roleDropdown?.classList.toggle('is-active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!roleDropdown?.contains(e.target)) {
+                roleDropdown?.classList.remove('is-active');
+            }
         });
     })();
 
