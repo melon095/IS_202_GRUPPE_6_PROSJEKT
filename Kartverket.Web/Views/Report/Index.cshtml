@@ -1,7 +1,14 @@
 @using Kartverket.Web.Database
+@using Kartverket.Web.Models.Report
 @model Kartverket.Web.Models.Report.ReportIndexViewModel
 @{
     ViewBag.Title = "Rapporter";
+
+    var reverseSortOrder = Model.SortOrder == SortOrder.Ascending
+        ? SortOrder.Descending
+        : SortOrder.Ascending;
+
+    var sortDate = Model.SortDate.ToString("yyyy-MM-dd");
 }
 
 <div class="box">
@@ -20,7 +27,7 @@
                     type="date"
                     id="SelDate"
                     name="SortDate"
-                    value="@(Model.SortDate.ToString("yyyy-MM-dd"))"/>
+                    value="@(sortDate)"/>
                 <label for="SelStatus">Status</label>
                 <select asp-for="SortStatus" asp-items="Html.GetEnumSelectList<ReviewStatus>()"
                         id="SelStatus">
@@ -37,12 +44,12 @@
             <th>Åpne</th>
             <th>
                 <a class="nav-link text-dark"
-                   asp-controller="Report"
-                   asp-action="Details"
-                   asp-route-sortDate="@Model.SortDate.ToString("yyyy-MM-dd")"
-                   asp-route-sortOrder="@(ViewBag.SortOrder == "asc" ? "desc" : "asc")"
-                   asp-route-SortDate="@(Model.SortOrder)">
-                    @(ViewBag.SortOrder == "asc" ? "▲" : "▼")
+                   asp-action="Index"
+                   asp-route-Page="@(Model.CurrentPage)"
+                   asp-route-SortDate="@(sortDate)"
+                   asp-route-SortOrder="@(reverseSortOrder)"
+                   asp-route-SortStatus="@(Model.SortStatus)">
+                    @(Model.SortOrder == SortOrder.Ascending ? "▲" : "▼")
                 </a>
                 Dato
             </th>
@@ -60,15 +67,15 @@
                 <td>@report.Review.GetDisplayName()</td>
                 <td>
                     <a class="nav-link, text-dark"
-                       asp-controller="Admin"
-                       asp-action="ReportInDepth"
+                       asp-action="Details"
                        asp-route-id="@report.Id"
                     >
                         Åpne
                     </a>
                 </td>
                 <td>
-                    @report.CreatedAt</td>
+                    @report.CreatedAt
+                </td>
             </tr>
         }
         </tbody>
@@ -81,17 +88,17 @@
             {
                 <a class="pagination-previous"
                    asp-action="Index"
-                   asp-route-page="@(Model.CurrentPage - 1)"
-                   asp-route-SortDate="@Context.Request.Query["SortDate"]"
-                   asp-route-SortOrder="@Context.Request.Query["SortOrder"]"
-                   asp-route-SortStatus="@Context.Request.Query["SortStatus"]">
-                    Previous
+                   asp-route-Page="@(Model.CurrentPage - 1)"
+                   asp-route-SortDate="@(sortDate)"
+                   asp-route-SortOrder="@(Model.SortOrder)"
+                   asp-route-SortStatus="@(Model.SortStatus)">
+                    Forrige
                 </a>
             }
             else
             {
-                <a class="pagination-previous" disabled>
-                    Previous
+                <a class="pagination-previous" disable>
+                    Forrige
                 </a>
             }
 
@@ -99,17 +106,17 @@
             {
                 <a class="pagination-next"
                    asp-action="Index"
-                   asp-route-page="@(Model.CurrentPage + 1)"
-                   asp-route-SortDate="@Context.Request.Query["SortDate"]"
-                   asp-route-SortOrder="@Context.Request.Query["SortOrder"]"
-                   asp-route-SortStatus="@Context.Request.Query["SortStatus"]">
-                    Next
+                   asp-route-Page="@(Model.CurrentPage + 1)"
+                   asp-route-SortDate="@(sortDate)"
+                   asp-route-SortOrder="@(Model.SortOrder)"
+                   asp-route-SortStatus="@(Model.SortStatus)">
+                    Neste
                 </a>
             }
             else
             {
-                <a class="pagination-next" disabled>
-                    Next
+                <a class="pagination-next" disable>
+                    Neste
                 </a>
             }
             <ul class="pagination-list">
@@ -118,14 +125,17 @@
                     <li>
                         @if (i == Model.CurrentPage)
                         {
-                            <a class="pagination-link column is-half" disabled>@i</a>
+                            <a class="pagination-link column is-half" disable>@i</a>
                         }
                         else
                         {
                             <a class="pagination-link
                             column is-half"
                                asp-action="Index"
-                               asp-route-page="@i">
+                               asp-route-page="@i"
+                               asp-route-SortDate="@(sortDate)"
+                               asp-route-SortOrder="@(Model.SortOrder)"
+                               asp-route-SortStatus="@(Model.SortStatus)">
                                 @i
                             </a>
                         }

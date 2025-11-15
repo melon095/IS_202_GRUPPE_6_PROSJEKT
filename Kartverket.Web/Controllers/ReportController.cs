@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kartverket.Web.Controllers;
 
+[Authorize]
 public class ReportController : Controller
 {
     private const int ReportPerPage = 10;
@@ -18,7 +19,6 @@ public class ReportController : Controller
     }
 
     [HttpGet]
-    [Authorize]
     public async Task<IActionResult> Index(ReportIndexViewModel model, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
@@ -59,4 +59,7 @@ public class ReportController : Controller
 
         return View(model);
     }
+
+    [HttpGet]
+    public async Task<IActionResult> Details() => throw new NotImplementedException();
 }
