@@ -101,8 +101,18 @@ public class MapController : Controller
     public async Task<IEnumerable<MapObjectDataModel>> GetObjects(
         [FromQuery] DateTime? since = null,
         [FromQuery] Guid? reportId = null,
-        CancellationToken cancellationToken = default) =>
-        await _hindranceService.GetAllObjectsSince(since, reportId, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null) return [];
+
+        var roles = await _userManager.GetRolesAsync(user);
+        if (roles.Count == 0) return [];
+
+        var role = roles[0];
+
+        return await _hindranceService.GetAllObjectsSince(since, reportId, role, cancellationToken);
+    }
 
     [HttpGet("/Map/SatelliteTiles/{z:int}/{x:int}/{y:int}.jpg")]
     [Authorize]

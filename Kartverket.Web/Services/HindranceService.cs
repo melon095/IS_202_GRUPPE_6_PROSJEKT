@@ -1,4 +1,5 @@
-﻿using Kartverket.Web.Database;
+﻿using Kartverket.Web.AuthPolicy;
+using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.Map;
 using Kartverket.Web.Models.Map.Request;
@@ -34,6 +35,7 @@ public interface IHindranceService
     void DeleteObject(Guid hindranceObjectId);
 
     Task<List<MapObjectDataModel>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
+        string? role = null,
         CancellationToken cancellationToken = default);
 }
 
@@ -126,12 +128,16 @@ public class HindranceService : IHindranceService
     }
 
     public Task<List<MapObjectDataModel>> GetAllObjectsSince(DateTime? since = null, Guid? ignoreReportId = null,
+        string? role = null,
         CancellationToken cancellationToken = default)
     {
         var query = _dbContext.HindranceObjects
             .AsNoTracking()
             .Include(o => o.HindranceType)
             .Include(o => o.HindrancePoints)
+            .Include(o => o.Report)
+            .ThenInclude(r => r.ReportedBy)
+            .ThenInclude(u => u.Role)
             .AsQueryable();
 
         if (since != null)
@@ -139,6 +145,30 @@ public class HindranceService : IHindranceService
 
         if (ignoreReportId != Guid.Empty)
             query = query.Where(o => o.ReportId != ignoreReportId);
+
+        // Vise objekter basert på brukerrolle
+        if (!string.IsNullOrEmpty(role))
+        {
+            // Dersom bruker er pilot,
+            // vis alle objekter fra andre piloter,
+            // men skjul objekter fra vanlige brukere dersom de ikke er godkjent av kartverket.
+            if (role.Equals(RoleValue.Pilot, StringComparison.OrdinalIgnoreCase))
+                query = query.Where(o => o.Report.ReportedBy.Role.Name != RoleValue.User ||
+                                         o.ReviewStatus == ReviewStatus.Resolved);
+
+            // Dersom bruker er en vanlig bruker,
+            // vis kun objekter som er godkjent av kartverket.
+            else if (role.Equals(RoleValue.User, StringComparison.OrdinalIgnoreCase))
+                query = query.Where(o => o.ReviewStatus == ReviewStatus.Resolved);
+
+            // Kartverket ser alle objekter, ingen filtrering nødvendig.
+            else if (!role.Equals(RoleValue.Kartverket, StringComparison.OrdinalIgnoreCase))
+                query = query.Where(o => false);
+        }
+        else
+        {
+            query = query.Where(o => o.ReviewStatus == ReviewStatus.Resolved);
+        }
 
         return query
             .OrderBy(o => o.CreatedAt)
