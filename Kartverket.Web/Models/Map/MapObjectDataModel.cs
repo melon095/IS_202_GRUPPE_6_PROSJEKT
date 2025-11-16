@@ -1,4 +1,5 @@
-﻿using Kartverket.Web.Database.Tables;
+﻿using Kartverket.Web.Database;
+using Kartverket.Web.Database.Tables;
 
 namespace Kartverket.Web.Models.Map;
 
@@ -10,6 +11,10 @@ public class MapObjectDataModel
     public GeometryType GeometryType { get; set; }
     public string? Title { get; set; }
     public IEnumerable<MapPoint> Points { get; set; } = [];
+
+    public string ReportedByRole { get; set; } = string.Empty;
+    public Guid ReportedByUserId { get; set; }
+    public ReviewStatus ReviewStatus { get; set; }
 
     public class MapPoint
     {

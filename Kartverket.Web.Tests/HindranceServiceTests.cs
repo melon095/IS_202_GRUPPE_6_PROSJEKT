@@ -89,6 +89,8 @@ public class HindranceServiceTests
     public async Task GetAllObjectsSince_ShouldReturnObjects()
     {
         // Arrange
+        var user = new UserTable { Id = Guid.NewGuid(), UserName = "testuser", IsActive = true };
+        var roleName = "_";
         var since = DateTime.UtcNow;
         var objDate1 = since.AddDays(-5);
         var objDate2 = since.AddHours(-12);
@@ -98,17 +100,20 @@ public class HindranceServiceTests
             new()
             {
                 Id = Guid.NewGuid(), Title = "Object 1", HindranceTypeId = Guid.NewGuid(),
-                Description = "Desc 1"
+                Description = "Desc 1",
+                ReviewStatus = ReviewStatus.Resolved
             },
             new()
             {
                 Id = Guid.NewGuid(), Title = "Object 2", HindranceTypeId = Guid.NewGuid(),
-                Description = "Desc 2"
+                Description = "Desc 2",
+                ReviewStatus = ReviewStatus.Resolved
             },
             new()
             {
                 Id = Guid.NewGuid(), Title = "Object 3", HindranceTypeId = Guid.NewGuid(),
-                Description = "Desc 3"
+                Description = "Desc 3",
+                ReviewStatus = ReviewStatus.Resolved
             }
         };
 
@@ -126,8 +131,8 @@ public class HindranceServiceTests
         _dbContext.ChangeTracker.Clear();
 
         // Act
-        var result1 = await _hindranceService.GetAllObjectsSince();
-        var result2 = await _hindranceService.GetAllObjectsSince(since);
+        var result1 = await _hindranceService.GetAllObjectsSince(user, roleName);
+        var result2 = await _hindranceService.GetAllObjectsSince(user, roleName, since: since);
 
         // Assert
         Assert.Equal(3, result1.Count);

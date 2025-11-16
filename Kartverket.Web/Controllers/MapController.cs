@@ -107,11 +107,11 @@ public class MapController : Controller
         if (user == null) return [];
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (roles.Count == 0) return [];
+        if (roles is null || roles.Count == 0) return [];
 
         var role = roles[0];
 
-        return await _hindranceService.GetAllObjectsSince(since, reportId, role, cancellationToken);
+        return await _hindranceService.GetAllObjectsSince(user, role, reportId, since, cancellationToken);
     }
 
     [HttpGet("/Map/SatelliteTiles/{z:int}/{x:int}/{y:int}.jpg")]
