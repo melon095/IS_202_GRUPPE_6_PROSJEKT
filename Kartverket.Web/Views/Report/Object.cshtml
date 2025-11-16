@@ -212,8 +212,6 @@
             @if (objPrev.HasValue)
             {
                 <a class="button is-light"
-                   asp-controller="Admin"
-                   asp-action="ObjectReview"
                    asp-route-id="@Model.ReportId"
                    asp-route-objectId="@objPrev">
                     Forrige objekt
@@ -226,8 +224,6 @@
             @if (objNext.HasValue)
             {
                 <a class="button is-light"
-                   asp-controller="Admin"
-                   asp-action="ObjectReview"
                    asp-route-id="@Model.ReportId"
                    asp-route-objectId="@objNext">
                     Neste objekt
