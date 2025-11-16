@@ -137,6 +137,7 @@ public class HindranceService : IHindranceService
         DateTime? since = null,
         CancellationToken cancellationToken = default)
     {
+        // Bygg opp spørringen
         var query = _dbContext.HindranceObjects
             .AsNoTracking()
             .Include(o => o.HindranceType)
@@ -146,34 +147,48 @@ public class HindranceService : IHindranceService
             .ThenInclude(u => u.Role)
             .AsQueryable();
 
+        // Filtrer på siden av dato hvis angitt
         if (since.HasValue)
             query = query.Where(o => o.CreatedAt >= since.Value || o.UpdatedAt >= since.Value);
 
+        // Filtrer bort et spesifikt rapport-id hvis angitt
         if (ignoreReportId.HasValue && ignoreReportId.Value != Guid.Empty)
             query = query.Where(o => o.ReportId != ignoreReportId.Value);
 
         query = roleName switch
         {
+            // Dersom bruker er pilot
             _ when roleName.Equals(RoleValue.Pilot, StringComparison.OrdinalIgnoreCase) =>
                 query.Where(o =>
+                    // Eget rapporterte objekter
                     o.Report.ReportedById == user.Id ||
+                    // Dersom objektet er rapportert av en annen bruker enn piloten
                     (o.Report.ReportedBy.Role != null && o.Report.ReportedBy.Role.Name != RoleValue.User &&
                      o.ReviewStatus != ReviewStatus.Closed) ||
+                    // Dersom objektet er rapportert av en bruker og er løst
                     (o.Report.ReportedBy.Role != null && o.Report.ReportedBy.Role.Name == RoleValue.User &&
                      o.ReviewStatus == ReviewStatus.Resolved)),
 
+            // Dersom bruker er vanlig bruker
             _ when roleName.Equals(RoleValue.User, StringComparison.OrdinalIgnoreCase) =>
                 query.Where(o =>
+                    // Eget rapporterte objekter
                     o.Report.ReportedById == user.Id ||
+                    // Dersom objektet er rapportert av en annen bruker og er løst
                     o.ReviewStatus == ReviewStatus.Resolved),
 
+            // Dersom bruker er Kartverket
             _ when roleName.Equals(RoleValue.Kartverket, StringComparison.OrdinalIgnoreCase) =>
+                // Få alle objekter
                 query,
 
+            // Annet (ukjent rolle)
             _ => query.Where(o => false)
         };
 
+        // Prosesser og returner resultatet
         return query
+            // Sorter på opprettet og oppdatert dato
             .OrderBy(o => o.CreatedAt)
             .ThenBy(o => o.UpdatedAt)
             .Select(o => new MapObjectDataModel
