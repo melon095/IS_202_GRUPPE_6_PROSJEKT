@@ -108,7 +108,8 @@ public class ReportController : Controller
                         obj.HindrancePoints.Average(p => p.Longitude))
                     : null,
                 Points = obj.HindrancePoints
-                    .Select(p => new Point(p.Latitude, p.Longitude))
+                    .OrderBy(p => p.Order)
+                    .Select(p => new Point(p))
                     .ToArray()
             };
 
@@ -167,6 +168,7 @@ public class ReportController : Controller
                         obj.HindrancePoints.Average(p => p.Longitude))
                     : null,
                 Points = obj.HindrancePoints
+                    .OrderBy(p => p.Order)
                     .Select(p => new Point(p))
                     .ToArray(),
                 Feedbacks = report.Feedbacks
