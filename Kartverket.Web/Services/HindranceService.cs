@@ -39,12 +39,10 @@ public interface IHindranceService
 
 public class HindranceService : IHindranceService
 {
-    private readonly ILogger<HindranceService> _logger;
     private readonly DatabaseContext _dbContext;
 
-    public HindranceService(ILogger<HindranceService> logger, DatabaseContext dbContext)
+    public HindranceService(DatabaseContext dbContext)
     {
-        _logger = logger;
         _dbContext = dbContext;
     }
 

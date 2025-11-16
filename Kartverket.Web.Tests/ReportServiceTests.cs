@@ -1,25 +1,22 @@
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Services;
-using Microsoft.Extensions.Logging;
 
 namespace Kartverket.Web.Tests;
 
 public class ReportServiceTests
 {
-    private readonly ILogger<ReportService> _logger;
     private readonly DatabaseContext _dbContext;
 
     public ReportServiceTests()
     {
-        _logger = Substitute.For<ILogger<ReportService>>();
         _dbContext = Create.MockedDbContextFor<DatabaseContext>();
     }
 
     [Fact]
     public async Task CreateDraft_ValidReport_Succeeds()
     {
-        var service = new ReportService(_logger, _dbContext);
+        var service = new ReportService(_dbContext);
         var reportedById = Guid.NewGuid();
 
         var report = await service.CreateDraft(reportedById);
@@ -32,7 +29,7 @@ public class ReportServiceTests
     [Fact]
     public void FinaliseReport_ValidReport_Succeeds()
     {
-        var service = new ReportService(_logger, _dbContext);
+        var service = new ReportService(_dbContext);
         var report = new ReportTable
         {
             Id = Guid.NewGuid(),

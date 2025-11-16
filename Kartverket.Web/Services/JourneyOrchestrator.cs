@@ -19,14 +19,12 @@ public interface IJourneyOrchestrator
 
 public class JourneyOrchestrator : IJourneyOrchestrator
 {
-    private readonly ILogger<JourneyOrchestrator> _logger;
     private readonly IReportService _reportService;
     private readonly IHindranceService _hindranceService;
 
-    public JourneyOrchestrator(ILogger<JourneyOrchestrator> logger, IReportService reportService,
+    public JourneyOrchestrator(IReportService reportService,
         IHindranceService hindranceService)
     {
-        _logger = logger;
         _reportService = reportService;
         _hindranceService = hindranceService;
     }

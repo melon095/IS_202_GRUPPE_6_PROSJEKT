@@ -139,13 +139,12 @@ builder.Services.AddCors(options =>
                 .AllowAnyMethod()
                 .AllowCredentials();
         }
-        // else
-        // {
-        //     policy.AllowAnyOrigin()
-        //         .AllowAnyHeader()
-        //         .AllowAnyMethod()
-        //         .AllowCredentials();
-        // }
+        else
+        {
+            policy.AllowAnyOrigin()
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        }
     });
 });
 
@@ -169,7 +168,8 @@ if (!app.Environment.IsDevelopment())
 }
 
 {
-    var roleManager = app.Services.CreateScope().ServiceProvider.GetRequiredService<RoleManager<RoleTable>>();
+    using var scope = app.Services.CreateScope();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<RoleTable>>();
     foreach (var roleName in RoleValue.AllRoles)
     {
         var roleExists = await roleManager.RoleExistsAsync(roleName);

@@ -29,6 +29,11 @@
 
     <ItemGroup>
         <_ContentIncludedByDefault Remove="Views\Shared\Components\Map\Default.cshtml"/>
+        <_ContentIncludedByDefault Remove="Views\Reports\UserReports.cshtml"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="wwwroot\images\home\"/>
     </ItemGroup>
 
 </Project>
