@@ -1,4 +1,5 @@
-﻿using Kartverket.Web.Database;
+﻿using Kartverket.Web.AuthPolicy;
+using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.Map;
 using Kartverket.Web.Models.Map.Request;
@@ -109,7 +110,10 @@ public class MapController : Controller
         var roles = await _userManager.GetRolesAsync(user);
         if (roles is null || roles.Count == 0) return [];
 
-        var role = roles[0];
+        var role = roles.Contains(RoleValue.Kartverket) ? RoleValue.Kartverket
+            : roles.Contains(RoleValue.Pilot) ? RoleValue.Pilot
+            : roles.Contains(RoleValue.User) ? RoleValue.User
+            : roles[0];
 
         return await _hindranceService.GetAllObjectsSince(user, role, reportId, since, cancellationToken);
     }

@@ -157,14 +157,15 @@ public class HindranceService : IHindranceService
             _ when roleName.Equals(RoleValue.Pilot, StringComparison.OrdinalIgnoreCase) =>
                 query.Where(o =>
                     o.Report.ReportedById == user.Id ||
-                    (o.Report.ReportedBy.Role.Name != RoleValue.User && o.ReviewStatus != ReviewStatus.Closed) ||
-                    (o.Report.ReportedBy.Role.Name == RoleValue.User && o.ReviewStatus == ReviewStatus.Resolved)),
+                    (o.Report.ReportedBy.Role != null && o.Report.ReportedBy.Role.Name != RoleValue.User &&
+                     o.ReviewStatus != ReviewStatus.Closed) ||
+                    (o.Report.ReportedBy.Role != null && o.Report.ReportedBy.Role.Name == RoleValue.User &&
+                     o.ReviewStatus == ReviewStatus.Resolved)),
 
             _ when roleName.Equals(RoleValue.User, StringComparison.OrdinalIgnoreCase) =>
                 query.Where(o =>
                     o.Report.ReportedById == user.Id ||
-                    (o.Report.ReportedBy.Role.Name != RoleValue.User && o.ReviewStatus != ReviewStatus.Closed) ||
-                    (o.Report.ReportedBy.Role.Name == RoleValue.User && o.ReviewStatus == ReviewStatus.Resolved)),
+                    o.ReviewStatus == ReviewStatus.Resolved),
 
             _ when roleName.Equals(RoleValue.Kartverket, StringComparison.OrdinalIgnoreCase) =>
                 query,
