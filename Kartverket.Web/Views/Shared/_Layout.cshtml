@@ -50,12 +50,10 @@
                 <a class="navbar-item" href="@Url.Action("Index", "Map")">
                     Kart
                 </a>
-                @if (User.IsInRole("Kartverket"))
-                {
-                    <a class="navbar-item" href="@Url.Action("Index", "Admin")">
-                        Administrator
-                    </a>
-                }
+
+                <a class="navbar-item" href="@Url.Action("Index", "Report")">
+                    Rapporter
+                </a>
 
                 <div class="navbar-item">
                     <div class="buttons">
