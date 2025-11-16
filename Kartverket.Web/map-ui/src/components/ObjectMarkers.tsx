@@ -3,15 +3,10 @@ import { parseISO } from "date-fns";
 import L from "leaflet";
 import { useEffect, useRef } from "react";
 
-import { useJourney } from "../hooks/useJourney";
 import { useObjectTypes } from "../hooks/useObjectTypes";
-import { useServerObjectsQuery } from "../hooks/useServerObjectsQuery";
 import { Colour, ObjectType, PlacedObject, PlaceMode, PlaceModeToString } from "../types";
 
 const DEFAULT_ICON_MARKER = "/images/marker-icon.png";
-const CURRENT_JOURNEY_COLOUR = "blue";
-const CURRENT_OBJECT_COLOUR = "red";
-const SERVER_OBJECTS_COLOUR = "green";
 
 const BASE_ZOOM = 13;
 const BASE_ICON_SIZE: [number, number] = [25, 41];
@@ -20,6 +15,16 @@ const MINIMUM_ZOOM_FOR_AREA_LABELS = 11;
 interface IconSize {
 	iconSize: [number, number];
 	popupAnchor: [number, number];
+}
+
+export interface ObjectDefinition {
+	colour: Colour;
+	objects: PlacedObject[];
+}
+
+export interface ObjectMarkerProps {
+	objects: ObjectDefinition[];
+	placeMode: PlaceMode;
 }
 
 const calculateIconSize = (currentZoom: number): IconSize => {
@@ -37,13 +42,11 @@ const calculateIconSize = (currentZoom: number): IconSize => {
 	};
 };
 
-export const ObjectMarkers = () => {
+export const ObjectMarkers = ({ objects, placeMode }: ObjectMarkerProps) => {
 	const leaflet = useLeafletContext();
 	const layerRef = useRef<L.LayerGroup | null>(null);
-	const { currentJourney, currentObjectPoints, placeMode } = useJourney();
 
 	const { getObjectTypeById, getStandardObjectType, isObjectTypeStandard } = useObjectTypes();
-	const { data: serverObjects } = useServerObjectsQuery(currentJourney?.id);
 
 	const perZoomIconCache = useRef<Record<string, L.Icon>>({});
 	const canvasRenderer = useRef<L.Renderer>(L.canvas({ padding: 0.5 }));
@@ -85,8 +88,8 @@ export const ObjectMarkers = () => {
 				<p>Type: ${PlaceModeToString[obj.geometryType as PlaceMode]}</p>
 				${obj.points[0]?.createdAt ? `<p>Laget: ${parseISO(obj.points[0].createdAt).toLocaleString()}</p>` : ""}
 				<div>
-					${obj.title ?? ""}
-					${obj.description ?? ""}
+					<p>${obj.title ?? ""}</p>
+					<p>${obj.description ?? ""}</p>
 				</div>
 			</div>`;
 
@@ -177,29 +180,9 @@ export const ObjectMarkers = () => {
 		const drawAll = (zoom: number) => {
 			layer.clearLayers();
 
-			if (currentJourney) {
-				for (const obj of currentJourney.objects) {
-					renderObject(obj, zoom, CURRENT_JOURNEY_COLOUR);
-				}
-			}
-
-			if (currentObjectPoints?.length > 0) {
-				renderObject(
-					{
-						id: "current-object",
-						points: currentObjectPoints,
-						geometryType: placeMode,
-						deleted: false,
-						createdAt: new Date().toISOString(),
-					},
-					zoom,
-					CURRENT_OBJECT_COLOUR
-				);
-			}
-
-			if (serverObjects) {
-				for (const obj of serverObjects) {
-					renderObject(obj, zoom, SERVER_OBJECTS_COLOUR);
+			for (const objectDef of objects) {
+				for (const obj of objectDef.objects) {
+					renderObject(obj, zoom, objectDef.colour);
 				}
 			}
 		};
@@ -217,16 +200,7 @@ export const ObjectMarkers = () => {
 			leaflet.map.off("zoomend", handleZoom);
 			layer.remove();
 		};
-	}, [
-		leaflet,
-		currentJourney,
-		currentObjectPoints,
-		placeMode,
-		serverObjects,
-		getObjectTypeById,
-		getStandardObjectType,
-		isObjectTypeStandard,
-	]);
+	}, [leaflet, objects, placeMode, getObjectTypeById, getStandardObjectType, isObjectTypeStandard]);
 
 	return null;
 };

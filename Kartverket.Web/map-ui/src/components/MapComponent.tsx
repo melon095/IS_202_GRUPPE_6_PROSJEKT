@@ -5,9 +5,10 @@ import { FeatureGroup, LayersControl, MapContainer, TileLayer, TileLayerProps, Z
 
 import "../css/MapComponent.css";
 import "../css/zoom-control.css";
+import { PlaceMode, Point } from "../types";
 import { GPSMarker } from "./GPSMarker";
 import { MapClickHandler } from "./MapClickHandler";
-import { ObjectMarkers } from "./ObjectMarkers";
+import { ObjectDefinition, ObjectMarkers } from "./ObjectMarkers";
 
 const mapCenter = [58.1465456, 7.9911451] satisfies LatLngTuple;
 
@@ -15,15 +16,19 @@ const SHARED_TILE_PROPS: Partial<TileLayerProps> = {
 	attribution: `&copy; <a href="https://www.kartverket.no/">Kartverket</a>`,
 };
 
-interface MapComponentProps {
+export interface MapComponentProps {
 	children?: React.ReactNode;
+	objects: ObjectDefinition[];
+	placeMode: PlaceMode;
+	onClick: (point: Point) => void;
+	style?: React.CSSProperties;
 }
 
-export const MapComponent = ({ children }: MapComponentProps) => {
+export const MapComponent = ({ children, objects, placeMode, onClick, style }: MapComponentProps) => {
 	return (
-		<MapContainer center={mapCenter} zoom={13} style={{ height: "100vh", width: "100vw" }} zoomControl={false}>
+		<MapContainer center={mapCenter} zoom={13} style={style} zoomControl={false}>
 			<ZoomControl position="bottomleft" />
-			<MapClickHandler />
+			<MapClickHandler onClick={onClick} />
 			{children}
 
 			<LayersControl>
@@ -47,7 +52,7 @@ export const MapComponent = ({ children }: MapComponentProps) => {
 
 				<LayersControl.Overlay name="Objekter" checked>
 					<FeatureGroup>
-						<ObjectMarkers />
+						<ObjectMarkers objects={objects} placeMode={placeMode} />
 					</FeatureGroup>
 				</LayersControl.Overlay>
 				<LayersControl.Overlay name="GPS Markør" checked>

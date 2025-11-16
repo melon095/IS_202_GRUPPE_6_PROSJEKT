@@ -64,7 +64,10 @@ export default defineConfig(async () => {
 			outDir: "../wwwroot/map-ui",
 			assetsDir: "",
 			rollupOptions: {
-				input: "src/main.tsx",
+				input: {
+					main: "src/main.tsx",
+					map: "src/map-main.tsx",
+				},
 				output: {
 					// Save entry files to the appropriate folder
 					entryFileNames: "js/[name].[hash].js",

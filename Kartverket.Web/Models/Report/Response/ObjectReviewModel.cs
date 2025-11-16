@@ -1,14 +1,14 @@
 ﻿using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
-using Kartverket.Web.Database;
 
 namespace Kartverket.Web.Models.Report.Response;
 
-public enum ObjectReviewAction
+public enum ObjectReviewActionOld
 {
     Accept,
     Deny
 }
+
 public class ObjectReviewModel
 {
     public Guid Id { get; set; }
@@ -33,10 +33,9 @@ public class ObjectReviewModel
         public ReviewStatus ObjectStatus { get; set; }
         public List<Point> Points { get; set; } = [];
         public List<FeedBackModel> Feedbacks { get; set; } = [];
-        
+
         public DateTime? VerifiedAt { get; set; }
         public bool IsVerified => VerifiedAt.HasValue;
-
     }
 
     public class FeedBackModel
@@ -47,6 +46,5 @@ public class ObjectReviewModel
         public Guid FeedbackById { get; set; }
         public string FeedbackByName { get; set; }
         public DateTime CreatedAt { get; set; }
-
     }
 }

@@ -1,0 +1,265 @@
+@using Kartverket.Web.Database.Tables
+@using Kartverket.Web.Models.Report
+@model ReportObjectViewModel
+@{
+    ViewBag.Title = "ObjektRevy";
+
+    var mapContainerId = "map";
+}
+
+<section class="section">
+    <div class="container is-fluid">
+        <div class="columns">
+
+            <div class="column is-7">
+                <div class="box mb-4">
+                    <a
+                        asp-action="Details"
+                        asp-route-reportId="@Model.ReportId">Tilbake</a>
+                    @if (Model.SelectedObject != null)
+                    {
+                        @if (string.IsNullOrWhiteSpace(Model.SelectedObject.Title))
+                        {
+                            <p class="is-size-3"><em>Objekt uten tittel</em></p>
+                        }
+                        else
+                        {
+                            <p class="is-size-3"><strong>Objekt:</strong> @Model.SelectedObject.Title</p>
+                        }
+
+                        <br/>
+                        @if (string.IsNullOrWhiteSpace(Model.SelectedObject.Description))
+                        {
+                            <p><em>Ingen beskrivelse på objekt ...</em></p>
+                        }
+                        else
+                        {
+                            <p>@Model.SelectedObject.Description</p>
+                        }
+
+                        <br/>
+                        <br/>
+                        @if (Model.SelectedObject.IsVerified)
+                        {
+                            <p><strong>Objekt verifisert</strong> @Model.SelectedObject.VerifiedAt</p>
+                        }
+                        else
+                        {
+                            <p>Objekt enda ikke verifisert</p>
+                        }
+
+                        <p>Status: Denne rapporten er @Model.SelectedObject.ObjectStatus.GetDisplayName()</p>
+                        @if (Model.IsKartverket)
+                        {
+                            @using (Html.BeginForm("ObjectReview", "Admin", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", Model.ReportId)
+                                @Html.Hidden("objectId", Model.SelectedObject.Id)
+                                <div>
+                                    <div>
+
+                                        <div class="control">
+                                            <button type="submit" name="StatusObject" value="accept"
+                                                    class="button is-success">Aksepter
+                                            </button>
+                                            <button type="submit" name="StatusObject" value="deny"
+                                                    class="button is-danger">
+                                                Avslå
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            }
+
+                            @if (TempData["Success"] != null)
+                            {
+                                <div class="notification is-info mt-3">
+                                    @TempData["Success"]
+                                </div>
+                            }
+                            else if (TempData["Error"] != null)
+                            {
+                                <div class="notification is-danger mt-3">
+                                    @TempData["Error"]
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p>Det er ingen objekter markert, velg en for å verifisere</p>
+                        <table class="table table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Objekt</th>
+                                <th>Åpne</th>
+                                <th>Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var obj in Model.Objects)
+                            {
+                                <tr>
+                                    <td>@obj.Title</td>
+                                    <td>
+                                        <a id="showIn"
+                                           asp-action="Object"
+                                           asp-route-reportId="@Model.ReportId"
+                                           asp-route-objectId="@obj.Id">Åpne</a>
+                                    </td>
+                                    <td>@obj.ObjectStatus.GetDisplayName()</td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    }
+
+                </div>
+
+                <div class="box">
+                    <h2 class="title is-5">Tilbakemeldinger</h2>
+                    @if (Model.SelectedObject != null)
+                    {
+                        <div id="CommentField">
+                            @if (Model.SelectedObject.Feedbacks.Length > 0)
+                            {
+                                @foreach (var com in Model.SelectedObject.Feedbacks)
+                                {
+                                    <article class="message is-light mb-2">
+                                        <div class="message-body">
+                                            <strong>@com.FeedbackByName</strong> (
+                                            @(com.FeedbackType switch
+                                                {
+                                                    FeedbackType.Approval => "Godkjenn",
+                                                    FeedbackType.Rejection => "Avslå",
+                                                    FeedbackType.Note => "Notat",
+                                                    FeedbackType.RequestForChange => "Forslag om endring",
+                                                    _ => com.FeedbackType.ToString()
+                                                }
+                                            )
+                                            ):
+                                            <br/>
+                                            @com.Feedback
+                                            <br/>
+                                            @com.CreatedAt
+                                        </div>
+                                    </article>
+                                }
+                            }
+                            else
+                            {
+                                <p><em>Ingen tilbakemeldinger enda...</em></p>
+                            }
+                        </div>
+                        <hr/>
+                        @if (Model.IsKartverket)
+                        {
+                            @using (Html.BeginForm("Comment", "Admin", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken()
+                                @Html.Hidden("id", Model.ReportId)
+                                @Html.Hidden("objectId", Model.SelectedObject.Id)
+                                <div class="field">
+                                    <label class="label">Tilbakemelding</label>
+                                    <div class="control">
+                                        <textarea name="feedbackText" class="textarea"
+                                                  placeholder="Skriv inn tilbakemelding (*Husk, statusforslag fra kommentarer endrer ikke objektets status)"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="label">Statusforslag</label>
+                                    <div class="control">
+                                        <div class="select">
+                                            <select name="feedbackType">
+                                                <option value="Note">Notat</option>
+                                                <option value="RequestForChange">Forslag om endring</option>
+                                                <option value="Approval">Godkjenn</option>
+                                                <option value="Rejection">Avslå</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="control mt-3">
+                                    <button type="submit" class="button is-link">Kommenter</button>
+                                </div>
+                            }
+                        }
+                    }
+                    else
+                    {
+                        <p>Velg et objekt for å kunne se/skrive tilbakemeldinger</p>
+                    }
+                </div>
+            </div>
+
+            <div class="column is-5">
+                @await Html.PartialAsync("_MapContainerPartial", mapContainerId)
+            </div>
+
+        </div>
+    </div>
+    @if (Model.Objects.Count > 1 && Model.SelectedObject != null)
+    {
+        var objIndex = Model.Objects.FindIndex(o => o.Id == Model.SelectedObject.Id);
+        var objPrev = objIndex > 0 ? Model.Objects[objIndex - 1].Id : (Guid?)null;
+        var objNext = objIndex < Model.Objects.Count - 1 ? Model.Objects[objIndex + 1].Id : (Guid?)null;
+
+        <div class="buttons mt-4">
+            @if (objPrev.HasValue)
+            {
+                <a class="button is-light"
+                   asp-route-id="@Model.ReportId"
+                   asp-route-objectId="@objPrev">
+                    Forrige objekt
+                </a>
+            }
+            else
+            {
+                <a class="button is-light" disabled>Forrige objekt</a>
+            }
+            @if (objNext.HasValue)
+            {
+                <a class="button is-light"
+                   asp-route-id="@Model.ReportId"
+                   asp-route-objectId="@objNext">
+                    Neste objekt
+                </a>
+            }
+            else
+            {
+                <a class="button is-light" disabled> Neste objekt</a>
+            }
+        </div>
+    }
+</section>
+
+@section styles
+{
+    <style>
+        .section {
+            padding: 15px;
+        }
+
+        #CommentField {
+            overflow-x: hidden;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+
+    @await Html.PartialAsync("_MapStylesPartial")
+
+}
+
+@section Scripts {
+    @await Html.PartialAsync("_MapScriptsPartial", new MapViewModel
+    {
+        MapObjects = Model.Objects,
+        SelectedMapObject = Model.SelectedObject,
+        MapElementId = mapContainerId
+    })
+}

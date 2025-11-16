@@ -1,0 +1,27 @@
+@using System.Text.Json
+@model Kartverket.Web.Models.Report.MapViewModel
+
+<script>
+    const {mapObjects, selectedMapObject} =
+    @Html.Raw(JsonSerializer.Serialize(Model, new JsonSerializerOptions
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    }));
+
+    window.APP_DATA = {
+        mapElementId: "@Model.MapElementId",
+        objectDefinitions: [{
+            colour: "hsl(59 100% 69.8%)",
+            objects: mapObjects.map((o) => ({
+                id: o.reportId,
+                ...o
+            })),
+        }],
+        selectedObject: selectedMapObject ? {
+            id: selectedMapObject.reportId,
+            ...selectedMapObject
+        } : null,
+    }
+</script>
+
+<script type="module" vite-src="~/src/map-main.tsx"></script>

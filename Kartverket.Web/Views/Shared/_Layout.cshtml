@@ -93,16 +93,6 @@
                     </div>
                 </div>
 
-                @if (User.HasAtLeastRole(RoleValue.Kartverket))
-                {
-                    <a asp-controller="Admin" asp-action="Index" class="navbar-item">
-                        <span>Admin</span>
-                        <span class="icon">
-                            <i class="fas fa-user-shield"></i>
-                        </span>
-                    </a>
-                }
-
                 <div class="navbar-item">
                     <div class="buttons">
                         @if (User.Identity is { IsAuthenticated: true })

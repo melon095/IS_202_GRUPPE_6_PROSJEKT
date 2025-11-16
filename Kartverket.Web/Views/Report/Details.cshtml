@@ -1,0 +1,173 @@
+@using Kartverket.Web.Models.Report
+@model Kartverket.Web.Models.Report.ReportDetailsViewModel
+@{
+    ViewBag.Title = "Rapport";
+
+    var mapContainerId = "map";
+}
+
+<div id="model-title">
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="notification is-danger">
+            <div asp-validation-summary="All" class="text-danger"></div>
+        </div>
+    }
+    <h2 class="is-size-2">
+        <strong>Rapport:</strong> @Model.Title
+    </h2>
+</div>
+
+<div class="main-container">
+
+    <div class="column-flex">
+        <div class="box row-flex">
+            <h2><strong>Beskrivelse:</strong></h2>
+            <br/>
+            @if (string.IsNullOrWhiteSpace(Model.Description))
+            {
+                <p><em>Ingen beskrivelse på rapport ...</em></p>
+            }
+            else
+            {
+                <p>@Model.Description</p>
+            }
+            <br/>
+            <p><strong>Rapportert:</strong> @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</p>
+        </div>
+
+        <div class="box row-flex" id="ObjTable">
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th>Objekt tittel</th>
+                    <th>Punkter</th>
+                    <th>Detaljer</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var obj in Model.Objects)
+                {
+                    <tr>
+                        <td>@if (string.IsNullOrWhiteSpace(obj.Title))
+                            {
+                                <p><em>Objekt uten tittel</em></p>
+                            }
+                            else
+                            {
+                                @obj.Title
+                            }
+                        </td>
+                        <td>@obj.Points.Length</td>
+                        <td>
+                            <a id="showIn" asp-route-reportId="@Model.ReportId" asp-route-objectId="@obj.Id">Åpne</a>
+                        </td>
+                        <td>@obj.ObjectStatus.GetDisplayName()</td>
+                    </tr>
+                }
+
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <div class="column-flex">
+        <div class="box" style="flex: 1">
+
+            @if (Model.SelectedObject is { } selObj)
+            {
+                @if (string.IsNullOrWhiteSpace(selObj.Title))
+                {
+                    <h3 class="title is-4"><em>Objekt uten tittel</em></h3>
+                }
+                else
+                {
+                    <h3 class="title is-4">@selObj.Title</h3>
+                }
+
+                <br/>
+                @if (string.IsNullOrWhiteSpace(selObj.Description))
+                {
+                    <p><em>Ingen beskrivelse på objekt ...</em></p>
+                }
+                else
+                {
+                    <p>@selObj.Description</p>
+                }
+
+                <br/>
+                <p>Status: @selObj.ObjectStatus.GetDisplayName()</p>
+                <br/>
+                @if (selObj.IsVerified)
+                {
+                    <p><strong>Verifisert:</strong> @selObj.VerifiedAt</p>
+                }
+                else
+                {
+                    <p>Dette objektet er ikke vurdert</p>
+                }
+
+                <a asp-action="Object"
+                   asp-route-reportId="@Model.ReportId"
+                   asp-route-objectId="@Model.SelectedObject.Id"
+                >
+                    Vurder objekt
+                </a>
+            }
+            else
+            {
+                <p>Objekt informasjon vises her.</p>
+            }
+
+        </div>
+    </div>
+
+    <div class="column-flex">
+        <div>
+            @await Html.PartialAsync("_MapContainerPartial", mapContainerId)
+
+        </div>
+    </div>
+</div>
+
+@section styles
+{
+    <style>
+        .main-container {
+            display: flex;
+            height: 100vh;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .column-flex {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 1rem;
+        }
+
+        .row-flex {
+            flex: 1;
+        }
+
+        #ObjTable {
+            overflow-y: auto;
+        }
+
+    </style>
+
+    @await Html.PartialAsync("_MapStylesPartial")
+}
+
+@section Scripts {
+    @await Html.PartialAsync("_MapScriptsPartial", new MapViewModel
+    {
+        MapObjects = Model.Objects,
+        SelectedMapObject = Model.SelectedObject,
+        MapElementId = mapContainerId
+    })
+}
