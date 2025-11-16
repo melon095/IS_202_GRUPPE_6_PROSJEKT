@@ -1,79 +1,78 @@
-﻿@using System.Security.Claims
-@{
-    ViewData["Title"] = "Home Page";
+﻿@{
+    ViewData["Title"] = "Hjem";
 }
 
 @if (User.Identity is { IsAuthenticated: true })
 {
-    <p>Du er logget inn som @User.Identity.Name</p>
-    <p>Din rolle er @(User.FindAll(ClaimTypes.Role).FirstOrDefault()?.Value)</p>
-    
-    <a asp-controller="User" asp-action="SetRole" asp-route-role="Kartverket" class="button is-link m-2">Bytt til Kartverket</a>
-    <a asp-controller="User" asp-action="SetRole" asp-route-role="Pilot" class="button is-link m-2">Bytt til Pilot</a>
-    <a asp-controller="User" asp-action="SetRole" asp-route-role="User" class="button is-link m-2">Bytt til User</a>
+    <div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center has-text-centered"
+         style="min-height: 80vh;">
 
-    if (User.HasAtLeastRole(RoleValue.Kartverket))
-    {
-        <p>Knapper for Kartverket</p>
-    }
-    
-    if (User.HasAtLeastRole(RoleValue.Pilot))
-    {
-        <p>Knapper Pilot</p>
-        <div class="is-flex is-flex-direction-column is-gapless">
-            <div class="grid">
-                <div class="cell">
-                    <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
-                        <a asp-controller="Map" asp-action="Index" class="has-text-link">
-                            Start en reise
-                        </a>
-                    </h2>
-                </div>
-                <div class="cell">
-                    <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
-                        <a asp-controller="Report" asp-action="GetAll" class="has-text-link">
-                            Mine reiser
-                        </a>
-                    </h2>
-                </div>
-            </div>
+        <h1 class="title is-2 mb-6">Hei @(User.Identity.Name ?? "Bruker")! Start en reise eller se rapporter</h1>
+
+        <div class="buttons is-flex is-align-items-center is-gap-4 pt-4">
+            <a asp-controller="Map" asp-action="Index" class="button is-success is-rounded is-large is-responsive">
+                <span>Start Reise</span>
+                <span class="icon is-small ml-2">
+                    <i class="fas fa-map"></i>
+                </span>
+            </a>
+
+            <a asp-controller="Report" asp-action="Index" class="button is-info is-rounded is-large is-responsive">
+                <span>Se Rapporter</span>
+                <span class="icon is-small ml-2">
+                    <i class="fas fa-file-alt"></i>
+                </span>
+            </a>
         </div>
-    }
-
-    if (User.HasAtLeastRole(RoleValue.User))
-    {
-        <p>Knapper for User</p>
-    }
+    </div>
 }
 else
 {
-    <div class="is-flex is-flex-direction-column is-gapless">
-        <div class="grid">
-            <div class="cell">
-                <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
-                    <a asp-controller="User" asp-action="Login" class="has-text-link">
-                        Pilot
-                    </a>
-                </h2>
-            </div>
-            <div class="cell">
-                <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
-                    <a asp-controller="User" asp-action="Login" class="has-text-link">
-                        Kartverket
-                    </a>
-                </h2>
-            </div>
-            <div class="cell">
-                <h2 class="m-5" style="font-weight: bold; font-size: 2rem;">
-                    <a asp-controller="User" asp-action="Login" class="has-text-link">
-                        TODO
-                    </a>
-                </h2>
-            </div>
-        </div>
+    <div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center has-text-centered"
+         style="min-height: 80vh;">
 
-        <div class="p-0">
-            <img src="~/images/home/web-home.jpg" class="image" alt="Innloggins bilder"/>
+        <h1 class="title is-2 mb-6">Logg inn eller registrer deg for å rapportere</h1>
+
+        <div class="buttons is-flex is-align-items-center" style="gap: 2rem; padding-top: 1rem;">
+            <a asp-controller="User" asp-action="Login" class="button is-success is-rounded is-large is-responsive">
+                Logg inn
+            </a>
+
+            <a asp-controller="User" asp-action="Register" class="button is-success is-rounded is-large is-responsive">
+                Registrer
+            </a>
         </div>
     </div>
+}
+
+@section Styles
+{
+    <style>
+        .button.is-responsive {
+            border-width: 3px;
+            transition: background-color 0.3s, color 0.3s, transform 0.2s;
+            min-width: 6rem;
+            text-align: center;
+            font-size: 1.5rem;
+            padding: 1.5rem 3rem;
+        }
+
+        .button.is-responsive:hover {
+            background-color: #2b7a2b;
+            color: #fff;
+            transform: scale(1.05);
+        }
+
+        .button.is-centered {
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        @@media (min-width: 768px) and (max-width: 1024px) {
+            .button.is-responsive {
+                font-size: clamp(1.25rem, 2.5vw, 2rem);
+                padding: clamp(1.25rem, 2.5vw, 2.5rem) clamp(2.5rem, 4vw, 6rem);
+            }
+        }
+    </style>
 }
