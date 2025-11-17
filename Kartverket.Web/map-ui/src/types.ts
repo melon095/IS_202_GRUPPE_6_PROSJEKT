@@ -1,7 +1,6 @@
 import { LatLngLiteral } from "leaflet";
 
 export interface Point extends LatLngLiteral {
-	// TODO: Elevation!
 	createdAt?: string;
 }
 
@@ -33,7 +32,6 @@ export enum PlaceMode {
 }
 
 export const PlaceModeToString = {
-	// TODO: Localize
 	[PlaceMode.None]: "Ingen",
 	[PlaceMode.Point]: "Punkt",
 	[PlaceMode.Line]: "Linje",

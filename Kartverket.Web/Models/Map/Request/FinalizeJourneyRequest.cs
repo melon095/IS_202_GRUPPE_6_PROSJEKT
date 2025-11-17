@@ -2,7 +2,6 @@ using Kartverket.Web.Database.Tables;
 
 namespace Kartverket.Web.Models.Map.Request;
 
-// TODO: Validation
 public class FinalizeJourneyObject
 {
     public Guid Id { get; set; }
@@ -24,7 +23,6 @@ public class FinalizeJourneyPointDataModel
 {
     public double Lat { get; set; }
     public double Lng { get; set; }
-    public int Elevation { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

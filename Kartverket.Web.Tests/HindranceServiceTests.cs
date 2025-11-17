@@ -2,21 +2,18 @@
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.Map.Request;
 using Kartverket.Web.Services;
-using Microsoft.Extensions.Logging;
 
 namespace Kartverket.Web.Tests;
 
 public class HindranceServiceTests
 {
-    private readonly ILogger<HindranceService> _logger;
     private readonly DatabaseContext _dbContext;
     private readonly IHindranceService _hindranceService;
 
     public HindranceServiceTests()
     {
-        _logger = Substitute.For<ILogger<HindranceService>>();
         _dbContext = Create.MockedDbContextFor<DatabaseContext>();
-        _hindranceService = new HindranceService(_logger, _dbContext);
+        _hindranceService = new HindranceService(_dbContext);
     }
 
     [Fact]

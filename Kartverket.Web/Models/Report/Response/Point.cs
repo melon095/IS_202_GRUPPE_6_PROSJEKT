@@ -7,7 +7,6 @@ public struct Point
     public Guid Id { get; set; }
     public double Lat { get; set; }
     public double Lng { get; set; }
-    public double Elevation { get; set; }
 
     public Point(double lat, double lng)
     {
@@ -20,6 +19,5 @@ public struct Point
         Id = point.Id;
         Lat = point.Latitude;
         Lng = point.Longitude;
-        Elevation = point.Elevation;
     }
 }
