@@ -140,11 +140,9 @@ public class UserController : Controller
         if (user == null)
             return NotFound();
 
-        if (!await _roleManager.RoleExistsAsync(role))
-            return NotFound();
-
         var newRole = await _roleManager.FindByNameAsync(role);
-        if (newRole == null) return NotFound();
+        if (newRole == null)
+            return NotFound();
 
         var currentRoles = await _userManager.GetRolesAsync(user);
         await _userManager.RemoveFromRolesAsync(user, currentRoles);

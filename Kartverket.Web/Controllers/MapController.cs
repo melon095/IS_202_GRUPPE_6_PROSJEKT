@@ -102,15 +102,20 @@ public class MapController : Controller
         CancellationToken cancellationToken = default)
     {
         var user = await _userManager.GetUserAsync(User);
-        if (user == null) return [];
+        if (user == null)
+            return [];
 
         var roles = await _userManager.GetRolesAsync(user);
-        if (roles is null || roles.Count == 0) return [];
+        if (roles is null || roles.Count == 0)
+            return [];
 
         var role = roles.Contains(RoleValue.Kartverket) ? RoleValue.Kartverket
             : roles.Contains(RoleValue.Pilot) ? RoleValue.Pilot
             : roles.Contains(RoleValue.User) ? RoleValue.User
-            : roles[0];
+            : null;
+
+        if (role == null)
+            return [];
 
         return await _hindranceService.GetAllObjectsSince(user, role, reportId, since, cancellationToken);
     }
