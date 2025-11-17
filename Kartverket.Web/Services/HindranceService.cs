@@ -111,7 +111,6 @@ public class HindranceService : IHindranceService
             Elevation = p.Elevation,
             Label = p.Label,
             CreatedAt = p.CreatedAt,
-            // TODO: Order må komme som brukerinput!
             Order = idx
         }).ToList();
 
