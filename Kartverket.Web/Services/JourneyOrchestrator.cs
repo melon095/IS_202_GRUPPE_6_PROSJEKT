@@ -60,7 +60,6 @@ public class JourneyOrchestrator : IJourneyOrchestrator
         {
             Lat = p.Lat,
             Lng = p.Lng,
-            Elevation = p.Elevation,
             CreatedAt = p.CreatedAt
         }).ToList();
 
@@ -159,7 +158,6 @@ public class JourneyOrchestrator : IJourneyOrchestrator
             {
                 Lat = p.Lat,
                 Lng = p.Lng,
-                Elevation = p.Elevation,
                 CreatedAt = p.CreatedAt
             })
             .ToList();

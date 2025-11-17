@@ -23,7 +23,6 @@ public class FinalizeJourneyPointDataModel
 {
     public double Lat { get; set; }
     public double Lng { get; set; }
-    public int Elevation { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

@@ -101,7 +101,6 @@ public class HindranceService : IHindranceService
             HindranceObjectId = hindranceObjectId,
             Latitude = p.Lat,
             Longitude = p.Lng,
-            Elevation = p.Elevation,
             Label = p.Label,
             CreatedAt = p.CreatedAt,
             // TODO: Order må komme som brukerinput!
@@ -154,7 +153,6 @@ public class HindranceService : IHindranceService
                     {
                         Lat = mp.Latitude,
                         Lng = mp.Longitude,
-                        Alt = mp.Elevation,
                         CreatedAt = mp.CreatedAt
                     })
                     .ToList()
