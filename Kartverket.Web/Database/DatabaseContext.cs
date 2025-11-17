@@ -9,8 +9,6 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
 {
     private IDbContextTransaction? _transaction;
 
-    public virtual DbSet<RoleTable> Roles { get; set; }
-
     public virtual DbSet<ReportTable> Reports { get; set; }
     public virtual DbSet<ReportFeedbackTable> ReportFeedbacks { get; set; }
 
@@ -81,12 +79,14 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
     public override int SaveChanges()
     {
         UpdateTimestamps();
+
         return base.SaveChanges();
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         UpdateTimestamps();
+
         return await base.SaveChangesAsync(cancellationToken);
     }
 
@@ -105,7 +105,7 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_transaction == null)
+        if (_transaction is null)
             return;
 
         try
@@ -127,7 +127,7 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
 
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if (_transaction == null)
+        if (_transaction is null)
             return;
 
         try
@@ -152,6 +152,7 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
             {
                 var result = await operation();
                 await CommitTransactionAsync(cancellationToken);
+
                 return result;
             }
             catch
@@ -184,7 +185,6 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
 
     private void UpdateTimestamps()
     {
-        // TODO: Dårlig fiks for å unngå problemer med in-memory database i tester
         if (Database.IsInMemory())
             return;
 
@@ -192,23 +192,29 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
             .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
 
         foreach (var entry in entries)
-            if (entry.Entity is BaseModel baseModel)
+            switch (entry.Entity)
             {
-                baseModel.UpdatedAt = DateTime.UtcNow;
-                if (entry.State == EntityState.Added)
-                    baseModel.CreatedAt = DateTime.UtcNow;
-            }
-            else if (entry.Entity is UserTable user)
-            {
-                user.UpdatedAt = DateTime.UtcNow;
-                if (entry.State == EntityState.Added)
-                    user.CreatedAt = DateTime.UtcNow;
-            }
-            else if (entry.Entity is RoleTable role)
-            {
-                role.UpdatedAt = DateTime.UtcNow;
-                if (entry.State == EntityState.Added)
-                    role.CreatedAt = DateTime.UtcNow;
+                case BaseModel baseModel:
+                {
+                    baseModel.UpdatedAt = DateTime.UtcNow;
+                    if (entry.State == EntityState.Added)
+                        baseModel.CreatedAt = DateTime.UtcNow;
+                    break;
+                }
+                case UserTable user:
+                {
+                    user.UpdatedAt = DateTime.UtcNow;
+                    if (entry.State == EntityState.Added)
+                        user.CreatedAt = DateTime.UtcNow;
+                    break;
+                }
+                case RoleTable role:
+                {
+                    role.UpdatedAt = DateTime.UtcNow;
+                    if (entry.State == EntityState.Added)
+                        role.CreatedAt = DateTime.UtcNow;
+                    break;
+                }
             }
     }
 }

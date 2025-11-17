@@ -44,12 +44,10 @@ public interface IHindranceService
 
 public class HindranceService : IHindranceService
 {
-    private readonly ILogger<HindranceService> _logger;
     private readonly DatabaseContext _dbContext;
 
-    public HindranceService(ILogger<HindranceService> logger, DatabaseContext dbContext)
+    public HindranceService(DatabaseContext dbContext)
     {
-        _logger = logger;
         _dbContext = dbContext;
     }
 
@@ -108,7 +106,6 @@ public class HindranceService : IHindranceService
             HindranceObjectId = hindranceObjectId,
             Latitude = p.Lat,
             Longitude = p.Lng,
-            Elevation = p.Elevation,
             Label = p.Label,
             CreatedAt = p.CreatedAt,
             Order = idx
@@ -203,7 +200,6 @@ public class HindranceService : IHindranceService
                     {
                         Lat = mp.Latitude,
                         Lng = mp.Longitude,
-                        Alt = mp.Elevation,
                         CreatedAt = mp.CreatedAt
                     })
                     .ToList()

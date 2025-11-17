@@ -8,7 +8,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!-- TODO: Generalization -->
         <Content Include="wwwroot\map-ui\.vite\**" Condition="Exists('wwwroot\map-ui\.vite')">
             <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
         </Content>
@@ -29,6 +28,11 @@
 
     <ItemGroup>
         <_ContentIncludedByDefault Remove="Views\Shared\Components\Map\Default.cshtml"/>
+        <_ContentIncludedByDefault Remove="Views\Reports\UserReports.cshtml"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Folder Include="wwwroot\images\home\"/>
     </ItemGroup>
 
 </Project>

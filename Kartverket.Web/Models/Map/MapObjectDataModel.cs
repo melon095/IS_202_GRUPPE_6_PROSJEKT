@@ -20,7 +20,6 @@ public class MapObjectDataModel
     {
         public double Lat { get; set; }
         public double Lng { get; set; }
-        public double Alt { get; set; }
         public DateTime CreatedAt { get; set; }
     }
 }

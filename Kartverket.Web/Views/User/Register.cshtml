@@ -1,4 +1,4 @@
-﻿@model Kartverket.Web.Models.User.Request.UserRegisterRequestModel
+﻿@model Kartverket.Web.Models.User.UserRegisterRequestModel
 @{
     ViewBag.Title = "Registrer";
 }
@@ -17,7 +17,7 @@
                     <div class="control">
                         @Html.TextBoxFor(m => m.Username, new { @class = "input", placeholder = "Username" })
                     </div>
-                    
+
                     <p class="help is-danger">
                         @Html.ValidationMessageFor(m => m.Username)
                     </p>
@@ -25,11 +25,11 @@
 
                 <div class="field">
                     @Html.LabelFor(m => m.Password, new { @class = "label" })
-                    
+
                     <div class="control">
                         @Html.PasswordFor(m => m.Password, new { @class = "input", placeholder = "Password" })
                     </div>
-                    
+
                     <p class="help is-danger">
                         @Html.ValidationMessageFor(m => m.Password)
                     </p>
@@ -37,11 +37,11 @@
 
                 <div class="field">
                     @Html.LabelFor(m => m.ConfirmPassword, new { @class = "label" })
-                    
+
                     <div class="control">
                         @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "input", placeholder = "Confirm Password" })
                     </div>
-                    
+
                     <p class="help is-danger">
                         @Html.ValidationMessageFor(m => m.ConfirmPassword)
                     </p>
