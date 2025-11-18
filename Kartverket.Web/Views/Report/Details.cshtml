@@ -56,7 +56,10 @@
                             }
                             else
                             {
+                                <div id="WrapText">
+
                                 @obj.Title
+                                </div>
                             }
                         </td>
                         <td>@obj.Points.Length</td>
@@ -154,8 +157,19 @@
             flex: 1;
         }
 
+        #WrapText {
+            text-wrap: balance;
+            word-break: break-word;
+        }
+
         #ObjTable {
             overflow-y: auto;
+            overflow-x: auto;
+        }
+
+        table {
+            table-layout: fixed;
+            width: 100%;
         }
 
     </style>
