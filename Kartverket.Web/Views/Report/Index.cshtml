@@ -60,7 +60,11 @@
         {
             <tr>
                 <td>@report.User</td>
-                <td>@report.Title</td>
+                <td>
+                    <div id="WrapText">
+                    @report.Title
+                    </div>
+                    </td>
                 <td>
                     @report.TotalObjects
                 </td>
@@ -146,3 +150,16 @@
         </nav>
     </div>
 </div>
+
+@section Styles {
+	<style>
+		#WrapText {
+			text-wrap: wrap;
+            word-break: break-word;
+		}
+        table {
+            table-layout: fixed;
+            width: 100%;
+        }
+	</style>
+}
