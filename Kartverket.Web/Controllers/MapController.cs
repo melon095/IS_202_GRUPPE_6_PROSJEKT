@@ -1,4 +1,5 @@
-﻿using Kartverket.Web.Database;
+﻿using Kartverket.Web.AuthPolicy;
+using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Models.Map;
 using Kartverket.Web.Models.Map.Request;
@@ -98,8 +99,26 @@ public class MapController : Controller
     public async Task<IEnumerable<MapObjectDataModel>> GetObjects(
         [FromQuery] DateTime? since = null,
         [FromQuery] Guid? reportId = null,
-        CancellationToken cancellationToken = default) =>
-        await _hindranceService.GetAllObjectsSince(since, reportId, cancellationToken);
+        CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+            return [];
+
+        var roles = await _userManager.GetRolesAsync(user);
+        if (roles is null || roles.Count == 0)
+            return [];
+
+        var role = roles.Contains(RoleValue.Kartverket) ? RoleValue.Kartverket
+            : roles.Contains(RoleValue.Pilot) ? RoleValue.Pilot
+            : roles.Contains(RoleValue.User) ? RoleValue.User
+            : null;
+
+        if (role == null)
+            return [];
+
+        return await _hindranceService.GetAllObjectsSince(user, role, reportId, since, cancellationToken);
+    }
 
     [HttpGet("/Map/SatelliteTiles/{z:int}/{x:int}/{y:int}.jpg")]
     public async Task<IActionResult> SatelliteTiles(int x, int y, int z,

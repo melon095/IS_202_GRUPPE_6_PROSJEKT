@@ -99,10 +99,18 @@ public class UserController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
+        var role = await _roleManager.FindByNameAsync(RoleValue.User);
+        if (role == null)
+        {
+            ModelState.AddModelError(string.Empty, "Standardrolle ikke funnet.");
+            return View(model);
+        }
+
         var user = new UserTable
         {
             UserName = model.Username,
-            IsActive = true
+            IsActive = true,
+            RoleId = role.Id
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
@@ -132,12 +140,16 @@ public class UserController : Controller
         if (user == null)
             return NotFound();
 
-        if (!await _roleManager.RoleExistsAsync(role))
+        var newRole = await _roleManager.FindByNameAsync(role);
+        if (newRole == null)
             return NotFound();
 
         var currentRoles = await _userManager.GetRolesAsync(user);
         await _userManager.RemoveFromRolesAsync(user, currentRoles);
         await _userManager.AddToRoleAsync(user, role);
+
+        user.RoleId = newRole.Id;
+        await _userManager.UpdateAsync(user);
 
         await _signInManager.SignInAsync(user, false);
 
