@@ -1,6 +1,9 @@
+using EntityFrameworkCore.Testing.NSubstitute;
 using Kartverket.Web.Database;
 using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Services;
+using NSubstitute;
+using Xunit;
 
 namespace Kartverket.Web.Tests;
 
