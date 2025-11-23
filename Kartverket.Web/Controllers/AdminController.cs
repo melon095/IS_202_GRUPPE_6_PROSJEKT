@@ -22,6 +22,11 @@ public class AdminController : Controller
         _dbContext = ctx;
     }
 
+    /// <summary>
+    ///     Vurder et objekt i en rapport
+    /// </summary>
+    /// <returns>Redirect til objekt visning</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Ugyldig status valgt</exception>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult ObjectReview(Guid id, Guid objectId, ObjectReviewAction StatusObject)
@@ -52,8 +57,10 @@ public class AdminController : Controller
 
         var reportVerify = report.HindranceObjects;
 
-
+        // Finn objekter som ikke er gjennomgått
         var notReviewed = reportVerify.Where(o => o.ReviewStatus == ReviewStatus.Draft).ToList();
+
+        // Finn objekter som er avslått
         var rejectedObjects = reportVerify.Where(o => o.ReviewStatus == ReviewStatus.Closed).ToList();
 
         // Alle objekter er gjennomgått
@@ -76,6 +83,10 @@ public class AdminController : Controller
         return RedirectToAction("Object", "Report", new { reportId = id, objectId });
     }
 
+    /// <summary>
+    ///     Legg til kommentar på et objekt i en rapport
+    /// </summary>
+    /// <returns>Redirect til objekt visning</returns>
     [HttpPost]
     [ValidateAntiForgeryToken]
     public IActionResult Comment(Guid id, Guid objectID, string feedbackText, FeedbackType feedbackType)

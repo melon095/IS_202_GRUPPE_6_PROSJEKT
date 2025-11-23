@@ -6,13 +6,46 @@ namespace Kartverket.Web.Services;
 
 public interface IReportService
 {
+    /// <summary>
+    ///     Lager et nytt utkast til rapport
+    /// </summary>
+    /// <param name="reportedById">Id til brukeren som lager rapporten</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Den nye rapporten</returns>
     Task<ReportTable> CreateDraft(Guid reportedById, CancellationToken cancellationToken = default);
+
+
+    /// <summary>
+    ///     Henter et utkast til rapport basert på rapport Id
+    /// </summary>
+    /// <param name="reportId">Id til rapporten</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Rapporten hvis den finnes, ellers null</returns>
     Task<ReportTable?> GetDraft(Guid reportId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Fullfører en rapport ved å sette tittel, beskrivelse og endre status fra utkast til sendt inn
+    /// </summary>
+    /// <param name="report">Rapporten som skal fullføres</param>
+    /// <param name="title">Tittel til rapporten</param>
+    /// <param name="description">Beskrivelse til rapporten</param>
     void FinaliseReport(ReportTable report, string title, string description);
 
+    /// <summary>
+    ///     Henter rapporter basert på gjennomgangsstatus
+    /// </summary>
+    /// <param name="status">Gjennomgangsstatusen</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Liste over rapporter med den angitte gjennomgangsstatusen</returns>
     Task<List<ReportTable>> GetReportsByReviewStatus(ReviewStatus status,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Henter rapporter basert på tilbakemeldingstype
+    /// </summary>
+    /// <param name="type">Tilbakemeldingstypen</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns>Liste over rapporter med den angitte tilbakemeldingstypen</returns>
     Task<List<ReportTable>> GetReportsByFeedbackType(FeedbackType type,
         CancellationToken cancellationToken = default);
 }
@@ -26,6 +59,7 @@ public class ReportService : IReportService
         _dbContext = dbContext;
     }
 
+    /// <inheritdoc />
     public async Task<ReportTable> CreateDraft(Guid reportedById, CancellationToken cancellationToken = default)
     {
         var report = new ReportTable
@@ -42,6 +76,7 @@ public class ReportService : IReportService
         return report;
     }
 
+    /// <inheritdoc />
     public async Task<ReportTable?> GetDraft(Guid reportId, CancellationToken cancellationToken = default)
     {
         return await _dbContext.Reports
@@ -53,6 +88,7 @@ public class ReportService : IReportService
             .FirstOrDefaultAsync(r => r.Id == reportId && r.ReviewStatus == ReviewStatus.Draft, cancellationToken);
     }
 
+    /// <inheritdoc />
     public void FinaliseReport(ReportTable report, string title, string description)
     {
         report.Title = title;
@@ -60,6 +96,7 @@ public class ReportService : IReportService
         report.ReviewStatus = ReviewStatus.Submitted;
     }
 
+    /// <inheritdoc />
     public async Task<List<ReportTable>> GetReportsByReviewStatus(ReviewStatus status,
         CancellationToken cancellationToken = default)
     {
@@ -69,6 +106,7 @@ public class ReportService : IReportService
             .ToListAsync(cancellationToken);
     }
 
+    /// <inheritdoc />
     public async Task<List<ReportTable>> GetReportsByFeedbackType(FeedbackType type,
         CancellationToken cancellationToken = default)
     {

@@ -2,6 +2,9 @@
 
 namespace Kartverket.Web.Models.User;
 
+/// <summary>
+///     ViewModel for brukerregistrering
+/// </summary>
 public class UserRegisterRequestModel
 {
     [Required] public string Username { get; set; } = null!;

@@ -4,12 +4,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kartverket.Web.Models.Report.Response;
 
+/// <summary>
+///     Handlinger som kan utføres på et rapportert objekt
+/// </summary>
 public enum ObjectReviewAction
 {
     Accept,
     Deny
 }
 
+/// <summary>
+///     ViewModel for et rapportert objekt i en rapport
+/// </summary>
 public class ReportObjectViewModel
 {
     [FromRoute] public Guid ReportId { get; set; }

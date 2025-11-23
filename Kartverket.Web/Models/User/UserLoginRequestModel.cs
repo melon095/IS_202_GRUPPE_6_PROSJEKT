@@ -2,6 +2,9 @@
 
 namespace Kartverket.Web.Models.User;
 
+/// <summary>
+///     ViewModel for brukerinnlogging
+/// </summary>
 public class UserLoginRequestModel
 {
     [Required(ErrorMessage = "Brukernavn er påkrevd")]

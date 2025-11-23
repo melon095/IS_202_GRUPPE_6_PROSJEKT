@@ -3,6 +3,9 @@ using Kartverket.Web.Database.Tables;
 
 namespace Kartverket.Web.Models.Map;
 
+/// <summary>
+///     Data modell for et kartobjekt i en rapport.
+/// </summary>
 public class MapObjectDataModel
 {
     public Guid Id { get; set; }

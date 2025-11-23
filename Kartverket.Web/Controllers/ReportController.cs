@@ -20,6 +20,9 @@ public class ReportController : Controller
         _dbContext = dbContext;
     }
 
+    /// <summary>
+    ///     En side for å liste rapporter med paginering og filtrering.
+    /// </summary>
     [HttpGet]
     public async Task<IActionResult> Index(ReportIndexViewModel model, CancellationToken cancellationToken = default)
     {
@@ -62,6 +65,9 @@ public class ReportController : Controller
         return View(model);
     }
 
+    /// <summary>
+    ///     En side for å vise detaljer om en rapport og dens objekter.
+    /// </summary>
     [HttpGet("Report/Details/{reportId:guid}/{objectId:guid?}")]
     public async Task<IActionResult> Details(ReportDetailsViewModel model,
         CancellationToken cancellationToken = default)
@@ -122,6 +128,9 @@ public class ReportController : Controller
         return View(model);
     }
 
+    /// <summary>
+    ///     En side for å vise et objekt i en rapport med tilhørende feedback.
+    /// </summary>
     [HttpGet("Report/Object/{reportId:guid}/{objectId:guid}")]
     public async Task<IActionResult> Object(ReportObjectViewModel model,
         CancellationToken cancellationToken = default)
