@@ -28,6 +28,9 @@ public class UserController : Controller
         _httpContextAccessor = httpContextAccessor;
     }
 
+    /// <summary>
+    ///     Viser innloggingssiden.
+    /// </summary>
     [HttpGet]
     [AllowAnonymous]
     public IActionResult Login(string? returnUrl = null)
@@ -38,10 +41,16 @@ public class UserController : Controller
         return View(model);
     }
 
+    /// <summary>
+    ///     Viser tilgang nektet-siden.
+    /// </summary>
     [HttpGet]
     [AllowAnonymous]
     public IActionResult AccessDenied() => View();
 
+    /// <summary>
+    ///     Logger ut brukeren.
+    /// </summary>
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> Logout()
@@ -52,10 +61,16 @@ public class UserController : Controller
         return RedirectToAction("Index", "Home");
     }
 
+    /// <summary>
+    ///     Viser registreringssiden.
+    /// </summary>
     [HttpGet]
     [AllowAnonymous]
     public IActionResult Register() => View();
 
+    /// <summary>
+    ///     Logger inn brukeren.
+    /// </summary>
     [HttpPost]
     [AllowAnonymous]
     public async Task<IActionResult> Login(UserLoginRequestModel body, string? returnUrl = null)
@@ -91,6 +106,9 @@ public class UserController : Controller
         return RedirectToAction("Index", "Home");
     }
 
+    /// <summary>
+    ///     Registrerer en ny bruker.
+    /// </summary>
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
@@ -132,6 +150,9 @@ public class UserController : Controller
         return RedirectToAction("Index", "Home");
     }
 
+    /// <summary>
+    ///     Endrer rollen til den innloggede brukeren.
+    /// </summary>
     [HttpGet("User/SetRole/{role}")]
     [Authorize(Policy = RoleValue.AtLeastUser)]
     public async Task<IActionResult> SetRole([FromRoute] string role)

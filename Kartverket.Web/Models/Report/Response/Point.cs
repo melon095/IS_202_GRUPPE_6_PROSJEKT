@@ -2,6 +2,9 @@
 
 namespace Kartverket.Web.Models.Report.Response;
 
+/// <summary>
+///     Data modell som representerer et punkt med geografiske koordinater
+/// </summary>
 public struct Point
 {
     public Guid Id { get; set; }

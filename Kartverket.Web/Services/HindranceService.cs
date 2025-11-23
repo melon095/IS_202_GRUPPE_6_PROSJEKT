@@ -9,8 +9,22 @@ namespace Kartverket.Web.Services;
 
 public interface IHindranceService
 {
+    /// <summary>
+    ///     Hent alle hindringstyper
+    /// </summary>
+    /// <returns>Liste over hindringstyper</returns>
     Task<List<HindranceTypeTable>> GetAllTypes(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Opprett et nytt hindringsobjekt
+    /// </summary>
+    /// <param name="reportId">Rapport-id</param>
+    /// <param name="hindranceTypeId">Hindringstype-id</param>
+    /// <param name="title">Tittel</param>
+    /// <param name="description">Beskrivelse</param>
+    /// <param name="geometryType">Geometri-type</param>
+    /// <param name="cancellationToken">Avbruddstoken</param>
+    /// <returns>Det opprettede hindringsobjektet</returns>
     Task<HindranceObjectTable> CreateObject(
         Guid reportId,
         Guid hindranceTypeId,
@@ -19,6 +33,15 @@ public interface IHindranceService
         GeometryType geometryType,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Oppdater et eksisterende hindringsobjekt
+    /// </summary>
+    /// <param name="obj">Hindringsobjektet som skal oppdateres</param>
+    /// <param name="hindranceTypeId">Hindringstype-id</param>
+    /// <param name="title">Tittel</param>
+    /// <param name="description">Beskrivelse</param>
+    /// <param name="geometryType">Geometri-type</param>
+    /// <param name="cancellationToken">Avbruddstoken</param>
     void UpdateObject(
         HindranceObjectTable obj,
         Guid hindranceTypeId,
@@ -27,13 +50,32 @@ public interface IHindranceService
         GeometryType geometryType,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Legg til punkter til et hindringsobjekt
+    /// </summary>
+    /// <param name="hindranceObjectId">Hindringsobjekt-id</param>
+    /// <param name="points">Liste over punkter som skal legges til</param>
+    /// <param name="cancellationToken">Avbruddstoken</param>
     Task AddPoints(
         Guid hindranceObjectId,
         List<PlacedPointDataModel> points,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    ///     Slett et hindringsobjekt
+    /// </summary>
+    /// <param name="hindranceObjectId">Hindringsobjekt-id</param
     void DeleteObject(Guid hindranceObjectId);
 
+    /// <summary>
+    ///     Hent alle hindringsobjekter siden en gitt dato
+    /// </summary>
+    /// <param name="user">Brukeren som gjør forespørselen</param>
+    /// <param name="roleName">Rollen til brukeren</param>
+    /// <param name="ignoreReportId">Rapport-id som skal ignoreres (valgfritt)</param>
+    /// <param name="since">Dato som objektene skal være opprettet eller oppdatert etter (valgfritt)</param>
+    /// <param name="cancellationToken">Avbruddstoken</param>
+    /// <returns>Liste over hindringsobjekter</returns>
     Task<List<MapObjectDataModel>> GetAllObjectsSince(
         UserTable user,
         string roleName,
@@ -51,12 +93,14 @@ public class HindranceService : IHindranceService
         _dbContext = dbContext;
     }
 
+    /// <inheritdoc />
     public async Task<List<HindranceTypeTable>> GetAllTypes(CancellationToken cancellationToken = default) =>
         await _dbContext.HindranceTypes
             .AsNoTracking()
             .OrderBy(t => t.Name)
             .ToListAsync(cancellationToken);
 
+    /// <inheritdoc />
     public async Task<HindranceObjectTable> CreateObject(
         Guid reportId,
         Guid hindranceTypeId,
@@ -81,6 +125,7 @@ public class HindranceService : IHindranceService
         return newObject;
     }
 
+    /// <inheritdoc />
     public void UpdateObject(
         HindranceObjectTable obj,
         Guid hindranceTypeId,
@@ -95,6 +140,7 @@ public class HindranceService : IHindranceService
         obj.GeometryType = geometryType;
     }
 
+    /// <inheritdoc />
     public async Task AddPoints(
         Guid hindranceObjectId,
         List<PlacedPointDataModel> points,
@@ -114,6 +160,7 @@ public class HindranceService : IHindranceService
         await _dbContext.HindrancePoints.AddRangeAsync(pointEntities, cancellationToken);
     }
 
+    /// <inheritdoc />
     public void DeleteObject(Guid hindranceObjectId)
     {
         var obj = _dbContext.HindranceObjects
@@ -126,6 +173,7 @@ public class HindranceService : IHindranceService
         _dbContext.HindranceObjects.Remove(obj);
     }
 
+    /// <inheritdoc />
     public Task<List<MapObjectDataModel>> GetAllObjectsSince(
         UserTable user,
         string roleName,

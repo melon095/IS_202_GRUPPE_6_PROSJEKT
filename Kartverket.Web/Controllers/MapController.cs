@@ -37,9 +37,15 @@ public class MapController : Controller
         _httpClientFactory = httpClientFactory;
     }
 
+    /// <summary>
+    ///     Hovedside for kartvisningen
+    /// </summary>
     [HttpGet]
     public IActionResult Index() => View();
 
+    /// <summary>
+    ///     Synkroniser et objekt plassert på kartet
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> SyncObject(
         [FromBody] PlacedObjectDataModel body,
@@ -66,6 +72,9 @@ public class MapController : Controller
         }
     }
 
+    /// <summary>
+    ///     Fullfør en pågående reise
+    /// </summary>
     [HttpPost]
     public async Task<IActionResult> FinalizeJourney(
         [FromBody] FinalizeJourneyRequest body,
@@ -95,6 +104,9 @@ public class MapController : Controller
         }
     }
 
+    /// <summary>
+    ///     Hent alle objekter for kartvisningen
+    /// </summary>
     [HttpGet]
     public async Task<IEnumerable<MapObjectDataModel>> GetObjects(
         [FromQuery] DateTime? since = null,
@@ -120,6 +132,9 @@ public class MapController : Controller
         return await _hindranceService.GetAllObjectsSince(user, role, reportId, since, cancellationToken);
     }
 
+    /// <summary>
+    ///     Hent satellittfliser fra Stadia Maps
+    /// </summary>
     [HttpGet("/Map/SatelliteTiles/{z:int}/{x:int}/{y:int}.jpg")]
     public async Task<IActionResult> SatelliteTiles(int x, int y, int z,
         CancellationToken cancellationToken = default)

@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kartverket.Web.Models.Report;
 
+/// <summary>
+///     ViewModel for rapport detaljer
+/// </summary>
 public class ReportDetailsViewModel
 {
     [FromRoute] public Guid ReportId { get; set; }

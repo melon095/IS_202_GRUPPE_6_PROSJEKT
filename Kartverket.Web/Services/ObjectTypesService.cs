@@ -8,6 +8,10 @@ namespace Kartverket.Web.Services;
 
 public interface IObjectTypesService
 {
+    /// <summary>
+    ///     Genererer en liste over objekt typer
+    /// </summary>
+    /// <returns>Objekt Typer</returns>
     ValueTask<ObjectTypesDataModel> List(CancellationToken cancellationToken = default);
 }
 
@@ -25,11 +29,7 @@ public class ObjectTypesService : IObjectTypesService
         _cache = cache;
     }
 
-    /// <summary>
-    ///     Genererer en liste over objekt typer
-    /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns>Objekt Typer</returns>
+    /// <inheritdoc />
     public async ValueTask<ObjectTypesDataModel> List(CancellationToken cancellationToken = default)
     {
         if (_cache.TryGetValue<ObjectTypesDataModel>(CACHE_KEY, out var cachedData))
@@ -63,6 +63,7 @@ public class ObjectTypesService : IObjectTypesService
 
         // @NOTE: Denne cachen blir aldri fjernet med mindre applikasjonen restartes,
         //        grunnen til dette er fordi objekt typer blir aldri endret i produksjon.
+        //
         //        De er automatisk generert ved oppstart av databasen, blir ikke endret, slettet eller lagt til av brukere.
         _cache.Set(CACHE_KEY, model, new MemoryCacheEntryOptions
         {

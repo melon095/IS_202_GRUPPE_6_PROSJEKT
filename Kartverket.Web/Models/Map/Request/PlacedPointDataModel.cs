@@ -1,5 +1,8 @@
 namespace Kartverket.Web.Models.Map.Request;
 
+/// <summary>
+///     Data modell for et plassert punkt på kartet.
+/// </summary>
 public class PlacedPointDataModel
 {
     public double Lat { get; set; }

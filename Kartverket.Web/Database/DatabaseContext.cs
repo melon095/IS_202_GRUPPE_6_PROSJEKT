@@ -90,6 +90,9 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
         return await base.SaveChangesAsync(cancellationToken);
     }
 
+    /// <summary>
+    ///     Begynner en database transaksjon.
+    /// </summary>
     public Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (_transaction != null)
@@ -103,6 +106,9 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
         });
     }
 
+    /// <summary>
+    ///     Committer en database transaksjon.
+    /// </summary>
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (_transaction is null)
@@ -125,6 +131,9 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
         }
     }
 
+    /// <summary>
+    ///     Ruller tilbake en database transaksjon.
+    /// </summary>
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
         if (_transaction is null)
@@ -141,6 +150,7 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
         }
     }
 
+    /// <inheritdoc />
     public Task<T> ExecuteInTransactionAsync<T>(Func<Task<T>> operation, CancellationToken cancellationToken = default)
     {
         var strategy = Database.CreateExecutionStrategy();
@@ -163,6 +173,7 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
         });
     }
 
+    /// <inheritdoc />
     public Task ExecuteInTransactionAsync(Func<Task> operation, CancellationToken cancellationToken = default)
     {
         var strategy = Database.CreateExecutionStrategy();

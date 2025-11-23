@@ -3,6 +3,9 @@ using Kartverket.Web.Models.Report.Response;
 
 namespace Kartverket.Web.Models.Report;
 
+/// <summary>
+///     ViewModel for å vise react kartkomponent med objekter
+/// </summary>
 public class MapViewModel
 {
     public IEnumerable<IMapObject> MapObjects { get; set; } = [];
@@ -12,6 +15,9 @@ public class MapViewModel
     public string MapElementId { get; set; } = "map";
 }
 
+/// <summary>
+///     Representerer et interface som kan brukes for objekter som skal vises på kartet
+/// </summary>
 public interface IMapObject
 {
     Guid Id { get; set; }

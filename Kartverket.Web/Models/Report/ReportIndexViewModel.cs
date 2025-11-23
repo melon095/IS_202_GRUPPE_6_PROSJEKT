@@ -3,12 +3,18 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Kartverket.Web.Models.Report;
 
+/// <summary>
+///     Sorteringsrekkefølge for rapporter.
+/// </summary>
 public enum SortOrder
 {
     Ascending,
     Descending
 }
 
+/// <summary>
+///     ViewModel for rapportindekssiden.
+/// </summary>
 public class ReportIndexViewModel
 {
     [FromQuery] public int Page { get; set; } = 1;

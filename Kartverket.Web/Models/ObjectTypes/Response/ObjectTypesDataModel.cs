@@ -2,6 +2,9 @@
 
 namespace Kartverket.Web.Models.ObjectTypes.Response;
 
+/// <summary>
+///     En data modell som representerer en samling av objekt typer.
+/// </summary>
 public class ObjectTypesDataModel
 {
     public List<ObjectType> ObjectTypes { get; set; } = [];

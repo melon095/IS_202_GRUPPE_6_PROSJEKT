@@ -2,6 +2,9 @@ using Kartverket.Web.Database.Tables;
 
 namespace Kartverket.Web.Models.Map.Request;
 
+/// <summary>
+///     Representerer et objekt i en ferdigstilling av en reise.
+/// </summary>
 public class FinalizeJourneyObject
 {
     public Guid Id { get; set; }
@@ -13,12 +16,18 @@ public class FinalizeJourneyObject
     public GeometryType GeometryType { get; set; }
 }
 
+/// <summary>
+///     Representerer data for ferdigstilling av en reise.
+/// </summary>
 public class FinalizeJourneyDataModel
 {
     public string Title { get; set; } = "Ny tur";
     public string Description { get; set; } = "";
 }
 
+/// <summary>
+///     Representerer et punkt i en ferdigstilling av en reise.
+/// </summary>
 public class FinalizeJourneyPointDataModel
 {
     public double Lat { get; set; }
@@ -26,6 +35,9 @@ public class FinalizeJourneyPointDataModel
     public DateTime CreatedAt { get; set; }
 }
 
+/// <summary>
+///     Representerer en forespørsel om å ferdigstille en reise.
+/// </summary>
 public class FinalizeJourneyRequest
 {
     public List<FinalizeJourneyObject> Objects { get; set; } = [];
