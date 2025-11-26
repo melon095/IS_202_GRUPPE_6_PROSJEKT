@@ -223,7 +223,10 @@ public class HindranceService : IHindranceService
             // Ser sin egen rapport, men ikke hvis den er avslått
                (o.Report.ReportedById == user.Id && o.ReviewStatus != ReviewStatus.Closed) ||
             // Ser andres hindringer om de er godkjent
-               o.ReviewStatus == ReviewStatus.Resolved)
+               o.ReviewStatus == ReviewStatus.Resolved),
+
+            // Ugyldig rolle dersom det oppstår
+            _ => query.Where(o => false)
         };
    
 
