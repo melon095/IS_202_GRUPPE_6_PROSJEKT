@@ -201,32 +201,31 @@ public class HindranceService : IHindranceService
 
         query = roleName switch
         {
-            // Dersom bruker er pilot
-            _ when roleName.Equals(RoleValue.Pilot, StringComparison.OrdinalIgnoreCase) =>
-                query.Where(o =>
-                    // Eget rapporterte objekter
-                    o.Report.ReportedById == user.Id ||
-                    // Dersom objektet er rapportert av en annen bruker enn piloten
-                    (o.Report.ReportedBy.Role != null && o.Report.ReportedBy.Role.Name != RoleValue.User &&
+            // Hvis bruker er Kartverket
+            _ when roleName.Equals(RoleValue.Kartverket, StringComparison.OrdinalIgnoreCase)
+                // Ser alle objekter på kartet med mindre de er avslått
+                => query.Where(o => o.ReviewStatus != ReviewStatus.Closed),
+            // Hvis bruker er en pilot
+            _ when roleName.Equals(RoleValue.Pilot, StringComparison.OrdinalIgnoreCase)
+                => query.Where(o =>
+                    // Ser sine egne obkekter, med mindre de er avslått
+                    (o.Report.ReportedById == user.Id && o.ReviewStatus != ReviewStatus.Closed) ||
+                    // Andre piloter og kartverkets objekter, dersom de ikke er avslått
+                    (o.Report.ReportedBy.Role.Name != RoleValue.User &&
                      o.ReviewStatus != ReviewStatus.Closed) ||
-                    // Dersom objektet er rapportert av en bruker og er løst
-                    (o.Report.ReportedBy.Role != null && o.Report.ReportedBy.Role.Name == RoleValue.User &&
-                     o.ReviewStatus == ReviewStatus.Resolved)),
-
-            // Dersom bruker er vanlig bruker
-            _ when roleName.Equals(RoleValue.User, StringComparison.OrdinalIgnoreCase) =>
-                query.Where(o =>
-                    // Eget rapporterte objekter
-                    o.Report.ReportedById == user.Id ||
-                    // Dersom objektet er rapportert av en annen bruker og er løst
+                    // Hvis en vanlig bruker har en godkjent objekt
+                    (o.Report.ReportedBy.Role.Name == RoleValue.User &&
+                     o.ReviewStatus == ReviewStatus.Resolved)
+                ),
+            // Hvis bruker er vanlig bruker
+            _ when roleName.Equals(RoleValue.User, StringComparison.OrdinalIgnoreCase)
+                => query.Where(o =>
+                    // Ser sin egen rapport, men ikke hvis den er avslått
+                    (o.Report.ReportedById == user.Id && o.ReviewStatus != ReviewStatus.Closed) ||
+                    // Ser andres hindringer om de er godkjent
                     o.ReviewStatus == ReviewStatus.Resolved),
 
-            // Dersom bruker er Kartverket
-            _ when roleName.Equals(RoleValue.Kartverket, StringComparison.OrdinalIgnoreCase) =>
-                // Få alle objekter
-                query,
-
-            // Annet (ukjent rolle)
+            // Ugyldig rolle dersom det oppstår
             _ => query.Where(o => false)
         };
 
