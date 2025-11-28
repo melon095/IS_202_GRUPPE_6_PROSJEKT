@@ -53,9 +53,6 @@ Applikasjonen tilbyr et REST API som tillater klienter å hente og sende data re
 - `GET /Map/GetObjects` - Henter alle hindringer for visning på kartet.
 - `GET /ObjectTypes/List` - Henter en liste over alle tilgjengelige hindringstyper.
 
-- SLETT MEG V
-- `POST /Admin/ObjectReview` - Håndterer godkjenning eller avvisning av rapporterte hindringer av en administrator.
-
 Endepunktene er beskyttet med autentisering og autorisering for å sikre at bare gyldige brukere kan utføre handlinger basert på deres roller.
 
 Det er tatt i bruk JSON som dataformat for kommunikasjon mellom klient og server.
