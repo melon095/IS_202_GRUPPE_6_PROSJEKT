@@ -1,28 +1,28 @@
 ﻿@{
     ViewData["Title"] = "Hjem";
 
-    var rolle = "ingen rolle";
-    if (User.IsInRole("Kartverket"))
+    var rolle = "Ingen rolle";
+
+    if (User.IsInRole(RoleValue.Kartverket))
     {
-        rolle = "Kartverket";
+        rolle = RoleValue.Kartverket;
     }
-    else if (User.IsInRole("Pilot"))
+    else if (User.IsInRole(RoleValue.Pilot))
     {
-        rolle = "Pilot";
+        rolle = RoleValue.Pilot;
     }
-    else if (User.IsInRole("User"))
+    else if (User.IsInRole(RoleValue.User))
     {
-        rolle = "User";
+        rolle = "Bruker";
     }
 }
-
 
 @if (User.Identity is { IsAuthenticated: true })
 {
     <div class="is-flex is-flex-direction-column is-justify-content-center is-align-items-center has-text-centered"
          style="min-height: 80vh;">
 
-        <h1 class="title is-2 mb-6">Hei @(User.Identity.Name ?? "Bruker") din rolle er @rolle</h1>
+        <h1 class="title is-2 mb-6">Hei @(User.Identity.Name ?? "Bruker"), din rolle er @rolle</h1>
         <p class="subtitle is-3 mb-8" style="color: hsl(0deg 0% 92.28%)">
             Start en reise eller se rapporter</p>
 
