@@ -151,6 +151,8 @@ Applikasjonen bruker Entity Framework Core som ORM (Object-Relational Mapping) v
 
 Entity Framework Core håndterer opprettelsen og migreringen av database tabeller basert på modellene definert i applikasjonen. Når applikasjonen startes, sjekker EF Core om databasens skjema samsvarer med modellene, og utfører nødvendige migrasjoner for å oppdatere databasen til den nyeste versjonen.
 
+DbGate er lagt til i docker-compose filen for enkel tilgang til databasen via en webgrensesnitt. Dette kan nås ved å navigere til `http://localhost:3000` i en nettleser når applikasjonen kjører via docker.
+
 # Test
 
 Enhetstester er implementert ved bruk av xUnit rammeverket. Testene dekker serviselaget. Testene kan finnes i [Kartverket.Web.Tests](https://github.com/melon095/IS_202_GRUPPE_6_PROSJEKT/tree/main/Kartverket.Web.Tests) og kjøres ved hjelp av testløperen i Visual Studio, Rider, eller via kommandolinjen med `dotnet test` kommandoen.
