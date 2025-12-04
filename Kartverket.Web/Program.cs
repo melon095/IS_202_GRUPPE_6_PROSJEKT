@@ -60,7 +60,7 @@ builder.Services.AddHttpContextAccessor();
 // https://source.dot.net/#Microsoft.AspNetCore.Identity/IdentityServiceCollectionExtensions.cs,b869775e5fa5aa5c
 
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy(RoleValue.AtLeastUser, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.User)); })
+    .AddPolicy(RoleValue.AtLeastUser, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Bruker)); })
     .AddPolicy(RoleValue.AtLeastPilot, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Pilot)); })
     .AddPolicy(RoleValue.AtLeastKartverket,
         p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Kartverket)); });

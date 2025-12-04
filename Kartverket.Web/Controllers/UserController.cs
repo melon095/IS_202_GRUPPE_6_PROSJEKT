@@ -117,7 +117,7 @@ public class UserController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var role = await _roleManager.FindByNameAsync(RoleValue.User);
+        var role = await _roleManager.FindByNameAsync(RoleValue.Bruker);
         if (role == null)
         {
             ModelState.AddModelError(string.Empty, "Standardrolle ikke funnet.");
@@ -138,7 +138,7 @@ public class UserController : Controller
             return View(model);
         }
 
-        await _userManager.AddToRoleAsync(user, RoleValue.User);
+        await _userManager.AddToRoleAsync(user, RoleValue.Bruker);
         await _signInManager.SignInAsync(user, false);
 
         _logger.LogInformation("Bruker {Username} opprettet en ny konto.", model.Username);

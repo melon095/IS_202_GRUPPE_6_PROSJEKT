@@ -2,7 +2,7 @@
 
 public static class RoleValue
 {
-    public const string User = "User";
+    public const string Bruker = "Bruker";
     public const string Pilot = "Pilot";
     public const string Kartverket = "Kartverket";
     
@@ -10,5 +10,5 @@ public static class RoleValue
     public const string AtLeastPilot = "AtLeastPilot";
     public const string AtLeastKartverket = "AtLeastKartverket";
     
-    public static readonly string[] AllRoles = [User, Pilot, Kartverket];
+    public static readonly string[] AllRoles = [Bruker, Pilot, Kartverket];
 }
