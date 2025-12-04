@@ -40,7 +40,7 @@ Det er mulig å få tilgang til nettsiden ved å navigere til `http://localhost:
 
 ## Brukerroller
 
-Applikasjonen har tre roller: "User", "Pilot" og "Kartverket". Disse rollene blir opprettet automatisk ved første oppstart av applikasjonen. Det blir ikke automatisk opprettet noen brukere, så du må registrere deg som en ny bruker via registreringssiden. Det er mulig å endre en brukers rolle i databasen ved å trykke på _Roller_ knappen på toppen av hjemmesiden etter innlogging.
+Applikasjonen har tre roller: "Bruker", "Pilot" og "Kartverket". Disse rollene blir opprettet automatisk ved første oppstart av applikasjonen. Det blir ikke automatisk opprettet noen brukere, så du må registrere deg som en ny bruker via registreringssiden. Det er mulig å endre en brukers rolle i databasen ved å trykke på _Roller_ knappen på toppen av hjemmesiden etter innlogging.
 
 # Systemarkitektur
 
