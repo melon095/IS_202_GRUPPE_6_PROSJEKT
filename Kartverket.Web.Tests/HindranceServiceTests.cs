@@ -98,7 +98,7 @@ public class HindranceServiceTests
         var roleId = Guid.NewGuid();
 
         var role = new RoleTable { Id = roleId, Name = RoleValue.Kartverket };
-        var user = new UserTable { Id = userId, RoleId = roleId, Role = role, IsActive = true };
+        var user = new UserTable { Id = userId, RoleId = roleId, Role = role };
         var report = new ReportTable
         {
             Id = Guid.NewGuid(), ReportedById = userId, ReportedBy = user, Title = "", Description = "",

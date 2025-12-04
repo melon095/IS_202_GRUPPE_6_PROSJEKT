@@ -127,7 +127,6 @@ public class UserController : Controller
         var user = new UserTable
         {
             UserName = model.Username,
-            IsActive = true,
             RoleId = role.Id
         };
 
