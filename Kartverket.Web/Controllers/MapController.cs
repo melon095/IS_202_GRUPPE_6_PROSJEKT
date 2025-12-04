@@ -123,7 +123,7 @@ public class MapController : Controller
 
         var role = roles.Contains(RoleValue.Kartverket) ? RoleValue.Kartverket
             : roles.Contains(RoleValue.Pilot) ? RoleValue.Pilot
-            : roles.Contains(RoleValue.User) ? RoleValue.User
+            : roles.Contains(RoleValue.Bruker) ? RoleValue.Bruker
             : null;
 
         if (role == null)
