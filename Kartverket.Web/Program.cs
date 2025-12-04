@@ -56,13 +56,12 @@ builder.Services.AddHttpContextAccessor();
 
 // https://source.dot.net/#Microsoft.AspNetCore.Identity/IdentityServiceCollectionExtensions.cs,b869775e5fa5aa5c
 
-builder.Services.AddAuthorization(o =>
-{
-    o.AddPolicy(RoleValue.AtLeastUser, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.User)); });
-    o.AddPolicy(RoleValue.AtLeastPilot, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Pilot)); });
-    o.AddPolicy(RoleValue.AtLeastKartverket,
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(RoleValue.AtLeastUser, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.User)); })
+    .AddPolicy(RoleValue.AtLeastPilot, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Pilot)); })
+    .AddPolicy(RoleValue.AtLeastKartverket,
         p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Kartverket)); });
-});
+
 builder.Services.AddSingleton<IAuthorizationHandler, MinimumRoleHandler>();
 
 builder.Services.AddAuthentication();
