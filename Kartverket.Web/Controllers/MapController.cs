@@ -143,7 +143,7 @@ public class MapController : Controller
         {
             using var client = _httpClientFactory.CreateClient("StadiaTiles");
 
-            using var response = await client.GetAsync($"/tiles/alidade_satellite/{z}/{x}/{y}.jpg", cancellationToken);
+            var response = await client.GetAsync($"/tiles/alidade_satellite/{z}/{x}/{y}.jpg", cancellationToken);
             if (!response.IsSuccessStatusCode)
             {
                 var responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -153,7 +153,7 @@ public class MapController : Controller
                 return NotFound();
             }
 
-            using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+            var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
 
             HttpContext.Response.Headers.ETag = response.Headers.ETag?.Tag ?? null;
             HttpContext.Response.Headers.LastModified = response.Content.Headers.LastModified?.ToString() ?? null;
