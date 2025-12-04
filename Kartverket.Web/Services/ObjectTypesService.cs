@@ -32,7 +32,7 @@ public class ObjectTypesService : IObjectTypesService
     /// <inheritdoc />
     public async ValueTask<ObjectTypesDataModel> List(CancellationToken cancellationToken = default)
     {
-        if (_cache.TryGetValue<ObjectTypesDataModel>(CACHE_KEY, out var cachedData))
+        if (_cache.TryGetValue<ObjectTypesDataModel>(CACHE_KEY, out var cachedData) && cachedData != null)
             return cachedData;
 
         var objectTypes = await _dbContext.HindranceTypes
