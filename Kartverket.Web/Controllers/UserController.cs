@@ -159,11 +159,11 @@ public class UserController : Controller
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
-            return NotFound();
+            return RedirectToAction("Login", "User");
 
         var newRole = await _roleManager.FindByNameAsync(role);
         if (newRole == null)
-            return NotFound();
+            return RedirectToAction("Index", "Home");
 
         var currentRoles = await _userManager.GetRolesAsync(user);
         await _userManager.RemoveFromRolesAsync(user, currentRoles);
