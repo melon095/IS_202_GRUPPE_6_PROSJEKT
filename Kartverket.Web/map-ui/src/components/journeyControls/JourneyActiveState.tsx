@@ -129,9 +129,12 @@ export const JourneyActiveState = ({
 				</IconFlex>
 			</div>
 
-			<Divider />
-
-			<div className="content">{children}</div>
+			{children && (
+				<>
+					<Divider />
+					<div className="content">{children}</div>
+				</>
+			)}
 		</>
 	);
 };

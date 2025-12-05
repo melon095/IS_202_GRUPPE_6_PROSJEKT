@@ -2,6 +2,7 @@ Denne repoen inneholder koden for Gruppe 6 sitt IS-202 Prosjekt.
 
 - [Komme i gang](#komme-i-gang)
 - [Drift](#drift)
+  - [Brukerroller](#brukerroller)
 - [Systemarkitektur](#systemarkitektur)
   - [REST API](#rest-api)
   - [Konfigurasjon](#konfigurasjon)
@@ -36,6 +37,10 @@ Applikasjonen kan enten startes manuelt via Visual Studio, Rider, eller med dock
 Den kobler seg til en MariaDB Database der tabeller blir skapt automatisk fra [DatabaseContext](https://github.com/melon095/IS_202_GRUPPE_6_PROSJEKT/blob/main/Kartverket.Web/Database/DatabaseContext.cs)
 
 Det er mulig å få tilgang til nettsiden ved å navigere til `http://localhost:8080` i en nettleser. Porten kan varieres avhengig av konfigurasjonen i `docker-compose.yml` filen dersom du bruker docker. Ved kjøring via IDE vil standardporten være bestemt av [projectSettings.json](https://github.com/melon095/IS_202_GRUPPE_6_PROSJEKT/blob/main/Kartverket.Web/Properties/launchSettings.json) filen, men dette skal være automatisk dokumentert i terminalen ved oppstart av applikasjonen.
+
+## Brukerroller
+
+Applikasjonen har tre roller: "Bruker", "Pilot" og "Kartverket". Disse rollene blir opprettet automatisk ved første oppstart av applikasjonen. Det blir ikke automatisk opprettet noen brukere, så du må registrere deg som en ny bruker via registreringssiden. Det er mulig å endre en brukers rolle i databasen ved å trykke på _Roller_ knappen på toppen av hjemmesiden etter innlogging.
 
 # Systemarkitektur
 

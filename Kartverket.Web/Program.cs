@@ -4,6 +4,7 @@ using Kartverket.Web.Database.Tables;
 using Kartverket.Web.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting.StaticWebAssets;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,8 @@ using Vite.AspNetCore;
 #region Builder
 
 var builder = WebApplication.CreateBuilder(args);
+
+var isInDocker = builder.Configuration.GetValue<bool>("DOTNET_RUNNING_IN_DOCKER");
 
 builder.Services.AddControllersWithViews();
 
@@ -56,13 +59,12 @@ builder.Services.AddHttpContextAccessor();
 
 // https://source.dot.net/#Microsoft.AspNetCore.Identity/IdentityServiceCollectionExtensions.cs,b869775e5fa5aa5c
 
-builder.Services.AddAuthorization(o =>
-{
-    o.AddPolicy(RoleValue.AtLeastUser, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.User)); });
-    o.AddPolicy(RoleValue.AtLeastPilot, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Pilot)); });
-    o.AddPolicy(RoleValue.AtLeastKartverket,
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(RoleValue.AtLeastBruker, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Bruker)); })
+    .AddPolicy(RoleValue.AtLeastPilot, p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Pilot)); })
+    .AddPolicy(RoleValue.AtLeastKartverket,
         p => { p.Requirements.Add(new MinimumRoleRequirement(RoleValue.Kartverket)); });
-});
+
 builder.Services.AddSingleton<IAuthorizationHandler, MinimumRoleHandler>();
 
 builder.Services.AddAuthentication();
@@ -123,6 +125,22 @@ builder.Services.AddSession(o =>
     o.Cookie.IsEssential = true;
 });
 
+if (isInDocker)
+{
+    // Definert i docker-compose.yaml filen
+    var dataPath = "/app/data";
+
+    if (!Directory.Exists(dataPath))
+    {
+        Directory.CreateDirectory(dataPath);
+    }
+
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(dataPath))
+        .SetApplicationName("Kartverket.Web");
+}
+
+
 #endregion // Authentication
 
 builder.Services.AddViteServices();
@@ -162,7 +180,9 @@ if (!app.Environment.IsDevelopment())
 }
 
 {
-    var db = app.Services.CreateScope().ServiceProvider.GetRequiredService<DatabaseContext>();
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
+
     await db.Database.MigrateAsync();
     await DatabaseContextSeeding.Seed(db);
 }
@@ -170,6 +190,7 @@ if (!app.Environment.IsDevelopment())
 {
     using var scope = app.Services.CreateScope();
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<RoleTable>>();
+
     foreach (var roleName in RoleValue.AllRoles)
     {
         var roleExists = await roleManager.RoleExistsAsync(roleName);

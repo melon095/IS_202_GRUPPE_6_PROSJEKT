@@ -211,14 +211,14 @@ public class HindranceService : IHindranceService
                     // Ser sine egne obkekter, med mindre de er avslått
                     (o.Report.ReportedById == user.Id && o.ReviewStatus != ReviewStatus.Closed) ||
                     // Andre piloter og kartverkets objekter, dersom de ikke er avslått
-                    (o.Report.ReportedBy.Role.Name != RoleValue.User &&
+                    (o.Report.ReportedBy.Role.Name != RoleValue.Bruker &&
                      o.ReviewStatus != ReviewStatus.Closed) ||
                     // Hvis en vanlig bruker har en godkjent objekt
-                    (o.Report.ReportedBy.Role.Name == RoleValue.User &&
+                    (o.Report.ReportedBy.Role.Name == RoleValue.Bruker &&
                      o.ReviewStatus == ReviewStatus.Resolved)
                 ),
             // Hvis bruker er vanlig bruker
-            _ when roleName.Equals(RoleValue.User, StringComparison.OrdinalIgnoreCase)
+            _ when roleName.Equals(RoleValue.Bruker, StringComparison.OrdinalIgnoreCase)
                 => query.Where(o =>
                     // Ser sin egen rapport, men ikke hvis den er avslått
                     (o.Report.ReportedById == user.Id && o.ReviewStatus != ReviewStatus.Closed) ||

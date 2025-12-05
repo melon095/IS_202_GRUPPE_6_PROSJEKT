@@ -117,7 +117,7 @@ public class UserController : Controller
         if (!ModelState.IsValid)
             return View(model);
 
-        var role = await _roleManager.FindByNameAsync(RoleValue.User);
+        var role = await _roleManager.FindByNameAsync(RoleValue.Bruker);
         if (role == null)
         {
             ModelState.AddModelError(string.Empty, "Standardrolle ikke funnet.");
@@ -127,7 +127,6 @@ public class UserController : Controller
         var user = new UserTable
         {
             UserName = model.Username,
-            IsActive = true,
             RoleId = role.Id
         };
 
@@ -139,7 +138,7 @@ public class UserController : Controller
             return View(model);
         }
 
-        await _userManager.AddToRoleAsync(user, RoleValue.User);
+        await _userManager.AddToRoleAsync(user, RoleValue.Bruker);
         await _signInManager.SignInAsync(user, false);
 
         _logger.LogInformation("Bruker {Username} opprettet en ny konto.", model.Username);
@@ -154,16 +153,16 @@ public class UserController : Controller
     ///     Endrer rollen til den innloggede brukeren.
     /// </summary>
     [HttpGet("User/SetRole/{role}")]
-    [Authorize(Policy = RoleValue.AtLeastUser)]
+    [Authorize(Policy = RoleValue.AtLeastBruker)]
     public async Task<IActionResult> SetRole([FromRoute] string role)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
-            return NotFound();
+            return RedirectToAction("Login", "User");
 
         var newRole = await _roleManager.FindByNameAsync(role);
         if (newRole == null)
-            return NotFound();
+            return RedirectToAction("Index", "Home");
 
         var currentRoles = await _userManager.GetRolesAsync(user);
         await _userManager.RemoveFromRolesAsync(user, currentRoles);

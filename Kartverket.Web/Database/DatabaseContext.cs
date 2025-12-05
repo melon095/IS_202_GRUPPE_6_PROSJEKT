@@ -73,6 +73,10 @@ public class DatabaseContext : IdentityDbContext<UserTable, RoleTable, Guid>, IU
         modelBuilder.Entity<ReportFeedbackTable>()
             .HasOne(rf => rf.Report);
 
+        modelBuilder.Entity<HindrancePointTable>()
+            .HasIndex(hp => new {hp.HindranceObjectId, hp.Order})
+            .IsUnique();
+
         base.OnModelCreating(modelBuilder);
     }
 

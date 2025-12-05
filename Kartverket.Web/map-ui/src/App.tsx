@@ -111,9 +111,7 @@ const AppContent = () => {
 					onClick={addPointToCurrentObject}
 					style={{ height: "100vh", width: "100vw" }}
 				>
-					<JourneyControls>
-						<div>{navigator.onLine ? "🟢 Kobla til internett" : "🔴 Mangler internett"}</div>
-					</JourneyControls>
+					<JourneyControls />
 
 					{showSummary && finishedJourney && (
 						<JourneySummary
