@@ -25,11 +25,24 @@ Denne repoen inneholder koden for Gruppe 6 sitt IS-202 Prosjekt.
 
 # Komme i gang
 
-Du kan starte prosjektet ved å kjøre følgende kommando i terminalen i prosjektets rotmappe:
+Du kan starte prosjektet ved å kjøre følgende disse stegene
+
+1. Sørg for at Docker og Docker Compose er installert på din maskin.
+2. Klone repoen til din lokale maskin.
+
+```bash
+git clone https://github.com/melon095/IS_202_GRUPPE_6_PROSJEKT.git
+cd IS_202_GRUPPE_6_PROSJEKT
+```
+
+3. Kjør følgende kommando for å starte applikasjonen med Docker Compose
 
 ```bash
 docker compose up
 ```
+
+4. Vent til applikasjonen er ferdig med å starte opp. Du skal se meldingen `Now listening on: http://localhost:8080` i terminalen når den er klar.
+5. Åpne en nettleser og naviger til `http://localhost:8080` for å få tilgang til applikasjonen.
 
 # Drift
 
