@@ -6,7 +6,7 @@ public static class RoleValue
     public const string Pilot = "Pilot";
     public const string Kartverket = "Kartverket";
     
-    public const string AtLeastUser = "AtLeastUser";
+    public const string AtLeastBruker = "AtLeastBruker";
     public const string AtLeastPilot = "AtLeastPilot";
     public const string AtLeastKartverket = "AtLeastKartverket";
     

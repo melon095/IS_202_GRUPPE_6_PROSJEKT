@@ -153,7 +153,7 @@ public class UserController : Controller
     ///     Endrer rollen til den innloggede brukeren.
     /// </summary>
     [HttpGet("User/SetRole/{role}")]
-    [Authorize(Policy = RoleValue.AtLeastUser)]
+    [Authorize(Policy = RoleValue.AtLeastBruker)]
     public async Task<IActionResult> SetRole([FromRoute] string role)
     {
         var user = await _userManager.GetUserAsync(User);
